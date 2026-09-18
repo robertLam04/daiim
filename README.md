@@ -1,6 +1,9 @@
-# Project Name
+# DAIIM
 
-Developer Names:
+Robert Lam
+Nathan Hum
+Aidan Lao
+Keira Laskoski
 
 Date of project start:
 
