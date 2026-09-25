@@ -22,7 +22,7 @@
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
-Date1 & Name(s) & Description of changes\\
+September 24 & Robert & Write problem statement and inputs/outputs\\
 Date2 & Name(s) & Description of changes\\
 ... & ... & ...\\
 \bottomrule
@@ -40,6 +40,14 @@ information.}
 
 \subsection{Problem}
 
+Current AI inference markets are increasingly concentrated around a small number of large organizations~\cite{vipra2023market}.
+As the artificial intelligence (AI) industry continues to grow, we become increasingly reliant on centralized providers for AI models, data, hardware, and compute.
+This centralization increases the risk of biased outputs because of the lack of diversity in training algorithms and data used by these companies~\cite{rolf2021representation}.
+Furthermore, the oligopilized nature of the AI market creates a risk of censorship and manipulation of AI outputs. The lack of transparency from these companies and the black-box nature of many AI models makes it difficult for consumers to verify the quality and reliability of their inferences.
+Lastly, the centralized nature of the compute infrastructure used by these companies creates potential single points of failure. According to the 2026 Stanford AI Index, NVIDIA accounts for over 60\% of total global AI compute capacity~\cite{aiindex2026}. 
+This concentration poses a significant risk of disruption to AI markets in the event of a single failure. 
+
+
 \wss{What problem are you trying to solve?  Why is it important? Do not talk
 about how you will solve the problem, only what the problem is.  AI is rarely
 part of the problem.  The problem is ``what'' you want to do, not ``how'' you
@@ -48,10 +56,32 @@ understandable to a non-technical audience.}
 
 \subsection{Inputs and Outputs}
 
+The inputs to the system consists of task definitions, inference requests, and network participation.
+Task definitions are specification of a problem to be solved via machine learning, including the expected input and output types.
+Inference requests ask the network to perform inference for a given task and include
+input data or some specification of where to find the input data.
+Network participation includes machine learning 
+predictions for individual inference requests that are supplied to the network by an individual.
+\\\\
+The system outputs aggregated inference results and maintains information about the network.
+The aggregated inference results include the final prediction for a given inference request, as well as information about the quality of the prediction.
+
 \wss{Characterize the problem in terms of ``high level'' inputs and outputs.  
 Use abstraction so that you can avoid details.}
 
 \subsection{Stakeholders}
+
+\begin{itemize}
+    \item Task requesters
+    \item Inference consumers
+    \item Inference providers
+    \begin{itemize}
+        \item Model owners \\ developers
+        \item Model runners
+    \end{itemize}
+    \item Data providers
+    \item TEST
+\end{itemize}
 
 \subsection{Environment}
 
@@ -95,5 +125,8 @@ instructor, can be modified over the course of the term.}
     they are suitable for a Capstone project (not overly ambitious but also of
     appropriate complexity for a senior design project)?
 \end{enumerate}  
+
+\bibliographystyle{unsrt}
+\bibliography{../../refs/References}
 
 \end{document}
