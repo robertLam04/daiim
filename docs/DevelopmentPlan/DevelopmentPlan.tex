@@ -2,7 +2,9 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
-
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
 \title{Development Plan\\\progname}
 
 \author{\authname}
@@ -100,14 +102,71 @@ likely change throughout the year.}
 
 \section{Project Decomposition and Scheduling}
 
-\begin{itemize}
-  \item How will you be using GitHub projects?
-  \item Include a link to your GitHub project
-\end{itemize}
+The project is organized around key milestones and overarching stages 
+(refer to Table 2), progressing from initial project planning and requirements
+analysis through design, implementation, verification, and final demonstration. 
+Each stage contains defined deliverables and deadlines to provide the team 
+with a clear progression throughout the project. The schedule will remain 
+flexible where necessary, allowing the team to adjust tasks and responsibilities 
+based on project needs, progress, and individual strengths.
 
-\wss{How will the project be scheduled?  This is the big picture schedule, not
-details. You will need to reproduce information that is in the course outline
-for deadlines.}
+\begin{table}[ht]
+    \centering
+    
+    \begin{tabularx}{\textwidth}{|>{\centering\arraybackslash}p{3cm}|
+                                    X|
+                                    >{\centering\arraybackslash}p{2cm}|}
+        \hline
+        \textbf{Stage} & \textbf{Milestone} & \textbf{Deadline} \\
+        \hline
+        
+        Planning & Project selection & W2 \\
+        \hline
+        
+        Planning & Problem Statement + PoC + Development Plan + Team Charter & W4 \\
+        \hline
+        
+        Requirements & SRS + Hazard Analysis & W6 \\
+        \hline
+        
+        Verification & V\&V Plan & W8 \\
+        \hline
+        
+        Design & Design Document & W10 \\
+        \hline
+        
+        Design & PoC Demo & W11 \\
+        \hline
+        
+        Implementation & Design Document Rev 0 & W16 \\
+        \hline
+        
+        Implementation & Module Implementation & W16 \\
+        \hline
+        
+        Implementation & Rev 0 Demo & W18 \\
+        \hline
+        
+        Finalization & Final Demo + Documentation & W21 \\
+        \hline
+        
+        Finalization & V\&V Report + CD & W22 \\
+        \hline
+        
+        Finalization & Final Demos & W23 \\
+        \hline
+        
+        Expo & Expo Materials & W25 \\
+        \hline
+        
+        Expo & Capstone EXPO & W26 \\
+        \hline
+    \end{tabularx}
+    
+    \caption{Project Milestones and Schedule}
+    \label{tab:milestones}
+\end{table}
+
 
 \section{Proof of Concept Demonstration Plan}
 
