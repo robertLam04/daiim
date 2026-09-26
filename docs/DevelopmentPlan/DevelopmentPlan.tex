@@ -5,6 +5,8 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{float}
+\usepackage{hyperref}
+
 \title{Development Plan\\\progname}
 
 \author{\authname}
@@ -228,7 +230,63 @@ What tools will you be using?  How will you verify the output of your LLMs?}
 
 \section{Coding Standard}
 
-\wss{What coding standard will you adopt?}
+The team will adhere to the coding standards outlined in Table~\ref{tab:coding-standards}.
+
+\begin{table}[ht]
+    \centering
+    
+    \begin{tabularx}{\textwidth}{|>{\centering\arraybackslash}p{3cm}|X|}
+        \hline
+        \textbf{Category} & \textbf{Details} \\
+        \hline
+        
+        \textbf{Go Backend} &
+        Go code will follow the
+        \href{https://go.dev/doc/effective_go}{Effective Go}
+        guidelines and will be formatted using \texttt{gofmt}. \\
+        \hline
+        
+        \textbf{Rust Backend} &
+        Rust code will follow the official
+        \href{https://rust-lang.github.io/api-guidelines/}{Rust API Guidelines}
+        and community style conventions, formatted using \texttt{rustfmt}
+        and linted with \texttt{clippy}. \\
+        \hline
+        
+        \textbf{Rust Documentation} &
+        Rust functions, structs, and modules will use
+        \texttt{rustdoc} doc comments (\texttt{///} and \texttt{//!})
+        following the conventions in the official
+        \href{https://doc.rust-lang.org/rustdoc/how-to-write-documentation.html}
+        {Rust documentation guide}. \\
+        \hline
+        
+        \textbf{Docker} &
+        Dockerfiles and container images will follow
+        \href{https://github.com/microsoft/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md}
+        {Docker's official best practices}
+        for maintainability, efficiency, and security. \\
+        \hline
+        
+        \textbf{Git} &
+        Git will be used for version control, with feature branches
+        used to isolate development work. \\
+        \hline
+        
+        \textbf{Code Review} &
+        Changes will be submitted through GitHub pull requests and
+        reviewed by another team member before being merged into the
+        main branch. See the
+        \href{https://docs.github.com/en/pull-requests/concepts/giving-reviews}
+        {GitHub pull request review guidelines}. \\
+        \hline
+        
+    \end{tabularx}
+    
+    \caption{Coding Standards}
+    \label{tab:coding-standards}
+    
+\end{table}
 
 \newpage{}
 
