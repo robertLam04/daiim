@@ -72,21 +72,23 @@ Use abstraction so that you can avoid details.}
 \subsection{Stakeholders}
 
 \begin{itemize}
-    \item Task requesters
-    \item Inference consumers
-    \item Inference providers
-    \begin{itemize}
-        \item Model owners \\ developers
-        \item Model runners
-    \end{itemize}
-    \item Data providers
-    \item TEST
+    \item \textbf{Task requesters} \newline
+    Task requesters are people who are requesting inferences to be made for a given task. These people would value the decentralized nature of our platform. 
+    For example, healthcare researchers would make requests to predict various regression inferences (such as biomarker levels) while still complying with privacy constraints. 
+    Similarly, decentralized finance platforms could make requests to predict various regression inferences (such as stock prices) while still complying with privacy constraints.
+
+    \item \textbf{Inference providers} \newline
+    Inference providers are people with computing resources and models, and want to monetize their regression models.
+    These people usually have specialized or powerful models that can be used to make predictions for a given task.
+   
+    \item \textbf{Data Providers}   \newline
+    Data providers are people with data that can be used to train models for a given task.
+    They would be interested in helping the inference providers improve their models by providing them with data to train on.
 \end{itemize}
 
 \subsection{Environment}
 
-\wss{Hardware and Software Environment for the users.  The developer environment
-is summarized as part of the developer plan.}
+This software is compatible with any computer running a modern browser that is connected to wifi. There is no hardware component. 
 
 \section{Goals}
 
