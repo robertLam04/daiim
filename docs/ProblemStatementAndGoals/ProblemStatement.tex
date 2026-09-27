@@ -94,34 +94,77 @@ This software is compatible with any computer running a modern browser that is c
 
 This project has a total of five primary goals.
 
-\begin{itemize}
-    \item[2.1] \textbf{Automated Decentralized Execution of Transactions and Agreements:}
-    Develop a system that enables the automated and decentralized execution of marketplace transactions and agreements between users and model providers.
+\subsection{Automated and Decentralized Marketplace Transactions}
 
-    \item[2.2] \textbf{Global AI Model Marketplace:}
-    Develop a global marketplace that connects users with AI models, allowing models to be discovered and ranked based on their reputation.
+Enable users and model providers to autonomously establish and fulfill
+marketplace agreements without requiring centralized coordination. This
+goal will be measured by whether the system can successfully complete an
+agreement from the initial request through payment and settlement without
+manual intervention.
 
-    \item[2.3] \textbf{Linear Regression Inference Support:}
-    Support linear regression inference tasks, allowing users to submit inference requests to available models through the decentralized marketplace.
+\subsection{Accessible AI Model Marketplace}
 
-    \item[2.4] \textbf{Consumer-Side User Interface:}
-    Develop an intuitive consumer-side interface that allows users to interact with the marketplace and submit inference requests without requiring knowledge of the underlying decentralized infrastructure.
+Provide users with a marketplace where AI models can be discovered,
+evaluated, and selected based on factors such as model reputation and
+availability. This goal will be measured by whether users can discover
+and select available models through the marketplace without needing to
+interact directly with the underlying decentralized infrastructure.
 
-    \item[2.5] \textbf{Decentralized Backend Communication for Model Providers:}
-    Enable model providers to communicate with and interact with the decentralized backend in order to register their models, receive inference requests, and provide inference results.
-\end{itemize}
+\subsection{Reliable AI Inference Through the Marketplace}
+
+Enable users to submit AI inference requests through the marketplace and
+receive results from participating model providers. This goal will be
+measured by whether a submitted inference request can successfully travel
+from the consumer to a model provider and return a corresponding
+inference result.
+
+\subsection{Accessible Consumer Experience}
+
+Provide a consumer-facing experience that allows users to interact with
+the marketplace without requiring knowledge of decentralized systems or
+their underlying infrastructure. This goal will be measured by whether a
+user can discover a model, submit an inference request, and receive its
+result entirely through the consumer interface.
+
+\subsection{Model Provider Participation}
+
+Enable independent model providers to participate in the marketplace by
+making their models available to consumers and responding to inference
+requests. This goal will be measured by whether a model provider can
+register a model, receive an inference request, execute the inference,
+and return the result through the system.
+
 
 
 \section{Stretch Goals}
-This project has a total of 2 stretch goals.
 
-\begin{itemize}
-    \item[3.1] \textbf{Support for More Complex Inference Tasks:}
-    Extend the system beyond linear regression to support more complex inference tasks and AI models.
+This project has a total of two stretch goals, which outline additional
+features that could be implemented after the primary goals have been
+achieved.
 
-    \item[3.2] \textbf{Private Inference Using Trusted Execution Environments:}
-    Investigate and implement Trusted Execution Environments (TEEs) to enable inference tasks to be executed on completely private data while protecting the data from unauthorized access.
-\end{itemize}
+\subsection{Expanded AI Model and Inference Support}
+
+Extend the marketplace beyond linear regression to support additional AI
+models and more complex inference tasks. This is considered a stretch
+goal because supporting multiple model architectures and more complex
+inference workflows would require additional development beyond the core
+marketplace functionality established by the primary goals. The
+achievement of this goal would be measured by whether the system can
+successfully register, discover, and execute inference requests for
+multiple AI model types beyond linear regression.
+
+\subsection{Private AI Inference}
+
+Enable inference on private or sensitive data while protecting that data
+from unauthorized access during execution through the use of Trusted
+Execution Environments (TEEs). This is considered a stretch goal because
+incorporating TEEs would introduce additional security, infrastructure,
+and integration requirements beyond those necessary to support the core
+marketplace and inference functionality. The achievement of this goal
+would be measured by whether the system can successfully execute an
+inference request on private data within a TEE while preventing
+unauthorized access to the data during execution.
+
 
 
 \wss{Goals you hope to get to, but not necessary.  They are also helpful if the
