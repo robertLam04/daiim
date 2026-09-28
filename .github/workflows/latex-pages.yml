@@ -87,8 +87,8 @@ jobs:
       - name: Install TeX Live and pandoc
         uses: awalsh128/cache-apt-pkgs-action@553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9 # v1.6.3
         with:
-          packages: texlive-latex-extra texlive-science texlive-fonts-extra texlive-fonts-recommended texlive-latex-recommended lmodern pandoc
-          version: 1.1
+          packages: texlive-latex-extra texlive-science texlive-fonts-extra texlive-fonts-recommended texlive-latex-recommended texlive-binaries lmodern pandoc
+          version: 1.2
       - name: Verify the TeX toolchain is usable
         run: |
           # A restored cache that skipped texlive's postinst would leave
@@ -105,6 +105,7 @@ jobs:
           sudo updmap-sys >/dev/null
 
           pdflatex --version | head -1
+          bibtex --version | head -1
           pandoc --version | head -1
           kpsewhich article.cls
           kpsewhich amsmath.sty
