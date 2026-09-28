@@ -84,23 +84,59 @@ There should be an agenda for all meetings.}
 
 \section{Team Communication Plan}
 
-\wss{Issues on GitHub should be part of your communication plan.}
+The team will use a Microsoft Teams group chat for regular communication. 
+The team also has a shared Word document for collaborative editing of documents and planning during meetings.  Github issues will be used to track each meeting and any associated agendas/minutes. \newline
+\noindent Communication with the supervisor will be done through email and Microsoft Teams. 
+Every email with the supervisor will be sent to all team members. 
+The team will meet regularly with the supervisor, subject to the supervisor's availability.  \newline
+
+\noindent Github issues will be the primary method of communication for development tasks. Each issue will represent a development task and will be assigned to a team member; the team member will be responsible for updating the issue with their progress.  
+The issues will be associated with a milestone representing the deliverable, and will be placed appropriately in the Kanban project according to its status (e.g., To Do, In Progress, Done).
+Feedback is expected from at least one other team member for each issue, through either a comment on the Github issue or reviewed in a meeting or group chat. \newline
+
 
 \section{Team Member Roles}
 
-\wss{You should identify the types of roles you anticipate, like notetaker,
-leader, meeting chair, reviewer.  Assigning specific people to those roles is
-not necessary at this stage.  In a student team the role of the individuals will
-likely change throughout the year.}
+\begin{itemize}
+  \item \textbf{Agenda creator}: The agenda creator is responsible for creating
+  the agenda for a meeting, and posting it to the meeting issue. The agenda creator will 
+  use the template for team meetings located in the repo, containing the agenda and an attendance tracker. 
+  
+  \item \textbf{Notetaker}: The notetaker is responsible for taking notes during a meeting, and posting the meeting minutes to the meeting issue. 
+  The meeting minutes will be posted as a comment under the meeting issue. 
+  Multiple people may contribute to the notetaker role during a meeting, especially if there are multiple topics / individual updates from each person.
+  
+  \item \textbf{Pull request reviewer}:
+  The pull request reviewer role is a role that is assigned to a team member for each pull request. The pull request reviewer is responsible for reviewing the code changes in the pull request, providing feedback, and approving or requesting changes to the pull request.
+  Every team member is expected to review pull requests, but the pull request reviewer is the primary reviewer for that pull request. They are in charge of making the final decision on approving the request. 
+
+  \item \textbf{Developer}: The developer role is a role assigned to a team member for each development task. The developer is responsible for implementing the task, and updating the associated issue with their progress.
+  Every team member is expected to take on this role and contribute to development tasks as necessary, but the developer is the primary person responsible for completing a given task.
+  
+\end{itemize}
+
 
 \section{Workflow Plan}
+\textbf{Regarding issues and deliverables}:
+Each deliverable (and sub-deliverable if needed) will have a milestone associated with it. 
+Each milestone will have a set of issues associated with it, representing the development tasks needed to complete the deliverable.
+These issues will be in the project Kanban board, and will be moved through the columns (To Do, In Progress, Done) as they are worked on. \newline
 
-\begin{itemize}
-	\item How will you be using git, including branches, pull request, etc.?
-	\item How will you be managing issues, including template issues, issue
-	classification, etc.?
-  \item Use of CI/CD
-\end{itemize}
+\noindent \textbf{Regarding pull requests}:
+All code changes will be made in a new branch, and a pull request will be created once development is done for a particular task. See the branches and commit sections for naming convention. 
+Typically, a branch will be created for each issue, but a branch may close several issues if they are related and can be completed together.
+
+
+\subsection{Branches \& Commits}
+\textbf{Branch naming convention:} Each branch will be named according to the following convention: \texttt{<branch-type>/<branch-name>}.
+Like mentioned, development will be done in a new branch, and a pull request will be created once development is done for a particular task.
+The naming convention for branches will be kebab-case and will be based on the branch content as well as the branch type. 
+For example, a branch for the issue "Implement user login" would be named "feature/implement-user-login".
+The current types of branches are feature and bugfix, but more types may be added as needed. \newline
+\textbf{Commit naming convention:} Each commit will be named according to the following convention: \texttt{<commit-type>: <commit-message>}.
+The naming convention for commits will be lowercase and will be based on the commit content as well as the commit type.
+For example, a commit for the issue "Implement user login" would be named "feat: implement user login".
+The current types of commits are feat, fix, docs, style, refactor, and test, but more types may be added as needed. \newline
 
 \section{Project Decomposition and Scheduling}
 
