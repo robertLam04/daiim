@@ -2,6 +2,10 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage{hyperref}
 
 \title{Development Plan\\\progname}
 
@@ -22,12 +26,13 @@
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
-Sept 28, 2026 & Robert Lam & Added sections 1-4 and 9-10\\
-Date2 & Name(s) & Description of changes\\
-... & ... & ...\\
+September 27 & Nathan & Changed project decomposition and scheduling, changed GitHub Projects usage, changed coding standards, changed Appendix -- Team Charter\\
+September 27 & Aidan & Added sections 5 to 7 of the development plan regarding Team communication plan, roles, and workflow. \\
+September 28 & Robert & Added sections 1-4 and 9-10\\
 \bottomrule
 \end{tabularx}
 \end{table}
+
 
 \newpage{}
 
@@ -62,34 +67,138 @@ resolution, or preparation for a deliverable.
 
 \section{Team Communication Plan}
 
-\wss{Issues on GitHub should be part of your communication plan.}
+The team will use a Microsoft Teams group chat for regular communication. 
+The team also has a shared Word document for collaborative editing of documents and planning during meetings.  Github issues will be used to track each meeting and any associated agendas/minutes. \newline
+\noindent Communication with the supervisor will be done through email and Microsoft Teams. 
+Every email with the supervisor will be sent to all team members. 
+The team will meet regularly with the supervisor, subject to the supervisor's availability.  \newline
+
+\noindent Github issues will be the primary method of communication for development tasks. Each issue will represent a development task and will be assigned to a team member; the team member will be responsible for updating the issue with their progress.  
+The issues will be associated with a milestone representing the deliverable, and will be placed appropriately in the Kanban project according to its status (e.g., To Do, In Progress, Done).
+Feedback is expected from at least one other team member for each issue, through either a comment on the Github issue or reviewed in a meeting or group chat. \newline
+
 
 \section{Team Member Roles}
 
-\wss{You should identify the types of roles you anticipate, like notetaker,
-leader, meeting chair, reviewer.  Assigning specific people to those roles is
-not necessary at this stage.  In a student team the role of the individuals will
-likely change throughout the year.}
+\begin{itemize}
+  \item \textbf{Agenda creator}: The agenda creator is responsible for creating
+  the agenda for a meeting, and posting it to the meeting issue. The agenda creator will 
+  use the template for team meetings located in the repo, containing the agenda and an attendance tracker. 
+  
+  \item \textbf{Notetaker}: The notetaker is responsible for taking notes during a meeting, and posting the meeting minutes to the meeting issue. 
+  The meeting minutes will be posted as a comment under the meeting issue. 
+  Multiple people may contribute to the notetaker role during a meeting, especially if there are multiple topics / individual updates from each person.
+  
+  \item \textbf{Pull request reviewer}:
+  The pull request reviewer role is a role that is assigned to a team member for each pull request. The pull request reviewer is responsible for reviewing the code changes in the pull request, providing feedback, and approving or requesting changes to the pull request.
+  Every team member is expected to review pull requests, but the pull request reviewer is the primary reviewer for that pull request. They are in charge of making the final decision on approving the request. 
+
+  \item \textbf{Developer}: The developer role is a role assigned to a team member for each development task. The developer is responsible for implementing the task, and updating the associated issue with their progress.
+  Every team member is expected to take on this role and contribute to development tasks as necessary, but the developer is the primary person responsible for completing a given task.
+  
+\end{itemize}
+
 
 \section{Workflow Plan}
+\textbf{Regarding issues and deliverables}:
+Each deliverable (and sub-deliverable if needed) will have a milestone associated with it. 
+Each milestone will have a set of issues associated with it, representing the development tasks needed to complete the deliverable.
+These issues will be in the project Kanban board, and will be moved through the columns (To Do, In Progress, Done) as they are worked on. \newline
 
-\begin{itemize}
-	\item How will you be using git, including branches, pull request, etc.?
-	\item How will you be managing issues, including template issues, issue
-	classification, etc.?
-  \item Use of CI/CD
-\end{itemize}
+\noindent \textbf{Regarding pull requests}:
+All code changes will be made in a new branch, and a pull request will be created once development is done for a particular task. See the branches and commit sections for naming convention. 
+Typically, a branch will be created for each issue, but a branch may close several issues if they are related and can be completed together.
+Pull requests will be reviewed by at least one other team member, and the pull request reviewer role will be responsible for approving or requesting changes to the pull request.
+
+\subsection{Branches \& Commits}
+\textbf{Branch naming convention:} Each branch will be named according to the following convention: \texttt{<branch-type>/<branch-name>}.
+Like mentioned, development will be done in a new branch, and a pull request will be created once development is done for a particular task.
+The naming convention for branches will be kebab-case and will be based on the branch content as well as the branch type. 
+For example, a branch for the issue "Implement user login" would be named "feature/implement-user-login".
+The current types of branches are feature, docs, and bugfix, but more types may be added as needed. \newline
+\textbf{Commit naming convention:} Each commit will be named according to the following convention: \texttt{<commit-type>: <commit-message>}.
+The naming convention for commits will be lowercase and will be based on the commit content as well as the commit type.
+For example, a commit for the issue "Implement user login" would be named "feat: implement user login".
+The current types of commits are feat, fix, docs, style, refactor, and test, but more types may be added as needed. \newline
 
 \section{Project Decomposition and Scheduling}
 
-\begin{itemize}
-  \item How will you be using GitHub projects?
-  \item Include a link to your GitHub project
-\end{itemize}
+The project is organized around key milestones and overarching stages 
+(refer to Table 2), progressing from initial project planning and requirements
+analysis through design, implementation, verification, and final demonstration. 
+Each stage contains defined deliverables and deadlines to provide the team 
+with a clear progression throughout the project. The schedule will remain 
+flexible where necessary, allowing the team to adjust tasks and responsibilities 
+based on project needs, progress, and individual strengths.
 
-\wss{How will the project be scheduled?  This is the big picture schedule, not
-details. You will need to reproduce information that is in the course outline
-for deadlines.}
+\begin{table}[ht]
+    \centering
+    
+    \begin{tabularx}{\textwidth}{|>{\centering\arraybackslash}p{3cm}|
+                                    X|
+                                    >{\centering\arraybackslash}p{2cm}|}
+        \hline
+        \textbf{Stage} & \textbf{Milestone} & \textbf{Deadline} \\
+        \hline
+        
+        Planning & Project selection & W2 \\
+        \hline
+        
+        Planning & Problem Statement + PoC + Development Plan + Team Charter & W4 \\
+        \hline
+        
+        Requirements & SRS + Hazard Analysis & W6 \\
+        \hline
+        
+        Verification & V\&V Plan & W8 \\
+        \hline
+        
+        Design & Design Document & W10 \\
+        \hline
+        
+        Design & PoC Demo & W11 \\
+        \hline
+        
+        Implementation & Design Document Rev 0 & W16 \\
+        \hline
+        
+        Implementation & Module Implementation & W16 \\
+        \hline
+        
+        Implementation & Rev 0 Demo & W18 \\
+        \hline
+        
+        Finalization & Final Demo + Documentation & W21 \\
+        \hline
+        
+        Finalization & V\&V Report + CD & W22 \\
+        \hline
+        
+        Finalization & Final Demos & W23 \\
+        \hline
+        
+        Expo & Expo Materials & W25 \\
+        \hline
+        
+        Expo & Capstone EXPO & W26 \\
+        \hline
+    \end{tabularx}
+    
+    \caption{Project Milestones and Schedule}
+    \label{tab:milestones}
+\end{table}
+
+\subsection{GitHub Project Usage}
+The project board will follow a Kanban-style workflow with columns for Backlog,
+Ready, In Progress, In Review, and Done. The project will be organized into 
+milestones representing the overarching deliverables required throughout each 
+stage of the project. For example, the initial stage contains milestones for 
+the Project Statement and Development Plan, with individual tasks associated 
+with each milestone. Each task will be represented as a card on the board and 
+assigned to the appropriate team member. Cards will move through the Kanban columns 
+as work progresses, allowing the team to track the status of individual tasks and overall 
+milestone completion.
+
 
 \section{Proof of Concept Demonstration Plan}
 
@@ -217,7 +326,65 @@ What tools will you be using?  How will you verify the output of your LLMs?}
 
 \section{Coding Standard}
 
-\wss{What coding standard will you adopt?}
+The team will adhere to the coding standards outlined in Table~\ref{tab:coding-standards}.
+
+\begin{table}[ht]
+    \centering
+    
+    \begin{tabularx}{\textwidth}{|>{\centering\arraybackslash}p{3cm}|X|}
+        \hline
+        \textbf{Category} & \textbf{Details} \\
+        \hline
+        
+        \textbf{React Frontend} &
+        React code will follow the
+        \href{https://react.dev/learn}{official React documentation}
+        and established JavaScript/TypeScript conventions. Code will be
+        formatted using \texttt{Prettier} and linted using \texttt{ESLint}. \\
+        \hline
+
+        
+        \textbf{Rust Backend} &
+        Rust code will follow the official
+        \href{https://rust-lang.github.io/api-guidelines/}{Rust API Guidelines}
+        and community style conventions, formatted using \texttt{rustfmt}
+        and linted with \texttt{clippy}. \\
+        \hline
+        
+        \textbf{Rust Documentation} &
+        Rust functions, structs, and modules will use
+        \texttt{rustdoc} doc comments (\texttt{///} and \texttt{//!})
+        following the conventions in the official
+        \href{https://doc.rust-lang.org/rustdoc/how-to-write-documentation.html}
+        {Rust documentation guide}. \\
+        \hline
+        
+        \textbf{Docker} &
+        Dockerfiles and container images will follow
+        \href{https://github.com/microsoft/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md}
+        {Docker's official best practices}
+        for maintainability, efficiency, and security. \\
+        \hline
+        
+        \textbf{Git} &
+        Git will be used for version control, with feature branches
+        used to isolate development work. \\
+        \hline
+        
+        \textbf{Code Review} &
+        Changes will be submitted through GitHub pull requests and
+        reviewed by another team member before being merged into the
+        main branch. See the
+        \href{https://docs.github.com/en/pull-requests/concepts/giving-reviews}
+        {GitHub pull request review guidelines}. \\
+        \hline
+        
+    \end{tabularx}
+    
+    \caption{Coding Standards}
+    \label{tab:coding-standards}
+    
+\end{table}
 
 \newpage{}
 
@@ -229,9 +396,16 @@ What tools will you be using?  How will you verify the output of your LLMs?}
 planned use of AI for your project.  You discuss that topic in one of the
 sections in the body of this report.}
 
+Below is an overview of how AI tools were used in the making of this document.
+
 \subsection{AI Tools Used}
 
 \wss{Give the name of the AI tool(s) used and the version.}
+
+{\begin{itemize}
+    \item Claude Sonnet 5.
+    \item GPT-5.6 Luna.
+\end{itemize}}
 
 \subsection{How and Where Used}
 
@@ -244,6 +418,12 @@ inconsistencies.}
 
 \wss{You do not need to report every interaction, but you should disclose the 
 uses that materially contributed to your work}
+
+Some members used AI to aid in explaining certain machine learning topics and applications, as there were varying levels of experience in the subject matter. 
+
+Additionally, AI was used to facilitate some brainstorming. This occurred in parts of the Team Charter as supplementary ideas for elements of a code of conduct and ways to reward members for positive contributions.
+
+AI tools were also used throughout this document to check for grammar and spelling errors, but were not used to write whole sentences or significantly rewrite text that had been written by members. 
 
 \subsection{Verification of AI-Generated Content}
 
@@ -258,6 +438,12 @@ consistency, and appropriateness of the submitted document, regardless of
 whether material was generated by a human or an AI system.}
 \end{itemize}}
 
+The use of AI to explain complicated subject matter was used in conjunction with reading reliable sources, such as the Solana Handbook.
+
+The instances in which AI was used for brainstorming were purely for basic idea generation and was up to the discretion and opinion of the group to deem them valuable to the project.
+
+When AI tools were used to check grammar and spelling, team members still critically reviewed the document in its entirety to ensure the document was still understandable and double check the grammar and spelling.
+
 \newpage{}
 
 \section*{Appendix --- Reflection}
@@ -267,47 +453,79 @@ whether material was generated by a human or an AI system.}
 \input{../Reflection.text}
 
 \begin{enumerate}
-    \item Why is it important to create a development plan prior to starting the
-    project?
-    \item In your opinion, what are the advantages and disadvantages of using
-    CI/CD?
-    \item What disagreements did your group have in this deliverable, if any,
-    and how did you resolve them?
+    \item Why is it important to create a development plan prior to starting the project?
+
+    Creating a development plan prior to starting the project helps to encourage thoughtful communication between team members and facilitates helpful discussions regarding expectations for the individual and for the group.
+
+    It helped to ensure that we were all on the same page and helped us to think about the future of the project. Outlining the Proof of Concept plan helped us to confront what is reasonable within the scope of the project, and we were able to identify possible pain points. For example, we realized that the UI will most likely be a large part of the project, but is not necessary to be super involved. In contrast, we found that we are still shaky on how we will implement the reputation system. Thus, this helped us to narrow our focus and identify the expected pain points of the initial development of the system.
+
+    Outlining roles and assigning actual metrics to the expectations really helped with administrative organization and getting a better understanding of how we want to work both as a group and individually. For example, conflict resolution was not something we had considered. However, we have now developed a system that will hopefully help in catching issues early, hold everyone accountable, and address the issues in a respectful, agreed-upon manner. It also helped us to think about the necessity of having a plan for consistent contributions and to have deadlines throughout the project to keep the team on track and avoid major crams.
+
+    While we understand that the information laid out in this development plan may not end up going completely as expected, creating this document led to fruitful discussions and agreements, and helped us to get a better understanding of the project as a whole.
+
+    \item In your opinion, what are the advantages and disadvantages of using CI/CD?
+
+    CI/CD can be extremely helpful, especially in group projects, when executed correctly. It can help to outline certain standards. For example, having a set of rules that must be adhered to in order for a pull request to be accepted.
+
+    It can also help to prevent bugs from unknowingly arising when changes are made to existing code and disrupting code that was previously written off as meeting requirements and passing test cases. This is especially useful in a project with many collaborators and on complex projects, as small bugs introduced can be hard to catch and to pinpoint when they were introduced.
+
+    However, CI/CD can be complicated to implement and can add to project overhead.
+
+    As a group, we have decided to implement guidelines that must be followed when merging a branch into Main (no conflicts, at least one reviewer), the existing automatic PDF generator (with potential modifications as the project progresses), and the addition of unit testing where deemed necessary. We may choose to add more CI/CD elements to the project in the future, at the discretion of the group.
+
+    \item What disagreements did your group have in this deliverable, if any, and how did you resolve them?
+
+    There were no disagreements in this deliverable. Everyone was respectful in sharing their ideas and listening to others. Any misunderstandings that were voiced were met with non-judgmental education, and agreements were decided from there. For example, there was uncertainty regarding the feasibility and expectations for the Proof of Concept. This led to educational discussions, constructive criticism, and educational moments.
+
+    The team navigated these discussions with respect and open-mindedness, and we believe this bodes well for the future of the project, conflict resolution, and the team dynamic.
 \end{enumerate}
 
 \newpage{}
 
 \section*{Appendix --- Team Charter}
+\section*{External Goals}
+
+For this Capstone, our team hopes to deliver a project that is both challenging and enjoyable to create. We aim to build something beyond simply fulfilling the requirements of a school project---something that we can be proud of and potentially carry forward into our professional careers. By focusing on producing a meaningful, well-developed, and high-quality project, we believe that a strong performance in the Capstone course will naturally follow.
+
+\section*{Attendance}
+
+This section summarizes the ground rules and expectations regarding team member attendance.
+
+\subsection*{Expectations}
+
+All team members are expected to attend weekly team meetings and meetings with our supervisor. Attendance at every Capstone course lecture is not required, provided that members remain up to date with the course material through either attending the lecture in person or reviewing the material independently.
+
+\vspace{\baselineskip}
+\noindent
+Attendance at all required team and supervisor meetings will be tracked through GitHub Issues. All members are expected to maintain a 95\% attendance rate throughout the project.
+\vspace{\baselineskip}
+\noindent
+When a meeting is held in person, team members should make their best effort to attend in person. If a member is unable to attend in person, they should notify the team at least 5 hours in advance and attend virtually instead. If a member is unable to attend the meeting altogether, they must notify the team as soon as possible, preferably when they become aware of the conflict and at least 24 hours before the meeting when reasonably possible. Different expectations may apply depending on the circumstances.
+
+\subsection*{Acceptable Excuse}
+
+Team members are expected to communicate with the rest of the team if they are unable to attend a meeting or meet a project deadline. Each member may miss up to three team meetings per term with prior notice. Acceptable reasons may include illness, family emergencies, religious observances, or previously arranged commitments that cannot reasonably be rescheduled.
+\vspace{\baselineskip}
+
+\noindent
+If a member exceeds three absences in a term, the team will discuss the member's participation, expectations, and responsibilities. If the issue cannot be resolved within the team, the team may involve the course professor or supervisor.
+\vspace{\baselineskip}
+
+\noindent
+Team members are expected to meet all assigned deadlines. Exceptions will generally only be made in the event of an emergency, as outlined in the following section.
+
+\subsection*{In Case of Emergency}
+
+If a team member is unable to meet a deadline or complete their assigned work due to an emergency, they must communicate this to the team as soon as they become aware that the work cannot be completed on time.
+\vspace{\baselineskip}
+\noindent
+The team will then discuss appropriate accommodations and, if necessary, redistribute the affected work to ensure that project deadlines can still be met. If another team member must take on the incomplete work, the original team member will be expected to take on additional responsibilities during a subsequent phase, where appropriate, to help maintain a fair distribution of workload.
+
 
 \wss{borrows from
 \href{https://engineering.up.edu/industry_partnerships/files/team-charter.pdf}
 {University of Portland Team Charter}}
 
-\subsection*{External Goals}
-
-\wss{What are your team's external goals for this project? These are not the
-goals related to the functionality or quality fo the project.  These are the
-goals on what the team wishes to achieve with the project.  Potential goals are
-to win a prize at the Capstone EXPO, or to have something to talk about in
-interviews, or to get an A+, etc.}
-
-\subsection*{Attendance}
-
-\subsubsection*{Expectations}
-
-\wss{What are your team's expectations regarding meeting attendance (being on
-time, leaving early, missing meetings, etc.)?}
-
-\subsubsection*{Acceptable Excuse}
-
-\wss{What constitutes an acceptable excuse for missing a meeting or a deadline?
-What types of excuses will not be considered acceptable?}
-
-\subsubsection*{In Case of Emergency}
-
-\wss{What process will team members follow if they have an emergency and cannot
-attend a team meeting or complete their individual work promised for a team
-deliverable?}
 
 \subsection*{Accountability and Teamwork}
 
@@ -317,12 +535,28 @@ deliverable?}
 of team members' preparation for team meetings and the quality of the
 deliverables that members bring to the team?}
 
+To reach our goal of using this capstone experience to build something that we as a team are proud of, all members agree to make contributions that meet or exceed expectations. Level 4 of the rubric of deliverables will be referenced and used as a guideline for minimum expected requirements.
+
+Team members are also expected to come to meetings with their assigned tasks completed and prepared to share their progress. Members are expected to actively contribute to team discussion and provide constructive criticism to help augment the quality of the project.
+
+During code reviews, reviewers are expected to provide at least one point of constructive criticism to encourage consistent improvement.
+
+
+
 \subsubsection*{Attitude}
 
 \wss{What are your team's expectations regarding team members' ideas,
 interactions with the team, cooperation, attitudes, and anything else regarding
 team member contributions?  Do you want to introduce a code of conduct?  Do you
 want a conflict resolution plan?  Can adopt existing codes of conduct.}
+
+All team members will contribute to creating a welcoming and non-judgmental environment in which members can feel comfortable openly sharing ideas. All ideas will be considered in their entirety and seen as valuable contributions to the development process, whether they are accepted or viewed as opportunities to provide constructive criticism and identify miscommunications or misunderstandings.
+
+Members are expected to communicate respectfully and refrain from interrupting or speaking over others. Everyone should be actively listening during meetings and provide thoughtful insight to team discussions.
+
+All members will communicate respectfully and professionally. Contributions will be acknowledged and openly appreciated. Cooperation is expected between team members and can be showcased through a willingness to learn, to compromise, to help fellow members when reasonably possible, and to give useful feedback during code reviews.
+
+All disagreements are expected to be handled professionally and constructively. Should conflict arise, members will take a reasonable break until they feel that they can address it in a productive and professional way. If conflict arises that cannot be resolved by the team, a meeting with the TA and professor will be requested, and the entire team is expected to attend, even if certain members are not directly involved.
 
 \subsubsection*{Stay on Track}
 
@@ -340,13 +574,36 @@ consequences if someone doesn't hit their targets?  Do they need to bring the
 coffee to the next team meeting?  Does the team need to make an appointment with
 their TA, or the instructor?  Are there incentives for reaching targets early?}
 
+To ensure deadlines are consistently met and the project stays on track, a GitHub kanban project will be used and maintained to stay up to date on all issues and milestones/deliverables. All issues will be labelled with the type, the associated milestone, the assignee(s), and the target deadline for the issue to be completed and ready for review.
+
+Deadlines will be assigned to each issue to encourage incremental, iterative, and consistent progress, rather than big pushes before externally enforced deliverable deadlines. The schedule and availability of members will be taken into consideration when assigning tasks and deadlines, to ensure that tasks and timelines are manageable and do not cause unnecessary stress. Tasks will also be assigned with a goal of sharing an even workload amongst all team members (1/4 of the expected workload). Team members will be free to voice their concerns if the workload does not seem even, and the task assignments will be reviewed and reassessed.
+
+Members should update the status of their issues regularly as the status changes. When an issue is ready for review, the assignee will create a pull request and assign a primary reviewer. The primary reviewer must respond and give feedback within 48 hours. Team member contributions will be assessed based on Git activity such as commits, pull requests, and issues completed to show consistent contributions that meet quality standards, as well as meeting the planned deadlines.
+
+At weekly team meetings, members will be expected to share the status of what they have been working on that week, as well as action items for what they intend to work on or complete before the next meeting. Each member should have an attendance record of $>95\%$. If consistent lateness becomes an issue, it will be addressed by the team.
+
+In the case of the anticipation of a missed deadline, members should raise concerns about meeting deadlines at least 48 hours before the deadline to ensure the team can adjust and plan for the work to still be completed. In the case of a member needing to offload their assigned tasks onto other members to meet the deadline, it will be handled as a missed deadline and will be handled according to what has been outlined above in \textbf{Attendance}.
+
+Members who are not meeting expectations will be respectfully confronted at the following team meeting. They will have the opportunity to explain their situation and must come up with a detailed plan describing how they will get back on track. This plan will be reviewed and approved by the other team members, and their progress will be reviewed at each subsequent team meeting until the member consistently meets expectations. If at the following meetings it becomes clear that little to no effort is being made to get back on track, the issues will be brought to the attention of the TA in an effort to seek external support in conflict resolution.
+
+Members who consistently meet or exceed expectations will be recognized by the team for their contributions. This may include informal recognition during team meetings, opportunities to take on preferred tasks, or small team rewards after completing major milestones. If the entire team reaches a milestone ahead of schedule while maintaining the expected quality of work, the team may use the additional time for a team social activity or other agreed-upon reward.
+
+
 \subsubsection*{Team Building}
 
 \wss{How will you build team cohesion (fun time, group rituals, etc.)? }
+
+Team building activities will be planned and hosted biweekly. Potential events may include, but are not limited to, team lunches and trivia nights. The events will be planned for a time that works for all members' schedules and will be mindfully inclusive of the needs and interests of all team members.
 
 \subsubsection*{Decision Making} 
 
 \wss{How will you make decisions in your group? Consensus?  Vote? How will you
 handle disagreements? }
+
+Team decisions will occur through consensus, first allowing all team members to voice their opinions and concerns. The team will collectively come to an agreement, with the success of the team and project as a whole as a priority.
+
+In the case of a disagreement, each member will be treated with respect and given the opportunity to express their opinions honestly and respectfully. Efforts will be made to come to a healthy compromise.
+
+If time constraints allow, any disagreement that cannot be resolved within the meeting will be revisited at a subsequent meeting. All members of the team will take time between meetings to view the situation from a different perspective to encourage empathy in the decision-making process and academic research, if necessary.
 
 \end{document}

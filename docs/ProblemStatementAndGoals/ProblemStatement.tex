@@ -17,17 +17,19 @@
 \maketitle
 
 \begin{table}[hp]
-\caption{Revision History} \label{TblRevisionHistory}
+\caption{Revision History}
+\label{TblRevisionHistory}
 \begin{tabularx}{\textwidth}{llX}
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
 September 24 & Robert & Write problem statement and inputs/outputs\\
-Date2 & Name(s) & Description of changes\\
-... & ... & ...\\
+September 25 & Nathan & Write goals and stretch goals\\
+September 27 & Aidan & Added stakeholders and environment \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
 
 \section{Problem Statement}
 
@@ -72,60 +74,138 @@ Use abstraction so that you can avoid details.}
 \subsection{Stakeholders}
 
 \begin{itemize}
-    \item Task requesters
-    \item Inference consumers
-    \item Inference providers
-    \begin{itemize}
-        \item Model owners \\ developers
-        \item Model runners
-    \end{itemize}
-    \item Data providers
-    \item TEST
+    \item \textbf{Task requesters} \newline
+    Task requesters are people who are requesting inferences to be made for a given task. These people would value the decentralized nature of our platform. 
+    For example, healthcare researchers would make requests to predict various regression inferences (such as biomarker levels) while still complying with privacy constraints. 
+    Similarly, decentralized finance platforms could make requests to predict various regression inferences (such as stock prices) while still complying with privacy constraints.
+
+    \item \textbf{Inference providers} \newline
+    Inference providers are people with computing resources and models, and want to monetize their regression models.
+    These people usually have specialized or powerful models that can be used to make predictions for a given task.
+   
+    \item \textbf{Data Providers}   \newline
+    Data providers are people with data that can be used to train models for a given task.
+    They would be interested in helping the inference providers improve their models by providing them with data to train on.
 \end{itemize}
 
 \subsection{Environment}
 
-\wss{Hardware and Software Environment for the users.  The developer environment
-is summarized as part of the developer plan.}
+This software is compatible with any computer running a modern browser that is connected to wifi. There is no hardware component. 
 
 \section{Goals}
 
 This project has a total of five primary goals.
 
-\begin{itemize}
-    \item[2.1] \textbf{Automated Decentralized Execution of Transactions and Agreements:}
-    Develop a system that enables the automated and decentralized execution of marketplace transactions and agreements between users and model providers.
+\subsection{Automated and Decentralized Marketplace Transactions}
 
-    \item[2.2] \textbf{Global AI Model Marketplace:}
-    Develop a global marketplace that connects users with AI models, allowing models to be discovered and ranked based on their reputation.
+Enable users and model providers to autonomously establish and fulfill
+marketplace agreements without requiring centralized coordination. This
+goal will be measured by whether the system can successfully complete an
+agreement from the initial request through payment and settlement without
+manual intervention.
 
-    \item[2.3] \textbf{Linear Regression Inference Support:}
-    Support linear regression inference tasks, allowing users to submit inference requests to available models through the decentralized marketplace.
+\subsection{Web3 Usability and Transparency}
 
-    \item[2.4] \textbf{Consumer-Side User Interface:}
-    Develop an intuitive consumer-side interface that allows users to interact with the marketplace and submit inference requests without requiring knowledge of the underlying decentralized infrastructure.
+Provide a user-friendly Web3 experience that abstracts unnecessary
+blockchain complexity while maintaining transparency into the actions and
+transactions performed by the system. The application should clearly
+communicate the purpose and consequences of actions requiring user
+authorization, including the transactions and data being signed, while
+providing users with direct visibility into the corresponding on-chain
+transactions, their status, and relevant state changes. This goal will be
+measured by whether users can understand the actions they are authorizing,
+successfully complete required Web3 interactions without directly
+managing the underlying blockchain infrastructure, and verify the
+resulting transactions and state changes through the application.
 
-    \item[2.5] \textbf{Decentralized Backend Communication for Model Providers:}
-    Enable model providers to communicate with and interact with the decentralized backend in order to register their models, receive inference requests, and provide inference results.
-\end{itemize}
+
+\subsection{Reliable AI Inference}
+
+Enable users to submit AI inference requests and reliably receive results
+from participating model providers. The system should ensure that
+requests are successfully delivered, processed, and returned to the
+consumer while minimizing failed, lost, or incomplete inference
+requests. This goal will be measured by whether submitted inference
+requests consistently reach an available model provider, are successfully
+processed, and return a corresponding inference result to the consumer.
+
+\subsection{Accessible Consumer Experience}
+
+Provide a consumer-facing experience that allows users to interact with
+the marketplace without requiring knowledge of decentralized systems or
+their underlying infrastructure. This goal will be measured by whether a
+user can discover a model, submit an inference request, and receive its
+result entirely through the consumer interface.
+
+\subsection{Model Provider Innovation}
+
+Encourage independent model providers to participate and innovate within
+the marketplace by providing opportunities to make their models available
+to consumers, compete for inference requests, and receive compensation
+for their services. The marketplace should create incentives for
+providers to improve the quality, performance, availability, and
+cost-effectiveness of their models, as models that provide greater value
+to consumers can attract more inference requests and generate greater
+potential revenue. This goal will be measured by whether a model provider
+can register a model, make it available to consumers, receive inference
+requests, execute the inference, and receive compensation for
+successfully returning results through the system.
+
 
 
 \section{Stretch Goals}
-This project has a total of 2 stretch goals.
 
-\begin{itemize}
-    \item[3.1] \textbf{Support for More Complex Inference Tasks:}
-    Extend the system beyond linear regression to support more complex inference tasks and AI models.
+This project has a total of two stretch goals, which outline additional
+features that could be implemented after the primary goals have been
+achieved.
 
-    \item[3.2] \textbf{Private Inference Using Trusted Execution Environments:}
-    Investigate and implement Trusted Execution Environments (TEEs) to enable inference tasks to be executed on completely private data while protecting the data from unauthorized access.
-\end{itemize}
+\subsection{Expanded AI Model and Inference Support}
+
+Extend the marketplace beyond linear regression to support additional AI
+models and more complex inference tasks. This is considered a stretch
+goal because supporting multiple model architectures and more complex
+inference workflows would require additional development beyond the core
+marketplace functionality established by the primary goals. The
+achievement of this goal would be measured by whether the system can
+successfully register, discover, and execute inference requests for
+multiple AI model types beyond linear regression.
+
+\subsection{Private AI Inference}
+
+Enable inference on private or sensitive data while protecting that data
+from unauthorized access during execution through the use of Trusted
+Execution Environments (TEEs). This is considered a stretch goal because
+incorporating TEEs would introduce additional security, infrastructure,
+and integration requirements beyond those necessary to support the core
+marketplace and inference functionality. The achievement of this goal
+would be measured by whether the system can successfully execute an
+inference request on private data within a TEE while preventing
+unauthorized access to the data during execution.
+
 
 
 \wss{Goals you hope to get to, but not necessary.  They are also helpful if the
 scope of the original project needs to be expanded.}
 
 \section{Custom Documents (CDs)}
+
+\subsection{Cognitive Walkthrough}
+
+A cognitive walkthrough will be performed using a wireframe prototype of the 
+planned interface of the application from the point of view of the inference requesters. 
+This will aid in mapping the entire process of DAIMM and generally smooth out any remaining 
+ambiguity. The results of the cognitive walkthrough will provide essential insight into the 
+required user feedback and how to make the UI accessible and learnable for the expected users 
+to ensure the application is simple to understand and enjoyable to use. 
+
+\subsection{Business Plan}
+
+A business plan will be developed, once a proof of concept has met expectations. The goal 
+of the business plan is to detail how the decentralized AI marketplace can be implemented 
+such that developers and stakeholders can be compensated, and will further explain the 
+business strategy behind the tokenomics. The business plan would include a description
+of the problem and the market need, the market size and business model, the cost breakdown,
+the competition and positioning, and the execution plan and milestones.
 
 \wss{For CAS 741: State whether the project is a research project. This
 designation, with the approval (or request) of the instructor, can be modified
@@ -148,13 +228,20 @@ instructor, can be modified over the course of the term.}
 \input{../Reflection.text}
 
 \begin{enumerate}
-    \item What went well while writing this deliverable? 
-    \item What pain points did you experience during this deliverable, and how
-    did you resolve them?
-    \item How did you and your team adjust the scope of your goals to ensure
-    they are suitable for a Capstone project (not overly ambitious but also of
-    appropriate complexity for a senior design project)?
-\end{enumerate}  
+    \item What went well while writing this deliverable?
+
+    Our team was incredibly agreeable and had no trouble communicating our ideas for the project or our concerns about the scope. The team worked smoothly to accomplish the requirements for the deliverable. Everyone cooperated with one another, and it was easy to split up the workload evenly without disagreements or conflict. We were able to easily schedule multiple group meetings, which facilitated group discussions that gave everyone a deeper understanding of the project.
+
+    \item What pain points did you experience during this deliverable, and how did you resolve them?
+
+    There were varying levels of experience in the subject matter of ML, blockchains, inferences, and decentralized AI systems. Members who were less familiar with the content did some research on the subject matter, and members who were more experienced were extremely cooperative in answering questions in a non-judgmental and non-condescending manner. Notes of previous research performed by Robert were also shared as supplementary resources. Our team organized a couple of meetings to discuss the content in this document to ensure everyone was comfortable with the material and to encourage necessary discussion to determine the problem, users, goals, and scope of the project.
+
+    \item How did you and your team adjust the scope of your goals to ensure they are suitable for a Capstone project (not overly ambitious but also of appropriate complexity for a senior design project)?
+
+    Our team discussed our skills and experience, and ideas for features of the application. We considered the timeline and budget, and ultimately we think we can reasonably accomplish the project over the next few terms given our skill and experience levels.
+
+    Initially, we brainstormed goals that we later deemed to be too ambitious for the scope of the project. For example, we had planned to try to implement multiple types of inferences. Upon further inspection, we realized that not only was this goal too solution-oriented, it was beyond what we could determine was reasonably feasible within the timeline of the project, considering the other features we are planning to implement. We instead included this as a stretch goal.
+\end{enumerate}
 
 \bibliographystyle{unsrt}
 \bibliography{../../refs/References}
