@@ -92,6 +92,9 @@ details. You will need to reproduce information that is in the course outline
 for deadlines.}
 
 \section{Proof of Concept Demonstration Plan}
+
+\subsection{Project Risks}
+
 One main risk is designing an aggregation algorithm that combines predictions
 from multiple inference providers into an accurate final result. The algorithm
 must handle disagreements between providers and reduce the influence of
@@ -115,6 +118,8 @@ distribution. For example, providers could submit similar inaccurate
 predictions to make their results appear correct and receive rewards. This is
 difficult to detect when there is no ground truth and when the colluding
 providers make up a large portion of the network.
+
+\subsection{POC Demonstration Plan}
 
 The proof of concept plan is to create a simulation of the DAIIM network that
 is completely off chain. The simulation will execute a sequence of rounds in which
@@ -146,6 +151,8 @@ system. These scenarios will vary the proportions of different actors, as well a
 network. These results will allow us to identify conditions under which the system remains reliable and economically
 viable, as well as conditions under which malicious or colluding providers can
 significantly influence the network.
+
+\subsection{Success Criteria and Failure Response}
 
 This proof of concept will be successful and show that the stated risk can be overcome if:
 - The system provides accurate aggregated results that improve over time even with some limited number of malicious actors
