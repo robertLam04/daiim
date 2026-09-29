@@ -221,6 +221,7 @@ task, the network may not have a source of \textit{ground truth} against which
 to compare the predictions. There is also a cold-start problem where intially
 there may not be enough trusted providers in the network to correctly evaluate
 one another. 
+\newline
 
 Another risk is designing the incentive system and token economics so that the network
 is sufficiently decentralizated and is resistant to attacks. The system must be fair and
@@ -228,6 +229,7 @@ and accesible for participants so that they are encouraged to take part in the n
 The system must also be economically sustainable and ensure that
 the distribution of rewards does not create incentives to exploit the system
 or reduce the quality of the aggregated results.
+\newline
 
 Collusion attacks pose a significant risk to the system. A collusion attack
 occurs when multiple participants, such as inference providers, coordinate
@@ -243,18 +245,27 @@ The proof of concept plan is to create a simulation of the DAIIM network that
 is completely off chain. The simulation will execute a sequence of rounds in which
 an inference task for a regression problem is executed by the network. Various different types of actors will 
 participate in the network:
+\newline
 
 1. Honest: attempt to maximize rewards by providing accurate predictions consistently (with some noise)
+\newline
+
 2. Learners: gradually improve their predictions over time
+\newline
+
 3. Malicious: intentiononally provide bad predictions
+\newline
+
 4. Collusion: A group of providers working together to skew the network
+\newline
 
 The simulation will start with a simple ML task (eg. predict y, y = mx + b), and each round some input data will be randomly generated.
 The different actors will be given some algorithm (good or bad algorithm depending on the actor) to determine their predictions given the input.
 The actors will submit their predictions, and the aggregation algorithm will determine the aggregated result. Actor's reputations will be updated
 and rewards will be distributed after each round.
+\newline
 
-Another layer of this simulation is to economically model each actor. We will
+Another layer of this simulation is to economically model the system. We will
 assign providers a cost for running their model, transaction fees for submitting
 predictions on-chain, and economic rewards or penalties for participating. These
 values will be calibrated relative to the costs and payments that we expect a
@@ -263,6 +274,7 @@ will ensure that the simulation reflects realistic participation decisions
 rather than relying on arbitrary values. We will also vary these values to
 measure how sensitive participation and network performance are to changes in
 costs, fees, rewards, and penalties.
+\newline
 
 We will test various combinations of actors to evaluate the limits of the
 system. These scenarios will vary the proportions of different actors, as well as the number of providers in the
@@ -276,6 +288,7 @@ This proof of concept will be successful and show that the stated risk can be ov
 - The system provides accurate aggregated results that improve over time even with some limited number of malicious actors
 - It is more profitable to act honestly and attempt to provide good predictions than to be malicious
 - The network can be cold-started with the assumption that initially there are a majority of honest providers
+\newline
 
 If the proof of concept is not able to demonstrate that these risks can be addressed then the project's assumptions and scope
 may need to be changed. Before proceeding to full
@@ -296,6 +309,7 @@ a separate network for testing programs and transactions without affecting
 Solana Mainnet. We will request free test SOL from a Devnet faucet to pay for
 transaction fees. Since Devnet tokens have no real-world value, the team can
 develop and test DAIIM without using real money before deploying to Mainnet.
+\newline
 
 Solana programs, or smart contracts, will be written in Rust. The conventional
 off-chain backend will use Node.js with TypeScript and PostgreSQL for data
@@ -321,6 +335,7 @@ The expected external libraries and components are:
 Git and Github will be used for version control and the project repository. GitHub Projects will
 organize issues and track their progress. LaTeX will be used for the
 project's technical documentation.
+\newline
 
 GitHub Actions will compile the LaTeX documentation automatically when relevant
 changes are pushed or proposed. Later, the CI pipeline will be extended to
