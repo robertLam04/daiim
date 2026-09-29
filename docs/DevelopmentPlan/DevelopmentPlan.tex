@@ -76,7 +76,7 @@ Every email with the supervisor will be sent to all team members.
 The team will meet regularly with the supervisor, subject to the supervisor's availability.  \newline
 
 \noindent Github issues will be the primary method of communication for development tasks. Each issue will represent a development task and will be assigned to a team member; the team member will be responsible for updating the issue with their progress.  
-The issues will be associated with a milestone representing the deliverable, and will be placed appropriately in the Kanban project according to its status (e.g., To Do, In Progress, Done).
+The issues will be associated with a milestone representing the deliverable, and will be placed appropriately in the \href{https://github.com/users/robertLam04/projects/5}{Kanban project} according to its status (e.g., To Do, In Progress, In Review, Done).
 Feedback is expected from at least one other team member for each issue, through either a comment on the Github issue or reviewed in a meeting or group chat. \newline
 
 
@@ -133,7 +133,7 @@ Individual commits will be preserved in the pull request, and the pull request r
 \section{Project Decomposition and Scheduling}
 
 The project is organized around key milestones and overarching stages 
-(refer to Table 2), progressing from initial project planning and requirements
+(refer to Table~\ref{tab:milestones}), progressing from initial project planning and requirements
 analysis through design, implementation, verification, and final demonstration. 
 Each stage contains defined deliverables and deadlines to provide the team 
 with a clear progression throughout the project. The schedule will remain 
@@ -223,8 +223,8 @@ there may not be enough trusted providers in the network to correctly evaluate
 one another. 
 
 Another risk is designing the incentive system and token economics so that the network
-is sufficiently decentralizated and is resistant to attacks. The system must be fair and
-and accesible for participants so that they are encouraged to take part in the network.
+is sufficiently decentralizated and is resistant to attacks. The system must be fair and accessible for 
+participants so that they are encouraged to take part in the network.
 The system must also be economically sustainable and ensure that
 the distribution of rewards does not create incentives to exploit the system
 or reduce the quality of the aggregated results.
@@ -244,12 +244,14 @@ is completely off chain. The simulation will execute a sequence of rounds in whi
 an inference task for a regression problem is executed by the network. Various different types of actors will 
 participate in the network:
 
-1. Honest: attempt to maximize rewards by providing accurate predictions consistently (with some noise)
-2. Learners: gradually improve their predictions over time
-3. Malicious: intentiononally provide bad predictions
-4. Collusion: A group of providers working together to skew the network
+\begin{enumerate}
+    \item Honest: attempt to maximize rewards by providing accurate predictions consistently (with some noise);
+    \item Learners: gradually improve their predictions over time;
+    \item Malicious: intentiononally provide bad predictions;
+    \item Collusion: A group of providers working together to skew the network.
+\end{enumerate}
 
-The simulation will start with a simple ML task (eg. predict y, y = mx + b), and each round some input data will be randomly generated.
+The simulation will start with a simple Machine Learning (ML) task (eg. predict y, y = mx + b), and each round some input data will be randomly generated.
 The different actors will be given some algorithm (good or bad algorithm depending on the actor) to determine their predictions given the input.
 The actors will submit their predictions, and the aggregation algorithm will determine the aggregated result. Actor's reputations will be updated
 and rewards will be distributed after each round.
@@ -273,9 +275,12 @@ significantly influence the network.
 \subsection{Success Criteria and Failure Response}
 
 This proof of concept will be successful and show that the stated risk can be overcome if:
-- The system provides accurate aggregated results that improve over time even with some limited number of malicious actors
-- It is more profitable to act honestly and attempt to provide good predictions than to be malicious
-- The network can be cold-started with the assumption that initially there are a majority of honest providers
+
+{\begin{itemize}
+    \item The system provides accurate aggregated results that improve over time even with some limited number of malicious actors;
+    \item It is more profitable to act honestly and attempt to provide good predictions than to be malicious;
+    \item The network can be cold-started with the assumption that initially there are a majority of honest providers.
+\end{itemize}}
 
 If the proof of concept is not able to demonstrate that these risks can be addressed then the project's assumptions and scope
 may need to be changed. Before proceeding to full
@@ -299,7 +304,7 @@ develop and test DAIIM without using real money before deploying to Mainnet.
 
 Solana programs, or smart contracts, will be written in Rust. The conventional
 off-chain backend will use Node.js with TypeScript and PostgreSQL for data
-storage. The user-facing interface will be developed with React.js and Vite.
+storage. The user-facing interface will be developed with React.js and Vite. 
 Python may also be used to write simple machine learning models for integration
 testing purposes.
 
@@ -394,7 +399,7 @@ The team will adhere to the coding standards outlined in Table~\ref{tab:coding-s
 
 \section{Appendix --- Generative AI Use Disclosure}
 
-Below is an overview of how AI tools were used in the making of this document.
+This section will provide an overview of how AI tools were used in the making of this document.
 
 \subsection{AI Tools Used}
 
@@ -416,9 +421,9 @@ AI tools were also used throughout this document to check for grammar and spelli
 
 The use of AI to explain complicated subject matter was used in conjunction with reading reliable sources, such as the Solana Handbook.
 
-The instances in which AI was used for brainstorming related to the team charter were purely for basic idea generation and was up to the discretion and opinion of the group to deem them valuable to the project. The list of potential libraries that was generated was used as a means to build awareness to existing available tools. The decision to include specific libaries made based on further research into the official documentation of the libraries, not the AI response.
+The instances in which AI was used for brainstorming related to the team charter were purely for basic idea generation and was up to the discretion and opinion of the group to deem them valuable to the project. The list of potential libraries that was generated was used as a means to build awareness to existing available tools. The decision to include specific libraries was made based on further research into the official documentation of the libraries, not the AI response.
 
-When AI tools were used to check grammar and spelling, team members still critically reviewed the document in its entirety to ensure the document was still understandable and double check the grammar and spelling.
+When AI tools were used to check grammar and spelling, team members still critically reviewed the document in its entirety to ensure the document was still understandable and to double check the grammar and spelling.
 
 \newpage{}
 
@@ -427,31 +432,32 @@ When AI tools were used to check grammar and spelling, team members still critic
 \input{../Reflection.text}
 
 \begin{enumerate}
-    \item Why is it important to create a development plan prior to starting the project?
+    \item \textbf{Why is it important to create a development plan prior to starting the project?}
 
-    Creating a development plan prior to starting the project helps to encourage thoughtful communication between team members and facilitates helpful discussions regarding expectations for the individual and for the group.
+    \indent Creating a development plan prior to starting the project helps to encourage thoughtful communication between team members and facilitates helpful discussions regarding expectations for the individual and for the group.
 
-    It helped to ensure that we were all on the same page and helped us to think about the future of the project. Outlining the Proof of Concept plan helped us to confront what is reasonable within the scope of the project, and we were able to identify possible pain points. For example, we realized that the UI will most likely be a large part of the project, but is not necessary to be super involved. In contrast, we found that we are still shaky on how we will implement the reputation system. Thus, this helped us to narrow our focus and identify the expected pain points of the initial development of the system.
+    \indent It helped to ensure that we were all on the same page and helped us to think about the future of the project. Outlining the Proof of Concept plan helped us to confront what is reasonable within the scope of the project, and we were able to identify possible pain points. For example, we realized that the UI will most likely be a large part of the project, but is not necessary to be super involved. In contrast, we found that we are still shaky on how we will implement the reputation system. Thus, this helped us to narrow our focus and identify the expected pain points of the initial development of the system.
 
-    Outlining roles and assigning actual metrics to the expectations really helped with administrative organization and getting a better understanding of how we want to work both as a group and individually. For example, conflict resolution was not something we had considered. However, we have now developed a system that will hopefully help in catching issues early, hold everyone accountable, and address the issues in a respectful, agreed-upon manner. It also helped us to think about the necessity of having a plan for consistent contributions and to have deadlines throughout the project to keep the team on track and avoid major crams.
+    \indent Outlining roles and assigning actual metrics to the expectations really helped with administrative organization and getting a better understanding of how we want to work both as a group and individually. For example, conflict resolution was not something we had considered. However, we have now developed a system that will hopefully help in catching issues early, hold everyone accountable, and address the issues in a respectful, agreed-upon manner. It also helped us to think about the necessity of having a plan for consistent contributions and to have deadlines throughout the project to keep the team on track and avoid major crams.
 
-    While we understand that the information laid out in this development plan may not end up going completely as expected, creating this document led to fruitful discussions and agreements, and helped us to get a better understanding of the project as a whole.
+    \indent While we understand that the information laid out in this development plan may not end up going completely as expected, creating this document led to fruitful discussions and agreements, and helped us to get a better understanding of the project as a whole.
 
-    \item In your opinion, what are the advantages and disadvantages of using CI/CD?
+   
+    \item \textbf{In your opinion, what are the advantages and disadvantages of using CI/CD?}
 
-    CI/CD can be extremely helpful, especially in group projects, when executed correctly. It can help to outline certain standards. For example, having a set of rules that must be adhered to in order for a pull request to be accepted.
+    \indent CI/CD can be extremely helpful, especially in group projects, when executed correctly. It can help to outline certain standards. For example, having a set of rules that must be adhered to in order for a pull request to be accepted.
 
-    It can also help to prevent bugs from unknowingly arising when changes are made to existing code and disrupting code that was previously written off as meeting requirements and passing test cases. This is especially useful in a project with many collaborators and on complex projects, as small bugs introduced can be hard to catch and to pinpoint when they were introduced.
+    \indent It can also help to prevent bugs from unknowingly arising when changes are made to existing code and disrupting code that was previously written off as meeting requirements and passing test cases. This is especially useful in a project with many collaborators and on complex projects, as small bugs introduced can be hard to catch and to pinpoint when they were introduced.
 
-    However, CI/CD can be complicated to implement and can add to project overhead.
+    \indent However, CI/CD can be complicated to implement and can add to project overhead.
 
-    As a group, we have decided to implement guidelines that must be followed when merging a branch into Main (no conflicts, at least one reviewer), the existing automatic PDF generator (with potential modifications as the project progresses), and the addition of unit testing where deemed necessary. We may choose to add more CI/CD elements to the project in the future, at the discretion of the group.
+    \indent As a group, we have decided to implement guidelines that must be followed when merging a branch into Main (no conflicts, at least one reviewer), the existing automatic PDF generator (with potential modifications as the project progresses), and the addition of unit testing where deemed necessary. We may choose to add more CI/CD elements to the project in the future, at the discretion of the group.
 
-    \item What disagreements did your group have in this deliverable, if any, and how did you resolve them?
+    \item \textbf{What disagreements did your group have in this deliverable, if any, and how did you resolve them?}
 
-    There were no disagreements in this deliverable. Everyone was respectful in sharing their ideas and listening to others. Any misunderstandings that were voiced were met with non-judgmental education, and agreements were decided from there. For example, there was uncertainty regarding the feasibility and expectations for the Proof of Concept. This led to educational discussions, constructive criticism, and educational moments.
+    \indent There were no disagreements in this deliverable. Everyone was respectful in sharing their ideas and listening to others. Any misunderstandings that were voiced were met with non-judgmental education, and agreements were decided from there. For example, there was uncertainty regarding the feasibility and expectations for the Proof of Concept. This led to educational discussions, constructive criticism, and educational moments.
 
-    The team navigated these discussions with respect and open-mindedness, and we believe this bodes well for the future of the project, conflict resolution, and the team dynamic.
+    \indent The team navigated these discussions with respect and open-mindedness, and we believe this bodes well for the future of the project, conflict resolution, and the team dynamic.
 \end{enumerate}
 
 \newpage{}
@@ -494,11 +500,6 @@ If a team member is unable to meet a deadline or complete their assigned work du
 \vspace{\baselineskip}
 \noindent
 The team will then discuss appropriate accommodations and, if necessary, redistribute the affected work to ensure that project deadlines can still be met. If another team member must take on the incomplete work, the original team member will be expected to take on additional responsibilities during a subsequent phase, where appropriate, to help maintain a fair distribution of workload.
-
-
-\wss{borrows from
-\href{https://engineering.up.edu/industry_partnerships/files/team-charter.pdf}
-{University of Portland Team Charter}}
 
 
 
