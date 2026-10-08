@@ -33,6 +33,7 @@ September 28 & Robert & Added sections 1-4 and 9-10\\
 Spetember 28 & Keira & Revised section 13 \\
 September 28 & Nathan & Added section 11 \\
 September 28 & All & Reviewed document and fixed formatting \\
+October 8 & Aidan & Refined section 9 POC success criteria to be less vague by defining concrete accuracy, malicious actor, and reward thresholds \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -284,8 +285,8 @@ significantly influence the network.
 This proof of concept will be successful and show that the stated risk can be overcome if:
 
 {\begin{itemize}
-    \item The system provides accurate aggregated results that improve over time even with some limited number of malicious actors;
-    \item It is more profitable to act honestly and attempt to provide good predictions than to be malicious;
+    \item The system provides accurate aggregated results that improve over time even with some limited number of malicious actors. We define accurate as the aggregated result being within a certain threshold (roughly 90\% of aggregated predictions match the ground truth). For this POC, we assume that the aggregated result will improve even with up to 10\% malicious actors in the network. The exact threshold for these percentages will be determined during the POC implementation and testing.
+    \item It is more profitable to act honestly and attempt to provide good predictions than to be malicious. Good predictions are those that are close to the ground truth (low relative error < 10\%). These good predictions should be rewarded with a non-zero token amount. The exact threshold for this percentage will be determined during the POC implementation and testing.
     \item The network can be cold-started with the assumption that initially there are a majority of honest providers.
 \end{itemize}}
 
