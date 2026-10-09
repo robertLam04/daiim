@@ -257,14 +257,30 @@ Secondary stakeholders do not use DAIIM directly, but are affected by the infere
 
 \subsection{Definitions and Acronyms}
 
-\plt{This section provides the meaning of the different words and phrases used
-  in the domain of the problem.}
-
 \begin{longtable}{p{0.25\textwidth} p{0.65\textwidth}}
 \toprule
 Term & Definition\\
 \midrule
-TODO & TODO\\
+AI & Artificial Intelligence.\\
+ML & Machine Learning.\\
+DAIIM & Decentralized Artificial Intelligence Inference Marketplace, the system specified in this document.\\
+Task & A problem to be solved via machine learning, such as predicting a biomarker level or a stock price.\\
+Task definition & A specification of a task, including the expected input and output types.\\
+Inference & A prediction produced by a machine learning model for a given input.\\
+Inference request & A request for the network to perform inference for a given task, including input data or a specification of where to find the input data.\\
+Task requester & A person who requests inferences to be made for a given task.\\
+Inference provider & A person with computing resources and models who supplies predictions for inference requests to the network.\\
+Data provider & A person who supplies data that inference providers can use to train models for a given task.\\
+Network participation & Machine learning predictions for individual inference requests supplied to the network by an inference provider.\\
+Aggregated inference result & The final prediction for a given inference request produced by combining the predictions of multiple inference providers, together with information about the quality of the prediction.\\
+Ground truth & The true, observed value that a prediction is attempting to estimate.\\
+Linear regression & A machine learning model that predicts a numeric output as a linear combination of its input features.\\
+Decentralized & Operating without a single central organization that coordinates or controls the system.\\
+Blockchain & A distributed, append-only ledger of transactions that is maintained by a network of nodes rather than a central authority.\\
+On-chain & Recorded on, or executed by, a blockchain.\\
+Web3 & Applications built on blockchains, where users interact with the system through their own blockchain accounts and authorize actions by signing transactions.\\
+Token & A digital asset on a blockchain, used by DAIIM to compensate inference providers.\\
+TEE & Trusted Execution Environment. A secure area of a processor that protects the code and data loaded inside it from unauthorized access.\\
 \bottomrule
 \caption{Definitions and Acronyms} \label{tab:DefinitionsAndAcronyms}
 \end{longtable}
