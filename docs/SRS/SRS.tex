@@ -183,19 +183,41 @@ For people who need machine learning predictions, DAIIM provides a way to obtain
 For people who build machine learning models, DAIIM provides an open marketplace where they can sell predictions from their models and earn money for accurate results. This gives independent providers a way to compete with large organizations and a reason to keep improving their models.
 
 \subsection{Scope}
-\plt{Briefly describe:
+
+DAIIM addresses the reliance on centralized AI providers described in the purpose above by allowing task requesters to obtain inferences from a decentralized network of independent inference providers.
+
+The inputs to the system consist of task definitions, inference requests, and network participation.
+Task definitions are specifications of a problem to be solved via machine learning, including the expected input and output types.
+Inference requests ask the network to perform inference for a given task and include
+input data or some specification of where to find the input data.
+Network participation includes machine learning
+predictions for individual inference requests that are supplied to the network by an individual.
+The system outputs aggregated inference results and maintains information about the network.
+The aggregated inference results include the final prediction for a given inference request, as well as information about the quality of the prediction.
+
+The major functionality within the scope of DAIIM is:
 \begin{itemize}
-  \item Problem being solved
-  \item Intended users
-  \item Major functionality
-  \item Expected benefits
-  \item Clarifying the scope often means saying what the software doesn't do
+    \item \textbf{Automated and decentralized marketplace transactions:} users and model providers autonomously establish and fulfill
+    marketplace agreements, from the initial request through payment and settlement, without centralized coordination or manual intervention.
+    \item \textbf{Web3 usability and transparency:} a user-friendly Web3 experience that abstracts unnecessary blockchain complexity while giving users
+    direct visibility into the on-chain transactions, their status, and relevant state changes.
+    \item \textbf{Reliable AI inference:} submitted inference requests reach an available model provider, are processed, and return a corresponding
+    inference result to the consumer, minimizing failed, lost, or incomplete requests.
+    \item \textbf{Accessible consumer experience:} a user can discover a model, submit an inference request, and receive its result entirely through
+    the consumer interface, without knowledge of decentralized systems or their underlying infrastructure.
+    \item \textbf{Model provider participation:} a model provider can register a model, make it available to consumers, receive inference requests,
+    execute the inference, and receive compensation for successfully returning results.
 \end{itemize}
-}
 
-\plt{The scope section is relevant for understanding the boundaries of the system. It is also relevant for later determining typical values of inputs. The scope should make it clear what inputs are reasonable to expect. This is a distinction between scope and context (context is a later section).  Scope affects the inputs while context affects how the software will be used.}
+The expected benefits are reduced reliance on centralized AI providers, improved reliability of inferences through redundant predictions from
+independent providers, and incentives for providers to improve the quality, performance, availability, and cost-effectiveness of their models.
 
-TODO
+The following are outside the scope of DAIIM:
+\begin{itemize}
+    \item AI models and inference tasks beyond linear regression. Support for additional model types is a stretch goal.
+    \item Inference on private or sensitive data within Trusted Execution Environments (TEEs). This is a stretch goal.
+    \item Any hardware component. DAIIM is used through a modern web browser on a computer connected to the internet.
+\end{itemize}
 
 \subsection{Stakeholders}
 \begin{itemize}
