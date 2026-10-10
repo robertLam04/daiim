@@ -86,13 +86,18 @@ This software is compatible with any computer running a modern browser that is c
 
 This project has a total of five primary goals.
 
-\subsection{Automated and Decentralized Marketplace Transactions}
-
-Enable users and model providers to autonomously establish and fulfill
-marketplace agreements without requiring centralized coordination. This
-goal will be measured by whether the system can successfully complete an
-agreement from the initial request through payment and settlement without
-manual intervention.
+\subsection{Transparency and Decentralization}
+Enable inference consumers and model providers to participate in a transparent inference marketplace
+that does not rely on a single centralized entity. The marketplace’s core logic,
+including payments, ownership, and settlement, will be deployed as smart contracts
+on a public blockchain. This ensures there are publicly verifiable records of requests, provider submissions, aggregated results, provider reputation etc.
+The system should require participation by multiple independent providers per inference,
+to reduce reliance on a narrow set of machine learning models and make the sources of
+inference more diverse. This goal will be measured by whether tests demonstrate
+that a request can proceed through provider submission and settlement without
+a centralized coordinator, that the relevant marketplace state can be
+verified from on-chain records, and that at least two independent providers
+can participate in fulfilling requests.
 
 \subsection{Web3 Usability and Transparency}
 
@@ -108,16 +113,25 @@ successfully complete required Web3 interactions without directly
 managing the underlying blockchain infrastructure, and verify the
 resulting transactions and state changes through the application.
 
-
 \subsection{Reliable AI Inference}
 
-Enable users to submit AI inference requests and reliably receive results
-from participating model providers. The system should ensure that
-requests are successfully delivered, processed, and returned to the
-consumer while minimizing failed, lost, or incomplete inference
-requests. This goal will be measured by whether submitted inference
-requests consistently reach an available model provider, are successfully
-processed, and return a corresponding inference result to the consumer.
+Enable users to receive accurate and reliable results by aggregating
+redundant predictions from multiple model providers rather than relying on
+a single prediction. Provider reputation scores will reflect observed
+performance and inform the aggregation, allowing contributions from
+providers with stronger records to have greater influence. As these scores
+are updated over repeated requests, the network can adapt to provider
+performance and improve the quality of its aggregated results. Having
+multiple registered providers makes the network more reliable by allowing
+requests to be fulfilled by available providers when others are unavailable.
+Reliability will be measured by the request-completion rate: the percentage
+of submitted requests that receive an aggregated result within a predefined
+time limit. Tests will vary the number of participating providers while, and compare completion rates to assess
+how provider count affects reliability.
+The accuracy of aggregate network predictions will be evaluated against ground
+truths revealed at a later time. For example, for a weather forecasting task,
+the network’s prediction will be compared with the actual weather conditions
+once the forecast period has elapsed.
 
 \subsection{Accessible Consumer Experience}
 
