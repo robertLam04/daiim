@@ -103,8 +103,7 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+October 8 & 1.0 & Aidan: Added sections 1.1 to 1.5 (Purpose, Scope, Stakeholders, Definitions and Acronyms, and Characteristics of Intended Reader)\\
 \bottomrule
 \end{tabularx}
 
@@ -176,70 +175,126 @@ practice.}
 
 \subsection{Purpose}
 
-\plt{State the purpose of the system.}
+DAIIM (Decentralized Artificial Intelligence Inference Marketplace) exists to reduce reliance on the small number of large organizations that currently provide most AI inference. It serves two groups of people.
 
-\plt{The purpose should be in the context of the project itself, not in the
-  context of this course. Although the ``purpose'' of the document is to get a
-  grade, you should not mention this.  Instead, ``fake it'' as if this is a real
-  project.}
+For people who need machine learning predictions, DAIIM provides a way to obtain inferences for a task they define without trusting a single centralized provider. Each inference request is answered by multiple independent providers, and their predictions are combined into one consensus result. Because no single provider controls the outcome, the result is more reliable, harder to censor or manipulate, and not dependent on any one point of failure.
 
-\progname{} is intended to solve ... \plt{What problem does your program solve?
-The description here should be in the problem space, not the solution space.}
+For people who build machine learning models, DAIIM provides an open marketplace where they can sell predictions from their models and earn money for accurate results. This gives independent providers a way to compete with large organizations and a reason to keep improving their models.
 
 \subsection{Scope}
-\plt{Briefly describe:
+
+DAIIM addresses the reliance on centralized AI providers described in the purpose above by allowing task requesters to obtain inferences from a decentralized network of independent inference providers.
+
+The inputs to the system consist of task definitions, inference requests, and network participation.
+Task definitions are specifications of a problem to be solved via machine learning, including the expected input and output types.
+Inference requests ask the network to perform inference for a given task and include
+input data or some specification of where to find the input data.
+Network participation includes machine learning
+predictions for individual inference requests that are supplied to the network by an individual.
+The system outputs aggregated inference results and maintains information about the network.
+The aggregated inference results include the final prediction for a given inference request, as well as information about the quality of the prediction.
+
+The major functionality within the scope of DAIIM is:
 \begin{itemize}
-  \item Problem being solved
-  \item Intended users
-  \item Major functionality
-  \item Expected benefits
-  \item Clarifying the scope often means saying what the software doesn't do
+    \item \textbf{Automated and decentralized marketplace transactions:} users and model providers autonomously establish and fulfill
+    marketplace agreements, from the initial request through payment and settlement, without centralized coordination or manual intervention.
+    \item \textbf{Web3 usability and transparency:} a user-friendly Web3 experience that abstracts unnecessary blockchain complexity while giving users
+    direct visibility into the on-chain transactions, their status, and relevant state changes.
+    \item \textbf{Reliable AI inference:} submitted inference requests reach an available model provider, are processed, and return a corresponding
+    inference result to the consumer, minimizing failed, lost, or incomplete requests.
+    \item \textbf{Accessible consumer experience:} a user can discover a model, submit an inference request, and receive its result entirely through
+    the consumer interface, without knowledge of decentralized systems or their underlying infrastructure.
+    \item \textbf{Model provider participation:} a model provider can register a model, make it available to consumers, receive inference requests,
+    execute the inference, and receive compensation for successfully returning results.
 \end{itemize}
-}
 
-\plt{The scope section is relevant for understanding the boundaries of the system. It is also relevant for later determining typical values of inputs. The scope should make it clear what inputs are reasonable to expect. This is a distinction between scope and context (context is a later section).  Scope affects the inputs while context affects how the software will be used.}
+The expected benefits are reduced reliance on centralized AI providers, improved reliability of inferences through redundant predictions from
+independent providers, and incentives for providers to improve the quality, performance, availability, and cost-effectiveness of their models.
 
-TODO
+The following are outside the scope of DAIIM:
+\begin{itemize}
+    \item AI models and inference tasks beyond linear regression. Support for additional model types is a stretch goal.
+    \item Inference on private or sensitive data within Trusted Execution Environments (TEEs). This is a stretch goal.
+    \item Any hardware component. DAIIM is used through a modern web browser on a computer connected to the internet.
+\end{itemize}
 
 \subsection{Stakeholders}
+
+\subsubsection*{Primary Stakeholders}
+
+Primary stakeholders interact with DAIIM directly.
+
 \begin{itemize}
-\item Customer
-\item End Users
-\item Project Sponsor
-\item Development Team
-\item Administrators
+    \item \textbf{Task requesters} \newline
+    Task requesters are people who are requesting inferences to be made for a given task. These people would value the decentralized nature of our platform.
+    For example, healthcare researchers would make requests to predict various regression inferences (such as biomarker levels) while still complying with privacy constraints.
+    Similarly, decentralized finance platforms could make requests to predict various regression inferences (such as stock prices) while still complying with privacy constraints.
+
+    \item \textbf{Inference providers} \newline
+    Inference providers are people with computing resources and models, and want to monetize their regression models.
+    These people usually have specialized or powerful models that can be used to make predictions for a given task.
+
+    \item \textbf{Data providers} \newline
+    Data providers are people with data that can be used to train models for a given task.
+    They would be interested in helping the inference providers improve their models by providing them with data to train on.
+\end{itemize}
+
+\subsubsection*{Secondary Stakeholders}
+
+Secondary stakeholders do not use DAIIM directly, but are affected by the inferences it produces or by how it handles data.
+
+\begin{itemize}
+    \item \textbf{Beneficiaries of machine learning inference} \newline
+    Beneficiaries are people and organizations, such as laboratories, that rely on the results of machine learning inference without requesting inferences themselves.
+    For example, a laboratory may make decisions based on biomarker predictions that a healthcare researcher obtained through DAIIM.
+    These people benefit from inferences that are reliable and not controlled by a single provider.
+
+    \item \textbf{Regulatory bodies} \newline
+    Regulatory bodies are organizations that oversee machine learning inference and data privacy.
+    They want to ensure that personal information and sensitive data handled by DAIIM, such as inference inputs and training data, is only accessible to the parties that need it, is encrypted, and is not retained longer than necessary to fulfill an inference request.
 \end{itemize}
 
 \subsection{Definitions and Acronyms}
-
-\plt{This section provides the meaning of the different words and phrases used
-  in the domain of the problem.}
 
 \begin{longtable}{p{0.25\textwidth} p{0.65\textwidth}}
 \toprule
 Term & Definition\\
 \midrule
-TODO & TODO\\
+AI & Artificial Intelligence.\\
+ML & Machine Learning.\\
+DAIIM & Decentralized Artificial Intelligence Inference Marketplace, the system specified in this document.\\
+Task & A problem to be solved via machine learning, such as predicting a biomarker level or a stock price.\\
+Task definition & A specification of a task, including the expected input and output types.\\
+Inference & A prediction produced by a machine learning model for a given input.\\
+Inference request & A request for the network to perform inference for a given task, including input data or a specification of where to find the input data.\\
+Task requester & A person who requests inferences to be made for a given task.\\
+Inference provider & A person with computing resources and models who supplies predictions for inference requests to the network.\\
+Data provider & A person who supplies data that inference providers can use to train models for a given task.\\
+Network participation & Machine learning predictions for individual inference requests supplied to the network by an inference provider.\\
+Aggregated inference result & The final prediction for a given inference request produced by combining the predictions of multiple inference providers, together with information about the quality of the prediction.\\
+Ground truth & The true, observed value that a prediction is attempting to estimate.\\
+Linear regression & A machine learning model that predicts a numeric output as a linear combination of its input features.\\
+Decentralized & Operating without a single central organization that coordinates or controls the system.\\
+Blockchain & A distributed, append-only ledger of transactions that is maintained by a network of nodes rather than a central authority.\\
+On-chain & Recorded on, or executed by, a blockchain.\\
+Web3 & Applications built on blockchains, where users interact with the system through their own blockchain accounts and authorize actions by signing transactions.\\
+Token & A digital asset on a blockchain, used by DAIIM to compensate inference providers.\\
+TEE & Trusted Execution Environment. A secure area of a processor that protects the code and data loaded inside it from unauthorized access.\\
 \bottomrule
 \caption{Definitions and Acronyms} \label{tab:DefinitionsAndAcronyms}
 \end{longtable}
 
 \subsection{Characteristics of Intended Reader} \label{sec_IntendedReader}
 
-\plt{This section summarizes the skills and knowledge of the readers of the
-  SRS.  It does NOT have the same purpose as the ``User Characteristics''
-  section (Section~\ref{SecUserCharacteristics}).  The intended readers are the
-  people that will read, review and maintain the SRS.  They are the people that
-  will conceivably design the software that is intended to meet the
-  requirements.  The user, on the other hand, is the person that uses the
-  software that is built.  They may never read this SRS document.  Of course,
-  the same person could be a ``user'' and an ``intended reader.''}
-
-\plt{The intended reader characteristics should be written as unambiguously and
-  as specifically as possible.  Rather than say, the user should have an
-  understanding of physics, say what kind of physics and at what level.  For
-  instance, is high school physics adequate, or should the reader have had a
-  graduate course on advanced quantum mechanics?}
+The intended readers of this document are the software engineers, reviewers, and supervisors who will design, implement, verify, and maintain DAIIM.
+Readers are expected to have:
+\begin{itemize}
+    \item An undergraduate-level background in software engineering, including requirements specification, software design, and testing, equivalent to the third year of a software engineering degree.
+    \item Introductory knowledge of machine learning, including supervised learning, linear regression, model training versus inference, and basic error measures such as relative error, equivalent to an introductory undergraduate machine learning course.
+    \item Introductory knowledge of blockchain and Web3 concepts, including blockchain transactions, accounts and wallets, transaction signing, and tokens. Familiarity with smart contract development is helpful but not required.
+    \item Familiarity with web applications that run in a modern browser.
+\end{itemize}
+Terms specific to the domain of DAIIM are defined in Table~\ref{tab:DefinitionsAndAcronyms}.
 
 % ============================================================== 
 \section{System Overview}
