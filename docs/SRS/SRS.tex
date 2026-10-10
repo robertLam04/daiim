@@ -453,11 +453,36 @@ requirements are usually derived from the stakeholder requirements and use cases
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_Label1}:] The system shall ...
+\item[] \textbf{Access and Transaction Authorization}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_Label2}:] The system shall ...
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_WalletAuthentication}:] The system shall allow users to authenticate by connecting their Web3 wallet and signing a verification message to prove ownership of the associated wallet address.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_Label3}:] The system shall ...
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PublicAccess}:] The system shall allow unauthenticated users to browse publicly available marketplace information, including registered providers, available models, and provider reputations.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ParticipationAuthentication}:] The system shall require users to authenticate as specified in \rref{FR_WalletAuthentication} before submitting inference requests or registering or managing a provider account.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TransactionAuthorization}:] The system shall require users to authorize (sign) blockchain transactions through their connected wallet before executing actions that modify on-chain state or transfer tokens.
+
+\item[] \textbf{Inference Task and Provider Participation}
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskCreation}:] The system shall allow authenticated users to create inference tasks.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskDefinition}:] Each inference task definition shall specify a name, problem description, inference category or type, input schema, and output schema. Where applicable, it shall also specify the metric(s) used to evaluate predictions. The task creator may optionally provide training data, or a reference to training data, for providers to use when training or adapting models for the task.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistration}:] The system shall allow authenticated users to register as inference providers for an inference task by staking the required minimum amount of tokens (reference the min # tokens).
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistrationStaking}:] When a provider registers for an inference task, the system shall lock the required minimum stake for that task in escrow. The system shall return the provider's stake when the applicable conditions for releasing it are met.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceProviderSlashing}:] The system shall slash some or all of a provider's stake when specified conditions for penalties are met.
+
+\item[] \textbf{Inference Request Management}
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceRequestSubmission}:] The system shall allow authenticated users to submit inference requests for an existing inference task. Each request shall include input data that conforms to the task's input schema.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceRequestPayment}:] Upon inference request submission, the system shall allow the inference requester to transfer some non-zero number of tokens they are willing to pay into escrow.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceRequestRejection}:] The system shall reject inference requests whose input data does not conform to the task's input schema.
+
 
 \end{itemize}
 
@@ -615,7 +640,7 @@ documents.}
 \toprule
 Stakeholder Req & Use Case & Functional Req \\
 \midrule
-\srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_Label1} \\
+\srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_WalletAuthentication} \\
 \bottomrule
 
 \caption{Traceability Between Stakeholder Requirements, Use Cases, and
