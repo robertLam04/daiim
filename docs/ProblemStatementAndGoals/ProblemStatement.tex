@@ -28,6 +28,7 @@ September 25 & Nathan & Write goals and stretch goals\\
 September 27 & Aidan & Added stakeholders and environment \\
 September 27 & Keira & Write custom documents and reflection \\
 September 28 & Robert & Revise problem statement \\
+October 10 & Robert & Ensure goals support claims made in prob statement. Ensure all goals are measureable. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -93,7 +94,7 @@ including payments, ownership, and settlement, will be deployed as smart contrac
 on a public blockchain. This ensures there are publicly verifiable records of requests, provider submissions, aggregated results, provider reputation etc.
 The system should require participation by multiple independent providers per inference,
 to reduce reliance on a narrow set of machine learning models and make the sources of
-inference more diverse. This goal will be measured by whether tests demonstrate
+inference more diverse. This goal will be measured by whether end-to-end testing demonstrate
 that a request can proceed through provider submission and settlement without
 a centralized coordinator, that the relevant marketplace state can be
 verified from on-chain records, and that at least two independent providers
@@ -108,12 +109,12 @@ communicate the purpose and consequences of actions requiring user
 authorization, including the transactions and data being signed, while
 providing users with direct visibility into the corresponding on-chain
 transactions, their status, and relevant state changes. This goal will be
-measured by whether users can understand the actions they are authorizing,
-successfully complete required Web3 interactions without directly
-managing the underlying blockchain infrastructure, and verify the
-resulting transactions and state changes through the application.
+evaluated by instructing users to complete representative Web3 tasks, such
+as authorizing a transaction and checking its status, then using a
+questionnaire to assess their understanding of the actions and ease
+of use.
 
-\subsection{Reliable AI Inference}
+\subsection{Reliable Inferences}
 
 Enable users to receive accurate and reliable results by aggregating
 redundant predictions from multiple model providers rather than relying on
@@ -133,27 +134,35 @@ truths revealed at a later time. For example, for a weather forecasting task,
 the network’s prediction will be compared with the actual weather conditions
 once the forecast period has elapsed.
 
-\subsection{Accessible Consumer Experience}
+\subsection{Accessible Inference Experience}
 
-Provide a consumer-facing experience that allows users to interact with
-the marketplace without requiring knowledge of decentralized systems or
-their underlying infrastructure. This goal will be measured by whether a
-user can discover a model, submit an inference request, and receive its
-result entirely through the consumer interface.
+Design an accessible user interface that lets users without
+machine-learning experience submit the inputs required for a task and
+understand the resulting aggregated prediction and accompanying information.
+The interface should use clear signifiers for available actions, mappings between task inputs
+and controls, constraints that help prevent invalid submissions, and
+feedback that communicates request progress and results. This goal will be
+evaluated in usability tests with participants unfamiliar with machine
+learning. Participants will complete representative inference request and result
+interpretation tasks; evaluation measures will include task-completion
+rate, time on task, and user errors.
 
 \subsection{Model Provider Innovation}
 
-Encourage independent model providers to participate and innovate within
+The network will encourage independent model providers to participate and innovate within
 the marketplace by providing opportunities to make their models available
 to consumers, compete for inference requests, and receive compensation
 for their services. The marketplace should create incentives for
 providers to improve the quality, performance, availability, and
 cost-effectiveness of their models, as models that provide greater value
 to consumers can attract more inference requests and generate greater
-potential revenue. This goal will be measured by whether a model provider
-can register a model, make it available to consumers, receive inference
-requests, execute the inference, and receive compensation for
-successfully returning results through the system.
+potential revenue. If competition and these incentives encourage providers
+to improve their models, that improvement should be reflected in the
+network's aggregate predictions over time. This goal will be measured by
+tracking the network's aggregated predictions for a real inference task
+over repeated requests. As ground-truth outcomes become available,
+prediction quality will be assessed using a task-appropriate metric to
+determine whether the aggregated results improve over time.
 
 \section{Stretch Goals}
 
@@ -163,14 +172,10 @@ achieved.
 
 \subsection{Expanded AI Model and Inference Support}
 
-Extend the marketplace beyond linear regression to support additional AI
-models and more complex inference tasks. This is considered a stretch
+Extend the marketplace beyond regression to support additional categories of AI inference and more complex tasks. This is considered a stretch
 goal because supporting multiple model architectures and more complex
 inference workflows would require additional development beyond the core
-marketplace functionality established by the primary goals. The
-achievement of this goal would be measured by whether the system can
-successfully register, discover, and execute inference requests for
-multiple AI model types beyond linear regression.
+marketplace functionality established by the primary goals.
 
 \subsection{Private AI Inference}
 
@@ -179,10 +184,7 @@ from unauthorized access during execution through the use of Trusted
 Execution Environments (TEEs). This is considered a stretch goal because
 incorporating TEEs would introduce additional security, infrastructure,
 and integration requirements beyond those necessary to support the core
-marketplace and inference functionality. The achievement of this goal
-would be measured by whether the system can successfully execute an
-inference request on private data within a TEE while preventing
-unauthorized access to the data during execution.
+marketplace and inference functionality.
 
 \section{Custom Documents (CDs)}
 
