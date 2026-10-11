@@ -553,6 +553,10 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskReputationTolerance}:] Each inference task definition shall specify a reputation tolerance $T$, in the units of the task's output, used to determine when a provider's reputation decreases.
 
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskAcceptancePeriod}:] Each inference task definition shall specify the length of the acceptance period for the task's inference requests. The acceptance period for each request shall end this length of time after the request is broadcast.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskMaxPredictionTime}:] Each inference task definition shall specify the maximum prediction time for the task's inference requests, measured from the end of the acceptance period.
+
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskBrowsing}:] The system shall allow all users to browse existing inference tasks and view each task's definition, required minimum provider stake, and number of registered providers.
 
 \end{itemize}
@@ -688,7 +692,6 @@ The functional requirements are grouped by the area of DAIIM they describe.
 Questions / Missing reqs: \\
 - We said that the task requester gets to choose the amount of tokens they want to offer for a request - How can we express this to inference providers in a useful way? Since the total amount does not reflect how much they will earn.\\
   - Unless the requester also gets to choose exactly how many participants are necessary to complete the request.\\
-- What are the time constraints for returning predictions? Is this decided by the requester? Is it decided by the task creator? Is this the same across all tasks? Or is it set per task?\\
 - What happens if aggregation fails? Should add req for this\\
 - What happens if not enough providers accept? Should add req for this\\
 - Rewards distribution and provider reputation update may be changed after POC\\
