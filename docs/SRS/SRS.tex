@@ -183,7 +183,7 @@ For people who build machine learning models, DAIIM provides an open marketplace
 
 \subsection{Scope}
 
-DAIIM addresses the reliance on centralized AI providers described in the purpose above by allowing task requesters to obtain inferences from a decentralized network of independent inference providers.
+DAIIM allows task requesters to obtain reliable inferences by combining predictions from multiple independent inference providers.
 
 The inputs to the system consist of task definitions, inference requests, and network participation.
 Task definitions are specifications of a problem to be solved via machine learning, including the expected input and output types.
@@ -194,31 +194,18 @@ predictions for individual inference requests that are supplied to the network b
 The system outputs aggregated inference results and maintains information about the network.
 The aggregated inference results include the final prediction for a given inference request, as well as information about the quality of the prediction.
 
-The major functionality within the scope of DAIIM is:
-\begin{itemize}
-    \item \textbf{Automated and decentralized marketplace transactions:} users and model providers autonomously establish and fulfill
-    marketplace agreements, from the initial request through payment and settlement, without centralized coordination or manual intervention.
-    \item \textbf{Web3 usability and transparency:} a user-friendly Web3 experience that abstracts unnecessary blockchain complexity while giving users
-    direct visibility into the on-chain transactions, their status, and relevant state changes.
-    \item \textbf{Reliable AI inference:} submitted inference requests reach an available model provider, are processed, and return a corresponding
-    inference result to the consumer, minimizing failed, lost, or incomplete requests.
-    \item \textbf{Accessible consumer experience:} a user can discover a model, submit an inference request, and receive its result entirely through
-    the consumer interface, without knowledge of decentralized systems or their underlying infrastructure.
-    \item \textbf{Model provider participation:} a model provider can register a model, make it available to consumers, receive inference requests,
-    execute the inference, and receive compensation for successfully returning results.
-\end{itemize}
-
 The expected benefits are reduced reliance on centralized AI providers, improved reliability of inferences through redundant predictions from
 independent providers, and incentives for providers to improve the quality, performance, availability, and cost-effectiveness of their models.
 
 The following are outside the scope of DAIIM:
 \begin{itemize}
-    \item AI models and inference tasks beyond linear regression. Support for additional model types is a stretch goal.
+    \item Inference tasks whose output is not a single numeric value, such as predicting a category label. Support for additional model types is a stretch goal.
     \item Inference on private or sensitive data within Trusted Execution Environments (TEEs). This is a stretch goal.
-    \item Any hardware component. DAIIM is used through a modern web browser on a computer connected to the internet.
+    \item DAIIM doesn't train models. It just uses model providers' existing models to make predictions for inference requests.
+    \item Using a custom blockchain. DAIIM will use Solana, an existing public blockchain.
 \end{itemize}
 
-\subsection{Stakeholders}
+\subsection{Stakeholders} \label{sec_Stakeholders}
 
 \subsubsection*{Primary Stakeholders}
 
@@ -226,17 +213,15 @@ Primary stakeholders interact with DAIIM directly.
 
 \begin{itemize}
     \item \textbf{Task requesters} \newline
-    Task requesters are people who are requesting inferences to be made for a given task. These people would value the decentralized nature of our platform.
-    For example, healthcare researchers would make requests to predict various regression inferences (such as biomarker levels) while still complying with privacy constraints.
-    Similarly, decentralized finance platforms could make requests to predict various regression inferences (such as stock prices) while still complying with privacy constraints.
+    Task requesters are people who are requesting inferences to be made for a given task, using their own input data.
+    These people value consensus and reliability: they want a prediction that combines the results of multiple independent models, rather than relying on a single model that may be wrong, biased, or unavailable.
+    For example, emergency management agencies would make requests to predict river levels or wildfire risk, where a single incorrect forecast can leave a community unprepared.
+    Similarly, decentralized finance platforms could make requests to predict stock prices, where relying on a single source of predictions creates a risk of error or manipulation.
+    Because input data is shared with inference providers, task requesters are expected to submit data that is not sensitive.
 
     \item \textbf{Inference providers} \newline
     Inference providers are people with computing resources and models, and want to monetize their regression models.
     These people usually have specialized or powerful models that can be used to make predictions for a given task.
-
-    \item \textbf{Data providers} \newline
-    Data providers are people with data that can be used to train models for a given task.
-    They would be interested in helping the inference providers improve their models by providing them with data to train on.
 \end{itemize}
 
 \subsubsection*{Secondary Stakeholders}
@@ -269,7 +254,6 @@ Inference & A prediction produced by a machine learning model for a given input.
 Inference request & A request for the network to perform inference for a given task, including input data or a specification of where to find the input data.\\
 Task requester & A person who requests inferences to be made for a given task.\\
 Inference provider & A person with computing resources and models who supplies predictions for inference requests to the network.\\
-Data provider & A person who supplies data that inference providers can use to train models for a given task.\\
 Network participation & Machine learning predictions for individual inference requests supplied to the network by an inference provider.\\
 Aggregated inference result & The final prediction for a given inference request produced by combining the predictions of multiple inference providers, together with information about the quality of the prediction.\\
 Ground truth & The true, observed value that a prediction is attempting to estimate.\\
@@ -414,51 +398,84 @@ restrictions.}
 % ============================================================== 
 \section{Stakeholder Requirements}
 
-\plt{Technology-independent requirements.  These come from statements made by
-the stakeholders.  You will find these through interviews and surveys.  They are
-often expressed in natural language.  They are not necessarily testable, but
-they should be verifiable.}
+This section lists the stakeholder requirements for DAIIM, grouped by the stakeholders described in Section~\ref{sec_Stakeholders}. These requirements are technology-independent and are stated from the point of view of the stakeholders.
 
-\plt{The stakeholder requirements are numbered so that you can have traceability to other parts of your document.}
+\subsubsection*{Task Requesters}
 
 \noindent \begin{itemize}
 
-\item[SR\refstepcounter{srnum}\thesrnum \label{SR_Label1}] TODO
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_DefineTask}] Task requesters shall be able to define their own machine learning task, including the type of input the task takes and the type of output it produces.
 
-\item[SR\refstepcounter{srnum}\thesrnum \label{SR_Label2}] TODO
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_RequestInference}] Task requesters shall be able to submit an inference request for a defined task and receive a result for that request.
 
-\item[SR\refstepcounter{srnum}\thesrnum \label{SR_Label3}] TODO
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_ReliableInference}] Task requesters shall receive inference results that are reliable. Each result shall be based on predictions from multiple independent inference providers, so that no single faulty or dishonest provider can determine the result.
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_ResultQuality}] Task requesters shall receive information about the quality of each inference result, so that they can judge how much to trust it.
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_NoCentralAuthority}] Task requesters shall be able to obtain inferences without relying on a single organization to coordinate the request, supply the prediction, or control the result.
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_Transparency}] Task requesters shall be able to see the actions and payments they authorize, and verify that those actions and payments were carried out.
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_EaseOfUse}] Task requesters shall be able to define tasks, submit inference requests, and receive results without knowledge of decentralized systems or their underlying infrastructure.
 
 \end{itemize}
 
-\plt{You should give your SRs meaningful labels, so that you can refer to them
-in other parts of the SRS.  The label names should be meaningful mnemonics, not
-numbers.}
+\subsubsection*{Inference Providers}
+
+\noindent \begin{itemize}
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_ProviderParticipation}] Inference providers shall be able to offer predictions from their own models for tasks defined by task requesters.
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_ProviderProfit}] Inference providers shall be able to earn a profit by supplying accurate predictions to the network.
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_RewardAccuracy}] Inference providers shall be rewarded according to the accuracy of their predictions, so that supplying honest, accurate predictions is more profitable than supplying dishonest or careless ones.
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_AutomaticPayment}] Inference providers shall receive payment for their predictions without manual intervention from the task requester or any third party.
+
+\end{itemize}
+
+\subsubsection*{Secondary Stakeholders}
+
+\noindent \begin{itemize}
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_ResilientService}] Beneficiaries of machine learning inference shall continue to have access to inference results when individual inference providers become unavailable.
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_DataPrivacy}] Personal information and sensitive data handled by DAIIM, such as inference inputs and training data, shall only be accessible to the parties that need it to fulfill an inference request.
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_DataProtection}] Personal information and sensitive data handled by DAIIM shall be protected from unauthorized access while it is transferred and while it is stored.
+
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_DataRetention}] Personal information and sensitive data handled by DAIIM shall not be retained longer than necessary to fulfill the inference request it belongs to.
+
+\end{itemize}
 
 % ============================================================== 
 \section{User Personas}
-\plt{Create 2-5 realistic personas.
-  Personas are fictional characters that represent the different user types that
-  might use your software.  They are used to help understand the users'
-  needs, experiences, behaviors and goals.  They are not real people, but they
-  should be based on real data collected from user research.}
 
-\subsection{Persona 1}
+\subsection{Persona 1: Emergency Management Coordinator (Task Requester)}
 \begin{itemize}
-\item Name:
-\item Description:
-\item Goals:
-\item Frustrations:
-\item Technical Ability:
+\item Name: Priya Nair
+\item Description: Priya is 41 and coordinates emergency management for a mid-sized town on a flood-prone river, in a region that also has an annual wildfire season. She decides when to issue flood warnings and evacuation orders, and when to pre-position firefighting resources. She currently relies on a single forecasting service, and has to justify every decision to the town council.
+\item Goals: Receive river-level forecasts 24 to 48 hours ahead, and wildfire risk estimates during fire season, that combine predictions from multiple independent sources. See how much the sources agree, so she knows how much to trust each forecast. Keep costs predictable and within the town's budget.
+\item Frustrations: Her current service is a black box: it gives one number with no indication of confidence, and she has no alternative when it is wrong or unavailable. A missed flood forecast the previous spring left the town unprepared. She has no interest in learning about cryptocurrency or managing digital wallets.
+\item Technical Ability: Comfortable with spreadsheets, web dashboards, and mapping tools. No programming experience and no experience with blockchain or Web3 applications.
 \end{itemize}
 
-\subsection{Persona 2}
+\subsection{Persona 2: Independent Stock Forecaster (Inference Provider)}
 \begin{itemize}
-\item Name:
-\item Description:
-\item Goals:
-\item Frustrations:
-\item Technical Ability:
+\item Name: Daniel Okafor
+\item Description: Daniel is 29 and works as a software developer. In his spare time he builds machine learning models that predict next-day stock prices from historical market data. His models perform well in backtests, but he has no way to earn money from them other than trading with his own savings.
+\item Goals: Earn a steady side income by supplying predictions from his models. Get paid automatically and promptly for good predictions. Build a visible track record that shows his models are reliable. Keep the cost of submitting each prediction low enough that participating is worthwhile.
+\item Frustrations: Selling predictions usually requires connections at a fund. Trading his own money exposes him to large losses. Prediction platforms he has tried were unclear about how payouts were calculated.
+\item Technical Ability: Strong Python programmer who regularly uses machine learning libraries. Owns a cryptocurrency wallet and has used decentralized finance applications.
+\end{itemize}
+
+\subsection{Persona 3: Hydrology Researcher (Inference Provider)}
+\begin{itemize}
+\item Name: Dr. Elena Varga
+\item Description: Elena is 34 and is a postdoctoral researcher in hydrology. She specializes in forecasting streamflow in mountain rivers fed by melting snow, where standard forecasting models often perform poorly during the spring melt. Her models currently only appear in academic papers.
+\item Goals: Earn supplementary income from her expertise by supplying predictions for tasks in her field, such as river-level and streamflow forecasts. Build a reputation for her models outside academia. See her research help communities prepare for floods.
+\item Frustrations: Consulting contracts are slow to arrange and rarely available to early-career researchers. Her models are most valuable during unusual events, when they disagree with standard models, and she worries about being penalized for disagreeing with the majority even when she is right.
+\item Technical Ability: Expert in statistical modeling, with strong Python and R skills. Has never used a cryptocurrency wallet or a blockchain application.
 \end{itemize}
 
 % ============================================================== 
