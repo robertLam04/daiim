@@ -410,6 +410,8 @@ This section lists the stakeholder requirements for DAIIM, grouped by the stakeh
 
 \item[SR\refstepcounter{srnum}\thesrnum \label{SR_ReliableInference}] Task requesters shall receive inference results that are reliable. Each result shall be based on predictions from multiple independent inference providers, so that no single faulty or dishonest provider can determine the result.
 
+\item[SR\refstepcounter{srnum}\thesrnum \label{SR_ResilientService}] Task requesters shall receive results for their inference requests even when some inference providers are unavailable.
+
 \item[SR\refstepcounter{srnum}\thesrnum \label{SR_ResultQuality}] Task requesters shall receive information about the quality of each inference result, so that they can judge how much to trust it.
 
 \item[SR\refstepcounter{srnum}\thesrnum \label{SR_NoCentralAuthority}] Task requesters shall be able to obtain inferences without relying on a single organization to coordinate the request, supply the prediction, or control the result.
@@ -437,8 +439,6 @@ This section lists the stakeholder requirements for DAIIM, grouped by the stakeh
 \subsubsection*{Secondary Stakeholders}
 
 \noindent \begin{itemize}
-
-\item[SR\refstepcounter{srnum}\thesrnum \label{SR_ResilientService}] Beneficiaries of machine learning inference shall continue to have access to inference results when individual inference providers become unavailable.
 
 \item[SR\refstepcounter{srnum}\thesrnum \label{SR_DataPrivacy}] Personal information and sensitive data handled by DAIIM, such as inference inputs and training data, shall only be accessible to the parties that need it to fulfill an inference request.
 
