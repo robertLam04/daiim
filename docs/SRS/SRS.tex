@@ -105,6 +105,7 @@
 \midrule
 October 8 & 1.0 & Aidan: Added sections 1.1 to 1.5 (Purpose, Scope, Stakeholders, Definitions and Acronyms, and Characteristics of Intended Reader)\\
 October 11 & 1.0 & Robert: Added major functional requirements\\
+October 11 & 1.0 & Aidan: Grouped functional requirements into categories and added functional requirements derived from the stakeholder requirements\\
 \bottomrule
 \end{tabularx}
 
@@ -524,6 +525,10 @@ requirements are usually derived from the stakeholder requirements and use cases
 
 \plt{Use SHALL statements. Requirements must be atomic, testable, and traceable.}
 
+The functional requirements are grouped by the area of DAIIM they describe.
+
+\subsection{Accounts and Authorization}
+
 \noindent \begin{itemize}
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_WalletAuthentication}:] The system shall allow users to authenticate by connecting their Web3 wallet and signing a verification message to prove ownership of the associated wallet address.
@@ -532,15 +537,43 @@ requirements are usually derived from the stakeholder requirements and use cases
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TransactionAuthorization}:] The system shall require authenticated users to authorize (sign) blockchain transactions through their connected wallet before executing actions that transfer tokens or modify on-chain state.
 
+\end{itemize}
+
+\subsection{Inference Tasks}
+
+\noindent \begin{itemize}
+
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskCreation}:] The system shall allow authenticated users to create new inference tasks by provinding the task definition.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskDefinition}:] Each inference task definition shall specify a name, problem description, inference category or type, input schema, and output schema. Where applicable, it shall also specify the metric(s) used to evaluate predictions. The task creator may optionally provide training data, or a reference to training data, for providers to use when training or adapting models for the task.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskMinimumProviders}:] Each inference task definition shall specify the minimum number of participating providers required to fulfill an inference request for the task.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumProvidersFloor}:] The system shall reject inference task definitions that specify a minimum number of participating providers less than 2.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskReputationTolerance}:] Each inference task definition shall specify a reputation tolerance $T$, in the units of the task's output, used to determine when a provider's reputation decreases.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskBrowsing}:] The system shall allow all users to browse existing inference tasks and view each task's definition, required minimum provider stake, and number of registered providers.
+
+\end{itemize}
+
+\subsection{Provider Registration and Staking}
+
+\noindent \begin{itemize}
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistration}:] The system shall allow authenticated users to register as inference providers for an inference task by staking the required minimum amount of tokens (reference the min \# tokens).
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistrationStaking}:] When a provider registers for an inference task, the system shall lock the required minimum stake for that task in escrow. The system shall return the provider's stake when the applicable conditions for releasing it are met.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceProviderSlashing}:] The system shall slash some or all of a provider's stake when specified conditions for penalties are met.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderWillingUnregistration}:] The system shall allow registered inference providers to unregister from an inference task, provided they have not accepted any acitve inference requests for that task. Upon unregistration, the provider shall be removed from the list of registered providers for the task, and their remaining staked tokens shall be returned to their token account. Upon re-registering for an inference task, the provider shall start with the baseline reputation score for that task, regardless of their previous reputation score.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderDashboard}:] The system shall allow inference providers to view their reputation score, staked tokens, and rewards earned for each inference task they are registered for.
+
+\end{itemize}
+
+\subsection{Inference Requests}
+
+\noindent \begin{itemize}
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestSubmission}:] The system shall allow authenticated users to submit inference requests for an existing inference task. Each request shall include input data that conforms to the task's input schema.
 
@@ -550,27 +583,107 @@ requirements are usually derived from the stakeholder requirements and use cases
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestBroadcast}:] After an inference request is submitted, the system shall broadcast its task definition, proposed payment amount, acceptance-period expiry time, and maximum prediction time to all providers registered for the task.
 
+\end{itemize}
+
+\subsection{Provider Acceptance and Predictions}
+
+\noindent \begin{itemize}
+
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_AcceptancePeriodStart}:] Upon broadcast of an inference request, the system shall automatically begin the acceptance period, during which providers registered for the task may accept or decline participation.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_AcceptancePeriodEnd}:] At the specified expiry time, the system shall end the acceptance period. All registered providers that have not accepted the request will be treated as non-participating. Inference request acceptances from inference providers outside of the acceptance period will not be considered.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumAcceptance}:] If fewer than the task's minimum number of participating providers have accepted an inference request when the acceptance period ends, the system shall cancel the request and return the requester's escrowed payment.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestInputDistribution}:] The system shall make the request's input data, or information needed to access it, available to all providers that accepted the request during the acceptance period.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionPhaseStart}:] Upon expiration of the acceptance period, the system shall begin collecting inferences from the set of providers that accepted the request. Predictions returned from inference providers that are not participating will be rejected.
 
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionSubmission}:] The system shall allow each provider that accepted an inference request to submit a prediction for that request during the prediction phase.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_OnePredictionPerProvider}:] The system shall accept at most one prediction from each provider for a given inference request.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionValidation}:] The system shall reject predictions that do not conform to the task's output schema.
+
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionPhaseEnd}:] The system shall end the prediction phase when it has received a prediction from every provider that accepted the request or when the maximum prediction time has elapsed, whichever occurs first. The system shall not accept predictions after the phase has ended.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionAggregation}:] Once all inferences have been received, the system shall aggregate the predictions into a final numerical result using a weighted aggregation algorithm in which each provider's reputation determines the weight assigned to its prediction.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumPredictions}:] If fewer than the task's minimum number of participating providers have submitted predictions when the prediction phase ends, the system shall cancel the request and return the requester's escrowed payment.
+
+\end{itemize}
+
+\subsection{Aggregation and Results}
+
+\noindent \begin{itemize}
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionAggregation}:] Once the prediction phase ends, the system shall aggregate the predictions into a final numerical result using a weighted aggregation algorithm in which each provider's reputation determines the weight assigned to its prediction.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_FinalResultDelivery}:] The system shall return the final aggregated result, time elapsed since submitting the request and the number of inference providers that submitted predictions, to the user that submitted the inference request.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:] The system shall update the reputation score of each inference provider that participated in an inference request, with a positive reputation change if the provider's prediction is closer to the final aggregated result than the average participating provider's prediction.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ResultSpread}:] The system shall return, with each final aggregated result, the minimum and maximum of the predictions submitted for the request.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_DistributeRewards}:] The system shall distribute the inference request's reward equally among all providers whose predictions contributed to the final aggregated result and whose reputation did not decrease as a result of the request.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestHistory}:] The system shall allow requesters to view the status of each inference request they have submitted and, once available, its final aggregated result.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderWillingUnregistration}:]  The system shall allow registered inference providers to unregister from an inference task, provided they have not accepted any acitve inference requests for that task. Upon unregistration, the provider shall be removed from the list of registered providers for the task, and their remaining staked tokens shall be returned to their token account. Upon re-registering for an inference task, the provider shall start with the baseline reputation score for that task, regardless of their previous reputation score.
+\end{itemize}
+
+\subsection{Reputation and Rewards}
+
+\noindent \begin{itemize}
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:] After the final aggregated result for an inference request is computed, the system shall update the reputation score of each provider that submitted a prediction for the request. For each such provider $i$, the system shall compute $d_i$, the absolute difference between the provider's prediction and the final aggregated result, and $\bar{d}$, the average of $d_j$ over all providers that submitted predictions for the request.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationIncrease}:] The system shall increase the reputation score of a provider whose distance $d_i$ is less than or equal to the average distance $\bar{d}$.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationUnchanged}:] The system shall leave unchanged the reputation score of a provider whose distance $d_i$ is greater than $\bar{d}$ but less than or equal to $\bar{d} + T$, where $T$ is the task's reputation tolerance.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationDecrease}:] The system shall decrease the reputation score of a provider whose distance $d_i$ is greater than $\bar{d} + T$, where $T$ is the task's reputation tolerance.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationPenaltyCap}:] The system shall limit the reputation decrease a provider receives for a single inference request to at most MAX\_REPUTATION\_PENALTY, regardless of how far the provider's prediction is from the final aggregated result.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_DistributeRewards}:] The system shall distribute the inference request's reward among all providers whose predictions contributed to the final aggregated result and whose reputation did not decrease as a result of the request, in proportion to each provider's reputation score. Each eligible provider $i$ shall receive $R \cdot r_i / \sum_j r_j$, where $R$ is the reward for the request, $r_i$ is the reputation score used to weight provider $i$'s prediction in the final aggregated result, and the sum is over all eligible providers.
+
+\end{itemize}
+
+\subsection{Penalties}
+
+\noindent \begin{itemize}
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceProviderSlashing}:] The system shall slash a provider's stake only under the conditions specified in \rref{FR_SlashInvalidPrediction} and \rref{FR_SlashNoShow}, and shall burn a provider's remaining stake only under the conditions specified in \rref{FR_SlashRepeatedOffenses} and \rref{FR_ProviderForcedUnregistration}.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashInvalidPrediction}:] When the system rejects a provider's prediction under \rref{FR_PredictionValidation}, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoShow}:] When a provider that accepted an inference request has not submitted any prediction for the request by the end of the prediction phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashRepeatedOffenses}:] When a provider has been slashed for at least REPEAT\_OFFENSE\_COUNT of the last REPEAT\_OFFENSE\_WINDOW inference requests they accepted for a task, the system shall unregister the provider from the task and burn their remaining stake for the task.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderForcedUnregistration}:] The system shall automatically unregister any inference provider whose reputation score falls below the minimum reputation threshold. Upon removal, the provider's remaining staked tokens for that inference task shall be burned.
+
+\end{itemize}
+
+\subsection{Transparency}
+
+\noindent \begin{itemize}
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TransactionPreview}:] Before prompting a user to authorize a transaction, the system shall display the action being performed and the amount of tokens being transferred.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TransactionStatus}:] The system shall display the status of each transaction a user has authorized until the transaction is confirmed or fails.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TransactionVerification}:] The system shall provide, for each transaction a user has authorized, the transaction identifier needed to look up the transaction on the blockchain.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_OnChainRecords}:] The system shall record request payments, provider stakes, aggregated results, reputation updates, and reward distributions on the blockchain.
+
+\end{itemize}
+
+\subsection{Data Handling}
+
+\noindent \begin{itemize}
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InputAccessRestriction}:] The system shall make a request's input data available only to the requester and the providers that accepted the request.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InputNotOnChain}:] The system shall not store a request's input data on the blockchain in readable form.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InputDeletion}:] The system shall delete a request's input data from any storage the system controls once the request has been completed or cancelled.
+
+\end{itemize}
 
 Questions / Missing reqs: \\
 - We said that the task requester gets to choose the amount of tokens they want to offer for a request - How can we express this to inference providers in a useful way? Since the total amount does not reflect how much they will earn.\\
@@ -580,16 +693,6 @@ Questions / Missing reqs: \\
 - What happens if not enough providers accept? Should add req for this\\
 - Rewards distribution and provider reputation update may be changed after POC\\
 - Need to define some of the thresholds used in reqs above: min reputation, amount to stake, min inference request payment etc.\\
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionSubmission}:]
-
-
-
-
-
-
-
-\end{itemize}
 
 \plt{The requirements are given labels so that they can be referenced in other
 parts of the SRS.  The label names should be meaningful mnemonics, not numbers.}
@@ -672,10 +775,17 @@ be covered in the Verification and Validation document.}
     Validation Plan.''  If you do this provide a link to the VnV plan.}
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Usability}:] \textbf{Usability}
-  \plt{Characterize the usability by giving the context/use for the software.
-    You should likely reference the user characteristics section.  The level of
-    usability achieved by the software shall be described following the
-    procedure given in Section~X of the Verification and Validation Plan.  Include a link to the VnV plan.}
+  Users with no knowledge of decentralized systems or their underlying
+  infrastructure shall be able to define tasks, submit inference requests, and
+  receive results without assistance. In usability testing with participants
+  who have no prior blockchain or Web3 experience, at least
+  USABILITY\_COMPLETION\_RATE of participants shall complete each of these tasks
+  without assistance.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_DataProtection}:] \textbf{Security}
+  Personal information and sensitive data handled by DAIIM, such as inference
+  inputs, shall be encrypted while it is transferred and while it is stored by
+  the system, so that it is protected from unauthorized access.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Maintainability}:]
   \textbf{Maintainability} \plt{The effort required to make any of the likely
@@ -775,6 +885,62 @@ rationale for everything, ust the major decisions that are not obvious.  You
 should have traceability to the entities in the document that you are
 referencing.}
 
+\subsection{Provider Staking}
+
+Inference providers must stake a minimum amount of tokens to register for an
+inference task (\rref{FR_InferenceTaskRegistration}). The stake is locked in
+escrow by the system's on-chain logic, rather than held by any person, and can
+only be returned, slashed, or burned according to the rules in
+\rref{FR_InferenceTaskRegistrationStaking},
+\rref{FR_InferenceProviderSlashing},
+\rref{FR_ProviderWillingUnregistration}, and
+\rref{FR_ProviderForcedUnregistration}. Requiring a stake serves three
+purposes:
+
+\begin{itemize}
+    \item \textbf{Resistance to fake accounts.} The final result is a
+    reputation-weighted aggregate of provider predictions
+    (\rref{FR_PredictionAggregation}), so anyone who controls enough providers
+    for a task can control its results. Without a stake, an attacker could
+    register many providers at no cost, and a provider with a low reputation
+    could abandon their account and register a new one. Requiring a stake for
+    every registration makes each additional provider cost real tokens, which
+    makes gaining control of a task's results expensive.
+
+    \item \textbf{Penalties for misbehaviour.} A loss of reputation alone may
+    not deter a provider who has nothing else at risk. A stake allows the
+    system to impose a financial penalty by slashing it
+    (\rref{FR_InferenceProviderSlashing}), or burning it when a provider's
+    reputation falls below the minimum threshold
+    (\rref{FR_ProviderForcedUnregistration}).
+
+    \item \textbf{Commitment to accepted requests.} If accepting an inference
+    request had no cost, providers could accept every request and respond only
+    when convenient, causing requests to be cancelled for having too few
+    predictions (\rref{FR_MinimumPredictions}). Having a stake at risk gives
+    providers a reason to submit a prediction for every request they accept.
+\end{itemize}
+
+A provider's stake does not determine the weight of their predictions;
+reputation does (\rref{FR_PredictionAggregation}). This prevents providers from
+gaining influence over results through wealth alone, so influence must be
+earned through a history of predictions that agree with the network.
+
+The minimum stake must balance two concerns. It must be high enough that
+registering many fake providers is expensive, but low enough that honest new
+providers, who have not yet earned any rewards, are not discouraged from
+joining.
+
+\subsection{Reputation Tolerance}
+
+Each task specifies a reputation tolerance $T$ (\rref{FR_TaskReputationTolerance}),
+and a provider's reputation only decreases when their distance from the final
+aggregated result exceeds the average distance by more than $T$
+(\rref{FR_ReputationDecrease}). Without this margin, roughly half of the
+providers would lose reputation on every request, even when all predictions are
+close together. $T$ is set per task because an acceptable margin depends on the
+units and scale of the task's output.
+
 \section{Likely Changes}    
 
 \noindent \begin{itemize}
@@ -821,7 +987,13 @@ Their values are defined in this section for easy maintenance.}
 
 \plt{The value of FRACTION, for the Maintainability NFR would be given here.}
 
-TODO
+\begin{itemize}
+\item USABILITY\_COMPLETION\_RATE: the minimum fraction of usability test participants who must complete each task without assistance (\nfrref{NFR_Usability}). To be determined.
+\item MAX\_REPUTATION\_PENALTY: the maximum reputation decrease a provider can receive for a single inference request (\rref{FR_ReputationPenaltyCap}). To be determined.
+\item SLASH\_FRACTION: the fraction of a provider's stake slashed for an invalid prediction or for not submitting a prediction (\rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}). To be determined.
+\item REPEAT\_OFFENSE\_COUNT: the number of slashing offences that causes a provider to be unregistered (\rref{FR_SlashRepeatedOffenses}). To be determined.
+\item REPEAT\_OFFENSE\_WINDOW: the number of most recent accepted inference requests over which slashing offences are counted (\rref{FR_SlashRepeatedOffenses}). To be determined.
+\end{itemize}
 
 \subsection{Appendix D: Generative AI Disclosure}
 
