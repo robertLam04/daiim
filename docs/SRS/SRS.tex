@@ -453,35 +453,67 @@ requirements are usually derived from the stakeholder requirements and use cases
 
 \noindent \begin{itemize}
 
-\item[] \textbf{Access and Transaction Authorization}
-
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_WalletAuthentication}:] The system shall allow users to authenticate by connecting their Web3 wallet and signing a verification message to prove ownership of the associated wallet address.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PublicAccess}:] The system shall allow unauthenticated users to browse publicly available marketplace information, including registered providers, available models, and provider reputations.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ParticipationAuthentication}:] The system shall require users to authenticate as specified in \rref{FR_WalletAuthentication} before submitting inference requests or registering or managing a provider account.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TransactionAuthorization}:] The system shall require authenticated users to authorize (sign) blockchain transactions through their connected wallet before executing actions that transfer tokens or modify on-chain state.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TransactionAuthorization}:] The system shall require users to authorize (sign) blockchain transactions through their connected wallet before executing actions that modify on-chain state or transfer tokens.
-
-\item[] \textbf{Inference Task and Provider Participation}
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskCreation}:] The system shall allow authenticated users to create inference tasks.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskCreation}:] The system shall allow authenticated users to create new inference tasks by provinding the task definition.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskDefinition}:] Each inference task definition shall specify a name, problem description, inference category or type, input schema, and output schema. Where applicable, it shall also specify the metric(s) used to evaluate predictions. The task creator may optionally provide training data, or a reference to training data, for providers to use when training or adapting models for the task.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistration}:] The system shall allow authenticated users to register as inference providers for an inference task by staking the required minimum amount of tokens (reference the min # tokens).
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistration}:] The system shall allow authenticated users to register as inference providers for an inference task by staking the required minimum amount of tokens (reference the min \# tokens).
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistrationStaking}:] When a provider registers for an inference task, the system shall lock the required minimum stake for that task in escrow. The system shall return the provider's stake when the applicable conditions for releasing it are met.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceProviderSlashing}:] The system shall slash some or all of a provider's stake when specified conditions for penalties are met.
 
-\item[] \textbf{Inference Request Management}
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestSubmission}:] The system shall allow authenticated users to submit inference requests for an existing inference task. Each request shall include input data that conforms to the task's input schema.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceRequestSubmission}:] The system shall allow authenticated users to submit inference requests for an existing inference task. Each request shall include input data that conforms to the task's input schema.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestValidation}:] The system shall reject inference requests whose input data does not conform to the task's input schema.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceRequestPayment}:] Upon inference request submission, the system shall allow the inference requester to transfer some non-zero number of tokens they are willing to pay into escrow.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestPayment}:] When submitting an inference request, the system shall require the requester to choose a payment amount in tokens greater than the minimum and prompt them to authorize, through their connected wallet, a transaction transferring that amount of tokens into escrow.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceRequestRejection}:] The system shall reject inference requests whose input data does not conform to the task's input schema.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestBroadcast}:] After an inference request is submitted, the system shall broadcast its task definition, proposed payment amount, acceptance-period expiry time, and maximum prediction time to all providers registered for the task.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_AcceptancePeriodStart}:] Upon broadcast of an inference request, the system shall automatically begin the acceptance period, during which providers registered for the task may accept or decline participation.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_AcceptancePeriodEnd}:] At the specified expiry time, the system shall end the acceptance period. All registered providers that have not accepted the request will be treated as non-participating. Inference request acceptances from inference providers outside of the acceptance period will not be considered.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestInputDistribution}:] The system shall make the request's input data, or information needed to access it, available to all providers that accepted the request during the acceptance period.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionPhaseStart}:] Upon expiration of the acceptance period, the system shall begin collecting inferences from the set of providers that accepted the request. Predictions returned from inference providers that are not participating will be rejected.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionPhaseEnd}:] The system shall end the prediction phase when it has received a prediction from every provider that accepted the request or when the maximum prediction time has elapsed, whichever occurs first. The system shall not accept predictions after the phase has ended.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionAggregation}:] Once all inferences have been received, the system shall aggregate the predictions into a final numerical result using a weighted aggregation algorithm in which each provider's reputation determines the weight assigned to its prediction.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_FinalResultDelivery}:] The system shall return the final aggregated result, time elapsed since submitting the request and the number of inference providers that submitted predictions, to the user that submitted the inference request.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:] The system shall update the reputation score of each inference provider that participated in an inference request, with a positive reputation change if the provider's prediction is closer to the final aggregated result than the average participating provider's prediction.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_DistributeRewards}:] The system shall distribute the inference request's reward equally among all providers whose predictions contributed to the final aggregated result and whose reputation did not decrease as a result of the request.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderWillingUnregistration}:]  The system shall allow registered inference providers to unregister from an inference task, provided they have not accepted any acitve inference requests for that task. Upon unregistration, the provider shall be removed from the list of registered providers for the task, and their remaining staked tokens shall be returned to their token account. Upon re-registering for an inference task, the provider shall start with the baseline reputation score for that task, regardless of their previous reputation score.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderForcedUnregistration}:] The system shall automatically unregister any inference provider whose reputation score falls below the minimum reputation threshold. Upon removal, the provider's remaining staked tokens for that inference task shall be burned.
+
+Questions / Missing reqs: \\
+- We said that the task requester gets to choose the amount of tokens they want to offer for a request - How can we express this to inference providers in a useful way? Since the total amount does not reflect how much they will earn.\\
+  - Unless the requester also gets to choose exactly how many participants are necessary to complete the request.\\
+- What are the time constraints for returning predictions? Is this decided by the requester? Is it decided by the task creator? Is this the same across all tasks? Or is it set per task?\\
+- What happens if aggregation fails? Should add req for this\\
+- What happens if not enough providers accept? Should add req for this\\
+- Rewards distribution and provider reputation update may be changed after POC\\
+- Need to define some of the thresholds used in reqs above: min reputation, amount to stake, min inference request payment etc.\\
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionSubmission}:]
+
+
+
+
+
 
 
 \end{itemize}
