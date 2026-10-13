@@ -64,11 +64,119 @@ hazards.}
 
 \section{System Boundaries and Components}
 
-\wss{Dividing the system into components will help you brainstorm the hazards.
-You shouldn't do a full design of the components, just get a feel for the major
-ones.  For projects that involve hardware, the components will typically include
-each individual piece of hardware.  If your software will have a database, or an
-important library, these are also potential components.}
+This section divides DAIIM into its major components and identifies where the
+boundary of the system lies. Components inside the boundary are built,
+deployed, and maintained by the team, and their behaviour can be changed to
+mitigate hazards. Components outside the boundary are part of DAIIM's
+environment: DAIIM depends on them, but cannot control them, so hazards
+originating from them can only be detected, tolerated, or contained. The
+components below are based on the requirements in the SRS and the technologies
+listed in the Development Plan. They are preliminary and will be refined in the
+design documents.
+
+\subsection{Components Within the System Boundary}
+
+\begin{enumerate}
+
+\item \textbf{Web Client.} The browser-based user interface, built with React,
+through which task requesters and inference providers use DAIIM. It connects to
+the user's wallet for authentication, lets users browse and create tasks,
+submit inference requests, register as providers, and view results,
+reputations, stakes, and rewards. Before each transaction, it shows the user
+the action being performed and the amount of tokens being transferred, and
+afterwards it shows the transaction's status and identifier. It also performs
+an initial check that request inputs conform to the task's input schema.
+\textit{Related SRS requirements:} Accounts and Authorization, Inference Tasks,
+Inference Requests, Aggregation and Results, Transparency.
+
+\item \textbf{On-Chain Programs.} The Solana programs, written in Rust, that
+hold DAIIM's authoritative state and all of its tokens. They are responsible
+for:
+\begin{itemize}
+  \item the registry of inference tasks and their parameters (minimum
+  providers, reputation tolerance, acceptance period, maximum prediction time);
+  \item provider registration and the escrow of provider stakes;
+  \item escrow of requester payments and the lifecycle of each inference
+  request (acceptance period, prediction phase, cancellation and refunds);
+  \item recording predictions, aggregating them into the final result, and
+  updating provider reputations;
+  \item distributing rewards, and slashing or burning provider stakes.
+\end{itemize}
+Because this component holds funds and blockchain transactions cannot be
+reversed, a defect here can cause direct and permanent financial loss.
+\textit{Related SRS requirements:} Inference Tasks, Provider Registration and
+Staking, Provider Acceptance and Predictions, Aggregation and Results,
+Reputation and Rewards, Penalties, Transparency.
+
+\item \textbf{Off-Chain Backend Service.} A Node.js and TypeScript service that
+performs the work that is impractical or unsafe to do on-chain. It monitors the
+on-chain programs for new inference requests and broadcasts them to the
+providers registered for the task, stores request input data and distributes it
+only to the requester and the providers that accepted the request, and deletes
+the input data once the request is completed or cancelled. It may also submit
+the transactions that move a request from one phase to the next when a deadline
+passes, since on-chain programs cannot act on their own, and it serves
+marketplace information to the Web Client. Since this service is a single
+point that the team operates, it must not be able to change results, payments,
+or reputations, which are controlled only by the on-chain programs.
+\textit{Related SRS requirements:} Inference Requests, Provider Acceptance and
+Predictions, Data Handling.
+
+\item \textbf{Off-Chain Database.} A PostgreSQL database used by the backend
+service. It temporarily holds encrypted request input data, which must not be
+stored on the blockchain, as well as task information that is too large to
+store on-chain economically (such as problem descriptions, schemas, and
+references to training data) and indexed copies of on-chain records for fast
+browsing. The on-chain records remain the source of truth for any data that
+appears in both places. \textit{Related SRS requirements:} Inference Tasks,
+Data Handling.
+
+\item \textbf{Provider Interface.} The interface, such as an API or client
+library, through which an inference provider's model receives broadcast
+requests, accepts requests, retrieves input data, and submits predictions. It
+checks that predictions conform to the task's output schema before they are
+submitted. This component ends where the provider's own model begins.
+\textit{Related SRS requirements:} Provider Acceptance and Predictions.
+
+\end{enumerate}
+
+\subsection{Components Outside the System Boundary}
+
+\begin{enumerate}
+
+\item \textbf{Solana Blockchain Network.} The public Solana network, including
+its validators and the RPC nodes used to read state and submit transactions.
+DAIIM relies on it to execute the on-chain programs, store records, and provide
+the time used for request deadlines. It may become congested, raise fees, delay
+or drop transactions, or suffer outages.
+
+\item \textbf{User Wallets.} Third-party Web3 wallets, such as browser wallet
+extensions, that hold users' private keys and sign transactions. DAIIM cannot
+recover a lost key, and cannot distinguish a compromised wallet from its
+legitimate owner.
+
+\item \textbf{Inference Providers' Models and Infrastructure.} The machine
+learning models, computing resources, and network connections of each
+provider. DAIIM receives only the predictions they produce and cannot inspect
+the models. Providers may be unavailable, inaccurate, careless, or dishonest,
+and several providers may collude.
+
+\item \textbf{Task Requesters and Their Input Data.} The people who define tasks
+and submit requests, and the sources of the input data they provide. DAIIM can
+check that inputs conform to a task's schema, but cannot verify that the data
+is correct, that task parameters are sensible, or that the data is not
+sensitive.
+
+\item \textbf{Downstream Decisions.} The decisions that task requesters and
+beneficiaries, such as emergency management agencies, make using DAIIM's
+results. DAIIM is responsible for providing accurate results and information
+about their quality, but not for how the results are used.
+
+\item \textbf{Hosting Infrastructure and Browsers.} The cloud or server
+infrastructure that hosts the backend service and database, and the web
+browsers on which the Web Client runs.
+
+\end{enumerate}
 
 \section{Critical Assumptions}
 
@@ -102,36 +210,46 @@ Which requirements will be implemented in the future?}
 
 \section{Appendix --- Generative AI Use Disclosure}
 
-\wss{ChatGPT (version 5) was used to brainstorm ideas for the template for this disclose section.}
+This section provides an overview of how generative AI tools were used in the
+making of this document.
 
 \subsection{AI Tools Used}
 
-\wss{Give the name of the AI tool(s) used and the version.}
+\begin{itemize}
+    \item Claude Opus 5.5 (Anthropic), used through Claude Code.
+\end{itemize}
 
 \subsection{How and Where Used}
 
-\wss{Explain what the tool(s) were used for.  Examples include: brainstorming,
-explaining a technical concept, reviewing the document, generating or modifying
-text, generating or modifying diagrams, identifying errors or omissions or
-inconsistencies.}
+Claude Opus 5.5 was used throughout this document to help ideate and draft its
+content. The team provided the tool with the SRS and the Development Plan, and
+used it to brainstorm the hazards, components, assumptions, and requirements
+that the document should address, and to produce first drafts of the text.
+In Section~3 (System Boundaries and Components), for example, it proposed a
+division of DAIIM into components inside and outside the system boundary,
+drafted the description of each component, and linked each component to the
+groups of functional requirements in the SRS that it is responsible for. It was
+also used to draft the text of this appendix.
 
-\wss{For each of the uses, identify which parts of the document were affected.}
-
-\wss{You do not need to report every interaction, but you should disclose the 
-uses that materially contributed to your work}
+The tool was used as an aid, not as a replacement for the team's own work.
+Team members were involved in every sentence of the document: each AI-assisted
+draft was read, discussed, and edited by the team, and ideas that did not fit
+the project were discarded or rewritten.
 
 \subsection{Verification of AI-Generated Content}
 
-\wss{\begin{itemize}
-    \item Describe how the team checked AI-generated or AI-assisted material
-    before including it in the document.
-    \item In particular, verify factual claims, technical assertions,
-    requirements, calculations, references, and other information for which an
-    AI system may produce incorrect or fabricated results.
-    \item \textbf{The team is responsible for the accuracy, completeness,
-consistency, and appropriateness of the submitted document, regardless of
-whether material was generated by a human or an AI system.}
-\end{itemize}}
+Every sentence in this document was reviewed by at least one team member
+before it was included. AI-assisted content was checked against the SRS and
+the Development Plan to confirm that it describes responsibilities and
+behaviour that the requirements actually assign to DAIIM, that it does not
+introduce requirements or design decisions the team has not agreed to, and
+that it is consistent with the technologies the Development Plan lists.
+References to SRS requirements were checked by hand. Content that is still
+undecided, such as how request phases are advanced when deadlines pass, is
+marked as preliminary and will be confirmed in the design documents. The team
+remains responsible for the accuracy, completeness, and consistency of this
+document, regardless of whether material was first drafted by a team member or
+with the help of an AI tool.
 
 \newpage{}
 
