@@ -326,7 +326,7 @@ this potential failure mode.}
 & The task requester is charged an incorrect amount
 & The task requester is charged more or less tokens than intended, causing direct financial losses for the task requester or task participants.
 & Incorrect financial calculation
-& Validate payment calculations and test the on-chain financial instructions against expected amounts. Before submitting a stake transaction, simulate it using available tools and verify that the expected balance changes match the intended return or burn. Submit only if they match.\\[1em]
+& Validate payment calculations and test the on-chain financial instructions against expected amounts. Before submitting a stake transaction, simulate it using available tools and verify that the expected balance changes match the actual change.\\[1em]
 
 & H3.2
 & Provider rewards are calculated or distributed incorrectly
@@ -339,6 +339,25 @@ this potential failure mode.}
 & Providers may lose their stake incorrectly or retain tokens that should have been burned.
 & Incorrect handling of voluntary unregistration or forced removal of inference providers
 & Validate stake return and burn instructions with tests for each removal scenario. \\
+
+\multirow[t]{4}{=}{The final inference result is not reasonably close to the ground truth.}
+& H4.1
+& The aggregation algorithm or reward incentives fail to favor accurate predictions
+& \multirow[t]{4}{=}{Users receive an inaccurate final inference result and may make decisions based on incorrect information. Inaccurate results may also undermine trust in the marketplace and its economic sustainability.}
+& The aggregation method handles provider disagreement or outlying predictions poorly, or token rewards and penalties do not align provider incentives with prediction accuracy
+& Evaluate aggregation on tasks with known ground truth and varied provider prediction quality (see POC plan). Compare the simulated net rewards of honest providers producing low-error predictions with malicious providers. \\[1em]
+
+& H4.2
+& Malicious or low-quality providers significantly influence the aggregated result
+&
+& The aggregation and reputation mechanisms do not sufficiently reduce the influence of inaccurate or dishonest predictions
+& Simulate different proportions of honest and malicious providers. Compare aggregated results against known ground truth and report the observed error. Use the results to identify and communicate the provider composition thresholds under which the system is expected to meet its accuracy criteria. \\[1em]
+
+& H4.3
+& Colluding providers submit similar inaccurate predictions to manipulate the aggregation
+&
+& A coordinated group constitutes a large enough portion of the network to skew aggregation, reputation scores, or rewards, particularly when ground truth is unavailable
+& Simulate colluding groups of different sizes and measure their effect on result accuracy, reputation, and rewards. Document the provider proportions at which collusion can materially influence results. \\[1em]
 
 \rule{0pt}{2.5em} & & & & & \\
 \rule{0pt}{2.5em} & & & & & \\
@@ -418,16 +437,50 @@ with the help of an AI tool.
 \input{../Reflection.text}
 
 \begin{enumerate}
-    \item What went well while writing this deliverable? 
+    \item What went well while writing this deliverable?
+    One thing that went well during this deliverable was
+    the concretization of the project that came out of defining functional requirements.
+    Up until this point, the problem statement, goals and development plan gave us a good definition
+    of the scope and the reason for the project, but there have been several looming questions about
+    what actions the system will perform. I think we were able to successfully define the core functional requirements
+    for the system, at a good level of abstraction. Our requirements are specific enough to say a lot about what the
+    system is responsible for, while not proposing possible designs. This process allowed us to answer a lot of the questions
+    we had discovered during earlier deliverables. Although these requirements are likely to evolve
+    as the project continues (especially during the POC), this felt like a significant milestone and marker of progress.
     \item What pain points did you experience during this deliverable, and how
     did you resolve them?
+    A pain point we experienced for this deliverable is the organizational overhead that arose because of the volume
+    of written content required. Because the SRS document and Hazard Analysis are large documents, it was often not
+    straightforward to allocate sections for parallel development, review each other's work, and keep track of the work. We addressed these problems by assigning responsibility for each section, providing constructive feedback in GitHub pull requests, and
+    reviewing the integrated documents together before final submission. This made it easier to work in parallel while catching gaps, overlap, and
+    inconsistencies during review. It also made it a lot easier for each member to keep track of the work they were responsible for. We also plan to treat the documents as evolving artifacts, revisiting and refining earlier sections
+    when later decisions clarified the system's requirements and hazards. We also established a standard of creating a GitHub issue
+    for every major piece of work and tracking its progress on the Kanban board.
     \item Which of your listed risks had your team thought of before this
     deliverable, and which did you think of while doing this deliverable? For
     the latter ones (ones you thought of while doing the Hazard Analysis), how
     did they come about?
+    We had already considered inaccurate or unreliable predictions, provider
+    unavailability, and malicious participation in our dev plan (POC plan).
+    These are the main risks that the POC aims to prove are avoidable.
+    The Hazard Analysis brought more risks into focus relating to the software environment,
+    including failed or expired transactions,
+    private-key exposure through software or dependencies, and incorrect reward
+    or stake handling. These emerged after defining the main functional requirements
+    and considering how each responsibility could fail.
     \item Other than the risk of physical harm (some projects may not have any
     appreciable risks of this form), list at least 2 other types of risk in
     software products. Why are they important to consider?
+    We talked about two other types of risk other than physical harm in the hazard analysis.
+    Privacy risks arise if sensitive
+    information is exposed to unauthorized parties. This can harm users and
+    undermine their trust in the system. The other types of risk are legal and financial risks.
+    Legal and financial risks can arise
+    when transactions fail, are duplicated, or charge an incorrect amount.
+    Users could lose funds or face disputes, and the project could incur
+    liability. These risks are important
+    to consider because they directly affect our stakeholders and, if we cannot
+    mitigate them, could threaten the project's success.
 \end{enumerate}
 
 \end{document}
