@@ -106,6 +106,7 @@
 October 8 & 1.0 & Aidan: Added sections 1.1 to 1.5 (Purpose, Scope, Stakeholders, Definitions and Acronyms, and Characteristics of Intended Reader)\\
 October 11 & 1.0 & Robert: Added major functional requirements\\
 October 11 & 1.0 & Aidan: Grouped functional requirements into categories and added functional requirements derived from the stakeholder requirements\\
+October 16 & 1.0 & Robert: Added data and AI reqs sections\\
 \bottomrule
 \end{tabularx}
 
@@ -652,6 +653,8 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoShow}:] When a provider that accepted an inference request has not submitted any prediction for the request by the end of the prediction phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
 
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderMinimumStakeUnregistration}:] Whenever a provider's stake for an inference task falls below MINIMUM\_PROVIDER\_STAKE, the system shall automatically unregister the provider from that task.
+
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashRepeatedOffenses}:] When a provider has been slashed for at least REPEAT\_OFFENSE\_COUNT of the last REPEAT\_OFFENSE\_WINDOW inference requests they accepted for a task, the system shall unregister the provider from the task and burn their remaining stake for the task.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderForcedUnregistration}:] The system shall automatically unregister any inference provider whose reputation score falls below the minimum reputation threshold. Upon removal, the provider's remaining staked tokens for that inference task shall be burned.
@@ -692,50 +695,80 @@ Questions / Missing reqs: \\
 - Rewards distribution and provider reputation update may be changed after POC\\
 - Need to define some of the thresholds used in reqs above: min reputation, amount to stake, min inference request payment etc.\\
 
-\plt{The requirements are given labels so that they can be referenced in other
-parts of the SRS.  The label names should be meaningful mnemonics, not numbers.}
-
 % ============================================================== 
 \section{Data Requirements}
 
-\plt{The Data Requirements section describes what information the system must manage.
-  It includes the major data entities, their attributes, and the relationships
-  between them.  It also includes a data dictionary that defines the meaning of
-  each attribute.}
-
 \subsection{Major Data Entities}
 
-\plt{What information must exist for the system to accomplish its goals?}
-
-\plt{For each entity, provide a short explanation.}
-
 \begin{itemize}
-\item User
-\item Song
-\item Session
-\item Report
+\item Model Providers: Network contributors identified by a wallet address, with a list of registered inference tasks and a reputation for each task.
+\item Inference Tasks: A task defined by its description and input and output formats, with a list of registered inference providers.
+\item Inference Requests: A consumer's request for an inference task, including associated inference task, input data, cost, information about the requester, individual provider inferences and the final aggregated inference.
+\item Token Economics: Network-wide totals describing token supply, staking, escrow, burns, and reward distributions.
+\item Network Participation Metrics: Measurements summarizing model providers' participation in inference tasks and requests across the network.
 \end{itemize}
 
 \subsection{Data Dictionary}
 
 \plt{For each entity, define all important attributes.}
 
-\begin{longtable}{p{0.20\textwidth} p{0.20\textwidth} p{0.45\textwidth}}
+\begin{longtable}{p{0.16\textwidth} p{0.22\textwidth} p{0.15\textwidth} p{0.35\textwidth}}
 \toprule
-Attribute & Type & Description\\
+Entity & Attribute & Type & Description\\
 \midrule
-user\_id & UUID & Unique identifier\\
-email & String & User email address\\
+Model Provider & Wallet address & Address & Provider's wallet\\
+ & Registered tasks & Task IDs & Tasks the provider joined\\
+ & Task reputation & Number & Reputation for a task\\
+ & Task stake & Integer & Stake for a task\\
+Inference Task & Task ID & Identifier & Unique task identifier\\
+ & Name and type & String & Task name and category\\
+ & Description & String & Problem addressed by the task\\
+ & Input schema & Json & Valid request input format\\
+ & Output schema & Json & Valid prediction format\\
+ & Minimum providers & Integer & Required participants per request\\
+ & Timing limits & Timestamp & Acceptance and prediction periods\\
+ & Reputation tolerance & Number & Threshold for reputation changes\\
+ & Minimum stake & Number & Stake required for registration\\
+Inference Request & Request ID & Identifier & Unique request identifier\\
+ & Task ID & Identifier & Requested inference task\\
+ & Requester wallet & Address & Wallet of the requester\\
+ & Input data & Json & Data submitted for inference\\
+ & Cost & Number & Offered payment\\
+ & Status & Status & Current request state\\
+ & Provider predictions & List<Output Type> & Predictions submitted for the request\\
+ & Aggregated result & Output Type & Final inference result\\
+ & Submission time & Timestamp & Request creation time\\
+Token Economics & Total minted & Number of tokens & Tokens minted across the network\\
+ & Total staked & Number of tokens & Tokens staked by providers\\
+ & Request escrow & Number of tokens & Tokens escrowed for inference requests\\
+ & Total burned & Number of tokens & Tokens permanently removed from supply\\
+ & Rewards distributed & Number of tokens & Tokens paid to providers as rewards\\
 \bottomrule
 \caption{Data Dictionary} \label{tab:DataDictionary}
 \end{longtable}
 
 \subsection{Privacy and Data Retention}
 
-\plt{Discuss storage, retention, deletion, privacy controls,
- consent, encryption, and compliance requirements.}
+DAIIM will use a semi-private approach for inference request input data. Inputs
+will be encrypted and made accessible only to the requester and providers that
+accept the request. By submitting a request, the requester consents to the
+input being shared with those providers and should not submit data they
+consider fully private or confidential. Input data will be stored only as long
+as needed to fulfill the request and will be deleted from storage controlled by
+the system once the request is completed or cancelled, following established
+data-minimization and retention practices. The system will not store readable
+input data on the blockchain. DAIIM's handling of personal data must follow
+applicable privacy and data-protection laws for its deployment and users; the
+specific obligations will depend on the relevant jurisdictions.
 
-TODO
+Other data, including wallet addresses, provider reputations, task definitions,
+request status and results, and token-economics records, will be collected and
+retained only as needed to operate the marketplace, provide its features, and
+meet applicable legal obligations. Information needed for public marketplace
+and blockchain functions may be visible to other users; users should be
+informed that blockchain records may be permanent and cannot necessarily be
+deleted. Data stored off-chain will be protected against unauthorized access
+and encrypted in transit and at rest where appropriate.
 
 % ============================================================== 
 \section{Non-Functional Requirements}
@@ -807,31 +840,25 @@ be covered in the Verification and Validation document.}
 % ============================================================== 
 \section{AI and Machine Learning Requirements}
 
-\plt{Refer to
-\href{https://gitlab.cas.mcmaster.ca/courses/capstone/-/blob/main/Lectures/Lxx_DrMosserGuestLecture/2026_09_Capstone.pdf?ref_type=heads}{Dr.
-Mosser's guest lecture} on AI requirements.}
-
-\plt{Include only when applicable.}
-
-\subsection{Model Inputs}
-
-TODO
-
-\subsection{Model Outputs}
-
-TODO
+This section describes how DAIIM supports machine-learning inference, evaluates
+prediction quality, and communicates the limitations of its results. The
+project scope focuses on regression tasks: each task defines its input and
+output schemas, providers submit numerical predictions, and the system combines
+those predictions into a reputation-weighted result.
 
 \subsection{Evaluation Metrics}
 
-\plt{Accuracy, Precision, Recall, F1, BLEU, WER, etc.}
-
-TODO
+Evaluation will focus on accuracy score, as this is appropriate for regression tasks.
+Ground truth may not exist or may become available only later; when it does
+become available, the corresponding accuracy metrics will be provided and
+displayed in the system.
 
 \subsection{Known Limitations}
 
-\plt{Explicitly document expected failure modes.}
-
-TODO
+The system aggregates provider predictions but does not independently verify
+that the final result is correct. Decentralization, provider reputation, and
+staking are intended to encourage reliable predictions, but the system cannot
+guarantee that a result is accurate or suitable for its intended use.
 
 % ============================================================== 
 \section{Requirements Traceability Matrices}
@@ -987,6 +1014,7 @@ Their values are defined in this section for easy maintenance.}
 
 \begin{itemize}
 \item USABILITY\_COMPLETION\_RATE: the minimum fraction of usability test participants who must complete each task without assistance (\nfrref{NFR_Usability}). To be determined.
+\item MINIMUM\_PROVIDER\_STAKE: the minimum stake a provider must maintain for an inference task to remain registered for that task (\rref{FR_ProviderMinimumStakeUnregistration}). To be determined.
 \item MAX\_REPUTATION\_PENALTY: the maximum reputation decrease a provider can receive for a single inference request (\rref{FR_ReputationPenaltyCap}). To be determined.
 \item SLASH\_FRACTION: the fraction of a provider's stake slashed for an invalid prediction or for not submitting a prediction (\rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}). To be determined.
 \item REPEAT\_OFFENSE\_COUNT: the number of slashing offences that causes a provider to be unregistered (\rref{FR_SlashRepeatedOffenses}). To be determined.
