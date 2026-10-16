@@ -290,112 +290,107 @@ problem, the vision, and the interfaces between the system and its environment.
 This section also describes user characteristics and lists the system
 constraints.
 
-\plt{The purpose of this section is to provide general information about the
-  system so that the specific requirements in the later sections will be easier to
-  understand. The general system description section is designed to be
-  changeable independent of changes to the functional requirements documented in
-  the specific system description. The general system description provides a
-  context for a family of related models.  The general description can stay the
-  same, while specific details are changed between family members.}
-
 \subsection{Problem Statement}
 
-\plt{Current situation, problem, impact, desired improvement.  You will likely borrow some text from your problem description document.}
+DAIIM aims to address the limitations of relying on centralized services to provide AI inference. Centralized inference services can create single points of failure and may limit transparency into how inference results are obtained. Users may also have limited ability to independently evaluate the reliability of the results they receive.
+These limitations can reduce trust in AI inference services and create concerns about service availability, transparency, and the potential for biased or manipulated outputs. DAIIM seeks to provide a decentralized marketplace in which multiple inference providers contribute predictions for a requested task. The system combines these predictions to produce an aggregated result and uses provider performance to inform reputation and reward mechanisms.
+The desired improvement is to provide a more transparent and resilient approach to AI inference, where users can request predictions without relying entirely on a single provider. By evaluating provider predictions and incorporating incentives for reliable participation, DAIIM aims to encourage accurate results and support accountability among participating providers.
 
-TODO
 
 \subsection{Product Vision}
 
-\plt{A clear and concise statement of the product's purpose and goals.}
 
-\plt{The goal statements are functional and nonfunctional objectives that system
-  under consideration should achieve. Goals provide criteria for sufficient
-  completeness of a requirements specification and for requirements pertinence.
-  Goals will be refined by requirements.  The goals are written abstractly, with
-  a minimal amount of technical language.  They should be understandable by
-  non-domain experts.}
+DAIIM aims to make AI inference more transparent, accessible, and resilient by enabling multiple independent providers to contribute predictions through a decentralized marketplace. The system seeks to produce reliable aggregated results, encourage providers to deliver accurate predictions through reputation and reward mechanisms, and allow users to access AI inference without depending entirely on a single provider.
+The system's goals are to:
+\begin{itemize}
+\item Provide a marketplace where users can submit AI inference requests and receive aggregated predictions.
+\item Improve the reliability of inference results by evaluating and combining predictions from multiple providers.
+\item Encourage accurate provider participation through performance-based reputation and reward mechanisms.
+\item Improve transparency by making aggregated results and relevant provider quality information available to users.
+\item Support a decentralized approach to AI inference that reduces dependence on a single service provider.
+\item Provide an accessible interface for users to interact with the marketplace.
+\end{itemize}
 
-\plt{You will likely borrow from your goal statements in your problem
-description document.}
 
-TODO
   
 \subsection{System Context}
 
-\plt{Include users, external systems, APIs, databases, and third-party services.}
+\subsubsection{System Context Diagram}
 
-\plt{Your system context will include a figure that shows the abstract view of
-  the software.  In some cases the diagram will show other external
-  entities, besides the user.  For instance, when the software product is a
-  library, the user will be another software program, not an actual end user.
-  If there are system constraints that the software must work with external
-  libraries, these libraries can also be shown on the System Context diagram.
-  They should only be named with a specific library name if this is required by
-  the system constraint.}
-
-\begin{figure}[h!]
+\begin{figure}[H]
 \begin{center}
- \includegraphics[width=0.6\textwidth]{SystemContextFigure}
+ \includegraphics[width=0.6\textwidth]{DAIIM-System-Context-Diagram.png}
 \caption{System Context}
 \label{Fig_SystemContext} 
 \end{center}
 \end{figure}
 
-\plt{For each of the entities in the system context diagram its responsibilities
-  should be listed.  Whenever possible the system should check for data quality,
-  but for some cases the user will need to assume that responsibility.  The list
-  of responsibilities should be about the inputs and outputs only, and they
-  should be abstract.  Details should not be presented here.  However, the
-  information should not be so abstract as to just say ``inputs'' and
-  ``outputs''.  A summarizing phrase can be used to characterize the inputs.
-  For instance, saying ``material properties'' provides some information, but it
-  stays away from the detail of listing every required properties.}
-
+\subsubsection{Responsibilities}
 \begin{itemize}
-\item User Responsibilities:
+\item \textbf{Task Requester Responsibilities:}
 \begin{itemize}
-\item 
+\item Submit inference requests with task definitions and the required input data.
+\item Provide inputs in a format supported by the system.
+\item Receive aggregated inference results and relevant quality information.
 \end{itemize}
-\item \progname{} Responsibilities:
+\item \textbf{Inference Provider Responsibilities:}
 \begin{itemize}
-\item Detect data type mismatch, such as a string of characters instead of a
-  floating point number
-\item 
-\end{itemize}
+    \item Receive inference tasks assigned or made available by the marketplace.
+    \item Execute the requested inference and return predictions in the required format.
+    \item Provide predictions that can be evaluated by the system's aggregation and reputation mechanisms.
 \end{itemize}
 
-\plt{Identify in what context the software will typically be used.  Is it for
-exploration? education? engineering work? scientific work?. Identify whether it
-will be used for mission-critical or safety-critical applications.} 
+\item \textbf{Blockchain Network Responsibilities:}
+\begin{itemize}
+    \item Process supported on-chain marketplace transactions.
+    \item Maintain records of transactions and other information assigned to the blockchain.
+    \item Provide transaction outcomes to the system when required.
+\end{itemize}
 
-\plt{This additional context information is needed to determine how much effort
-should be devoted to the rationale section.  If the application is
-safety-critical, the bar is higher.  This is currently less structured, but
-analogous to, the idea to the Automotive Safety Integrity Levels (ASILs) that
-McSCert uses in their automotive hazard analyses.}
+\item \textbf{\progname{} Responsibilities:}
+\begin{itemize}
+    \item Validate inference requests and detect invalid or unsupported input data.
+    \item Coordinate inference requests with participating providers.
+    \item Aggregate provider predictions into a result for the requester.
+    \item Evaluate provider performance and maintain relevant reputation information.
+    \item Apply the marketplace's reward and penalty mechanisms according to provider performance and system rules.
+    \item Present aggregated results and relevant quality information to users.
+    \item Handle failed or incomplete requests without presenting them as successful results.
+\end{itemize}
+
+\end{itemize}
+
+
+\subsubsection{Operating Context and Safety Significance}
+DAIIM is intended to be used as a web-based marketplace for requesting and evaluating AI inference results. Users interact with the system through a web interface, while inference providers perform the requested computations and return predictions for aggregation. The system may interact with a blockchain network for supported marketplace transactions and records.
+The initial proof of concept focuses on regression-based inference and the evaluation of aggregation accuracy, provider reputation, and reward mechanisms. DAIIM is intended to support general AI inference use cases rather than directly control physical systems or make safety-critical decisions. Incorrect predictions, provider collusion, failed transactions, and inaccurate reputation or reward calculations may nevertheless reduce the reliability and trustworthiness of the marketplace. These risks should be considered when evaluating the system.
+
 
 \subsection{User Characteristics} \label{SecUserCharacteristics}
+DAIIM is intended to support users with varying levels of technical expertise.
+\begin{itemize}
+\item \textbf{Task Requesters:} Task requesters should have a basic understanding of the inference task they wish to perform and be able to provide the required input data. They should be able to use a modern web browser and interpret the inference results presented by the system. They are not expected to understand the internal aggregation, reputation, or reward algorithms.
+\item \textbf{Inference Providers:} Inference providers should have sufficient technical knowledge and computational resources to execute the inference tasks they accept. They should understand the requirements for submitting predictions in a format supported by the marketplace.
 
-\plt{This section summarizes the knowledge/skills expected of the user.
-  Measuring usability, which is often a required non-function requirement,
-  requires knowledge of a typical user.  As mentioned above, the user is a
-  different role from the ``intended reader,'' as given in
-  Section~\ref{sec_IntendedReader}.  As in Section~\ref{sec_IntendedReader}, the
-  user characteristics should be specific an unambiguous.  For instance, ``The
-  end user of \progname{} should have an understanding of undergraduate Level 1
-  Calculus and Physics.''}
+\item \textbf{System Administrators or Developers:} Individuals responsible for deploying, configuring, or maintaining the system should have sufficient technical knowledge of its software components and any associated blockchain infrastructure.
+
+\end{itemize}
+The user interface should minimize the technical knowledge required to submit requests and interpret results, while provider participation may require greater technical expertise.
+
+
 
 \subsection{System Constraints}
 
-\plt{System constraints differ from other type of requirements because they
-  limit the developers' options in the system design and they identify how the
-  eventual system must fit into the world. This is the only place in the SRS
-  where design decisions can be specified.  That is, the quality requirement for
-  abstraction is relaxed here.  However, system constraints should only be
-  included if they are truly required.}
+\begin{itemize}
+\item \textbf{Web-based access:} The user-facing application must be accessible through a modern web browser and require an internet connection to communicate with the marketplace.
+\item \textbf{Inference execution:} The system must support the inference model or models selected for the project. The initial proof of concept focuses on regression-based inference.
 
-\plt{This is where you would mention platform constrains, and licensing
-restrictions.}
+\item \textbf{Blockchain integration:} Any on-chain marketplace operations must be compatible with the blockchain network selected for the project. The system must account for the possibility of transaction delays or failures.
+
+\item \textbf{Input and output compatibility:} Inference requests and provider predictions must use supported data formats so that the system can validate inputs and process predictions consistently.
+
+\end{itemize}
+
 
 % ============================================================== 
 \section{Stakeholder Requirements}
@@ -947,21 +942,21 @@ units and scale of the task's output.
 \section{Likely Changes}    
 
 \noindent \begin{itemize}
-
-\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_meaningfulLabel}:] \plt{Give
-    the likely changes, with traceability to the entity that is likely to change.}
-
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_inferenceModels}:] The set of supported AI inference models may expand beyond the regression model used in the initial proof of concept. The inference processing and aggregation components may need to be adapted to support additional model types.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_providerParticipation}:] The number and behaviour of participating inference providers may change over time as providers join or leave the marketplace. The system's aggregation, reputation, and reward mechanisms may need to accommodate different levels of provider participation.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_aggregation}:] The prediction aggregation, reputation, and reward mechanisms may be refined as the proof of concept is evaluated. These changes may be required to improve prediction reliability and address issues such as inaccurate predictions, malicious providers, or collusion.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_userRequirements}:] User requirements for the marketplace interface and the presentation of inference results may evolve as the system is tested. The interface may need to be updated to improve usability and make prediction quality information easier to understand.
 \end{itemize}
+
 
 \section{Unlikely Changes}    
 
 \noindent \begin{itemize}
-
-\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_meaningfulLabel}:] \plt{Give
-    the unlikely changes.  The design can assume that the changes listed will
-    not occur.}
-
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_corePurpose}:] The fundamental purpose of DAIIM is unlikely to change. The system will continue to provide a marketplace for requesting AI inference and obtaining aggregated predictions from participating providers.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_softwarePlatform}:] The system is unlikely to move away from its intended web-based form during the scope of this project. Users will continue to access the marketplace through a modern web browser with an internet connection.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_softwareOnly}:] The project is unlikely to introduce a physical hardware component. DAIIM will remain a software-based system that coordinates inference requests, provider predictions, and marketplace operations.
 \end{itemize}
+
 
 \newpage{}
 
