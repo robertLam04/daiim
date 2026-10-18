@@ -489,32 +489,534 @@ This section lists the stakeholder requirements for DAIIM, grouped by the stakeh
 \plt{Typically 8-15 substantial use cases.}
 
 \refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Example Use Case}
+\subsection{\ucref{UC_Label1}: Sign in to the web application.}
 
 \textbf{Primary Actor}
-
-TODO
+User (requester or provider)
 
 \textbf{Preconditions}
 \begin{itemize}
-\item TODO
+\item User has an account that is supported by MetaMask authentication (Google, Twitter, email, SMS, etc.).
 \end{itemize}
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item TODO
-\item TODO
-\item TODO
+\item User opens the DAIIM web application in a browser.
+\item User clicks the "Sign in" button.
+\item System displays a list of supported sign-in methods.
+\item User selects their preferred sign-in method (ie. Google, Twitter, email, SMS, existing supported wallet, etc.).
+\item User signs in with MetaMask Embedded Wallet infrastructure.
+\item System retrieves the JSON Web Token (JWT) and verifies the public key linked to the user's wallet.
+\item System authenticates the user and displays their profile linked with their wallet.
+
 \end{enumerate}
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item TODO
+\item 4a. User does not have a supported account: User creates a supported account.
+\item 5a. User cancels the sign-in process: System cancels sign-in and redirects user to the public page.
+\item 5b. User fails to input correct credentials: System displays an error message and prompts the user to try signing in again or choose another account.
+\item 6a. System fails to verify the JWT or public key: System displays an error message and prompts the user to try signing in again.
 \end{itemize}
 
 \textbf{Postconditions}
 \begin{itemize}
-\item TODO
+\item The requester is signed in to the DAIIM web application and can access their profile and other features of the application.
+\end{itemize}
+
+\subsection{\ucref{UC_Label1}: Sign out of the web application.}
+
+\textbf{Primary Actor}
+User (requester or provider)
+
+\textbf{Preconditions}
+\begin{itemize}
+\item User is signed in to the DAIIM web application.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item User clicks the "Sign out" button.
+\item System checks for pending transcations or actions that need to be completed before signing out.
+\item System confirms that there are no pending transactions or actions.
+\item System ends the user's session.
+\item System logs the user out and displays the public page.
+
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 3a. There are pending transactions or actions: System displays a message to the user indicating that they cannot sign out until the pending transactions or actions are completed.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user is signed out of the DAIIM web application and returns to the public page where they cannot access their profile or other features of the application.
+\end{itemize}
+
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Add funds to Web3 Wallet}
+
+\textbf{Primary Actor}
+User (provider or requester)
+
+\textbf{Preconditions}
+\begin{itemize}
+\item User (provider or requester) has a supported Web3 wallet installed and authorized.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item User navigates to the "Add Funds" section of the DAIIM web application.
+\item User interacts with embedded wallet infrastructure to initiate the process of adding funds to their Web3 wallet.
+\item System displays the available funding options (e.g., credit/debit card, bank transfer, cryptocurrency transfer).
+\item User selects their preferred funding option and provides the necessary information (e.g., card details, bank account information, or cryptocurrency wallet address).
+\item System processes the funding request and verifies the transaction.
+\item System updates the user's Web3 wallet balance and system displays a confirmation message indicating that the funds have been successfully added.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 4a. User cancels the funding process: System cancels the funding process and returns the user to the "Add Funds" section.
+\item 5a. System fails to verify the transaction: System displays an error message and prompts the user to try adding funds again or choose another funding option.
+\item 5b. User provides incorrect or incomplete information: System displays an error message and prompts the user to correct the information and try again.
+\item 5c. User's funding method is declined or insufficient funds: System displays an error message and prompts the user to try a different funding method or check their account balance.
+
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's Web3 wallet balance is updated.
+\item The transaction is logged on the blockchain.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Browse marketplace information}
+
+\textbf{Primary Actor}
+User (requester or provider)
+
+\textbf{Preconditions}
+\begin{itemize}
+\item User has opened the DAIIM web application and is on the public page.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item User navigates to the "Browse Marketplace" section of the DAIIM web application.
+\item System displays a list of available items (providers, reputations, services, etc.) in the marketplace.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item User has successfully browsed the marketplace information.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Create an inference task}
+
+\textbf{Primary Actor}
+Authenticated user
+
+\textbf{Preconditions}
+\begin{itemize}
+\item User is authenticated and logged in to the DAIIM web application.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item User navigates to the "Create Task" section of the DAIIM web application (FR4).
+\item User fills out the task creation form with the required information (FR5).
+\item System validates the information provided.
+\item System saves the new task and displays a confirmation message.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 3a. System detects missing or invalid information: System displays an error message and prompts the user to correct the information before proceeding.
+\item 4a. User cancels the task creation process: System discards the entered information and returns the user to the previous page.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The new inference task is created and stored in the system.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_ProviderRegistration}
+\subsection{\ucref{UC_ProviderRegistration}: Register as an inference provider for a task}
+
+\textbf{Primary Actor}
+Provider
+
+\textbf{Preconditions}
+\begin{itemize}
+\item Provider has an authenticated wallet and a model that can perform inference for a task.
+\item The task exists.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item Provider fills out the provider template and connects via the SDK.
+\item System verifies that the provider is properly connected.
+\item System verifies that the provider is not already registered for the task.
+\item System verifies that the provider's wallet holds at least the task's minimum stake.
+\item System requests that the provider consent to the staking and reputation conditions, the public display of the provider's name and reputation, the privacy agreement, and informs the provider that on-chain data is permanent.
+\item Provider consents.
+\item System requests the stake from the provider's wallet, explaining the action and the amount required.
+\item Provider confirms and signs the stake transaction.
+\item System verifies that the stake meets the task's minimum, locks it in escrow, assigns the base reputation for the task, and adds the provider to the list of registered providers for the task.
+\item System displays the transaction status until it is confirmed and returns the transaction identifier to the provider.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 1a. The provider template is incomplete or invalid: the SDK rejects it and names the missing or invalid field.
+\item 2a. The provider is not connected, the session has expired, or the wallet is on the wrong cluster: the system displays an error with the cause and a suggested fix, and no funds move.
+\item 3a. The provider is already registered for the task: the system displays an error and the provider's current registration, and the use case ends.
+\item 3b. The provider was registered before and unregistered: registration proceeds, and the reputation starts at the base reputation regardless of the earlier score.
+\item 4a. The wallet balance is below the minimum stake, or there is not enough SOL for the network fee: the system displays an error showing the shortfall for each, and the use case ends.
+\item 6a. The provider does not consent: the system explains that registration requires consent, nothing is signed or recorded, and the use case ends. The provider may start again.
+\item 8a. The provider declines to sign the stake transaction: no stake is locked, the provider is not registered, and the use case ends. The provider may start again.
+\item 9a. The system detects that the stake does not meet the task's minimum: the transaction is rejected, and no stake is locked.
+\item 9b. The network is unavailable or the transaction fails: no stake is locked and the provider is not registered. The system displays an error stating that no funds moved, and a retry does not create a duplicate registration.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The task's minimum stake is locked in escrow.
+\item The provider is registered for the task with the base reputation, appears in the task's list of registered providers, and can accept inference requests and submit predictions for it.
+\item The registration, stake, and provider's consent are recorded and the provider has the transaction identifier.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Submit an inference request for a task}
+
+\textbf{Primary Actor}
+Requester
+
+\textbf{Preconditions}
+\begin{itemize}
+\item Requester is logged in and authenticated.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item Requester navigates to the "Submit Inference Request" section of the DAIIM web application.
+\item Requester selects the desired task from the list of available tasks.
+\item Requester provides the required input data for the inference request.
+\item System validates the input data and checks for any errors or inconsistencies.
+\item System displays token cost and estimated time for the inference request.
+\item Requester confirms the submission of the inference request and authorizes the payment.
+\item System processes the payment, deducts the appropriate amount of tokens from the requester's wallet, and holds the funds in escrow.
+\item System processes the inference request and stores data in a secure location.
+\item System sends request to the registered inference providers for the selected task.
+\item System displays updated status of the inference request to the requester.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 2a. Desired task is not available: Requester selects option to create a new inference task.
+\item 4a. Input data is invalid or incomplete: System displays an error message and prompts the requester to correct the input data before proceeding.
+\item 6a. Requester cancels the submission: System cancels the inference request and returns the requester to the previous page.
+\item 7a. Payment fails or is declined: System displays an error message and prompts the requester to try again or choose another payment method.
+\item 8a. System fails to process the inference request: System displays an error message and prompts the requester to try again later or contact support.
+\item 8b. System fails to store data in a secure location: System displays an error message and prompts the requester to try again later or contact support, and removes input data from records.
+\item 9a. Insufficient registered inference providers accept the request: System displays a message indicating that the inference request cannot be processed at this time and suggests trying again later or selecting a different task, funds are returned to the requester.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The inference request is submitted and requester awaits result.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Accept an inference request for a task}
+
+\textbf{Primary Actor}
+Provider
+
+\textbf{Preconditions}
+\begin{itemize}
+\item Provider is logged in, connected, and authenticated for the task.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item System broadcasts the inference request to all registered providers for the task, indicating the request, expected payout, stake amount, and deadline.
+\item Provider receives the inference request and reviews the details.
+\item Provider accepts the inference request.
+\item System verifies that the provider has sufficient stake and reputation to accept the request.
+\item System prompts provider to confirm transaction and stake amount.
+\item Provider confirms and signs the transaction.
+\item System locks the stake in escrow and records the provider's acceptance of the inference request.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 2a. Provider declines the inference request: System records the provider's decision and does not lock any stake.
+\item 4a. Provider does not have sufficient stake or reputation: System sends an error message and prompts the provider to increase their stake or improve their reputation before accepting the request. Provider is not registered as an accepted provider for the request.
+\item 5a. Provider cancels the acceptance process: System cancels the acceptance.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The provider is registered as an accepted provider for the inference request, and the stake is locked in escrow.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Process and submit a prediction for an inference request}
+
+\textbf{Primary Actor}
+Provider
+
+\textbf{Preconditions}
+\begin{itemize}
+\item Provider is logged in, connected, and authenticated for the task.
+\item Provider has been registered as an accepted provider for the inference request.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item System provides the public key for the input data to the provider.
+\item Provider retrieves the input data from the decrypted secure location.
+\item Provider processes the input data using their model to generate a prediction.
+\item Provider submits the prediction to the system for aggregation.
+\item System verifies the submission and records the prediction for the inference request.
+\item System sends confirmation to the provider that the prediction has been successfully submitted.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 2a. Provider fails to decrypt the location or retrieve the input data due to issues with the system: Provider reports the issue to the system. System retries the operation or provides an alternative solution.
+\item 3a. Provider's model fails to generate a prediction due to errors or limitations: Provider has nothing to submit to the system. Provider tokens held in escrow and slashed and reputation is reduced.
+\item 4a. Provider fails to submit the prediction before the deadline: System marks the provider as non-responsive and informs them of the consequences. Provider tokens held in escrow and slashed and reputation is reduced.
+\item 5a. Provider submits an invalid or incomplete prediction: System rejects the submission and informs the provider of rejection and consequences. Provider tokens held in escrow and slashed and reputation is reduced.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The provider's prediction is submitted and recorded for the inference request.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Aggregate predictions and produce a final inference result}
+
+\textbf{Primary Actor}
+System
+
+\textbf{Preconditions}
+\begin{itemize}
+\item All required predictions have been submitted and verified.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item System retrieves all submitted predictions for the inference request.
+\item System calculates the final inference result based on the submitted predictions using a predefined aggregation algorithm for the task, using reputation scores of the providers to weight the predictions.
+\item System stores the final inference result in a secure location.
+\item System displays the final inference result in the requester's dashboard, along with the accuracy information and number of provider results used.
+\item System removes the input data and predictions from the secure location to maintain privacy and data retention policies after a set retention time has elapsed.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 1a. System fails to retrieve all submitted predictions due to issues with the storage or network: System retries the operation or provides an alternative solution.
+\item 2a. System encounters an error during the aggregation process:  **still need to come to a conclusion on how to handle**.
+\item 3a. System detects inconsistencies or anomalies in the submitted predictions: System flags the prvoiders who submitted the inconsistent predictions for further review and potential penalties/reputation reduction.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item Final result is successfully calculated and stored, and the result is displayed to the requester.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Update and maintain provider reputation}
+
+\textbf{Primary Actor}
+System
+
+\textbf{Preconditions}
+\begin{itemize}
+\item All required predictions have been submitted and verified, and the final inference result has been calculated.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item System retrieves the submitted predictions from the accepted providers and the final inference result for the inference request.
+\item System calculates the accuracy of each provider's prediction by comparing it to the final inference result.
+\item System updates each provider's reputation score based on the accuracy of their prediction, using a predefined reputation update algorithm for the task.
+\item System stores the updated reputation scores in the provider's profile.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 1a. System fails to retrieve the submitted prediction due to the prediction being rejected or not submitted: System marks the provider as non-responsive and informs them of the consequences. Provider tokens held in escrow and slashed and reputation is reduced.
+\item 2a. System encounters an error during the accuracy calculation or reputation update process: System retries the operation.
+\item 2b. System detects inconsistencies or anomalies in the submitted predictions: System flags the providers who submitted the inconsistent predictions for further review and potential penalties/reputation reduction.
+\item 3a. System calculates a reputation score that is below the minimum threshold for the task: System informs the provider that their reputation score has fallen below the minimum threshold and the consequences, unregisters them from the task, and burns their staked tokens.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item Provider reputations are updated based on the accuracy of their predictions, and any providers with reputations below the minimum threshold are unregistered from the task.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Distribute rewards to inference providers}
+
+\textbf{Primary Actor}
+System
+
+\textbf{Preconditions}
+\begin{itemize}
+\item All required predictions have been submitted and verified, the final inference result has been calculated, and the provider reputations have been updated.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item System retrieves the reputation scores of the accepted providers who are eligible for rewards and the total payment amount for the inference request.
+\item System calculates the reward distribution for each eligible provider based on their reputation score and the total payment amount, using a predefined reward distribution algorithm for the task.
+\item System initiates the transfer of rewards to each eligible provider's wallet, deducting the appropriate amount of tokens from the escrowed funds.
+\item System verifies the successful transfer of rewards to each provider's wallet and updates their balance accordingly.
+\item System sends a confirmation message to each provider, indicating the amount of tokens received and their updated balance.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 2a. Calculated reward distribution results in a provider receiving a negative or zero reward: System sets the provider's reward to zero and informs them of the outcome.
+\item 3a. Provider wallet is no longer valid or accessible: System attempts to contact the provider to resolve the issue. If unsuccessful, the system holds the reward in escrow until the provider can be reached or a resolution is found.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item All eligible providers have received their rewards or had their tokens slashed, and their balances have been updated accordingly.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Cancel an inference request with too few participating providers}
+
+\textbf{Primary Actor}
+System
+
+\textbf{Preconditions}
+\begin{itemize}
+\item Too few providers have accepted the inference request before the deadline.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The system identifies that too few providers have accepted the inference request.
+\item The system cancels the inference request.
+\item The system notifies the requester and accepted providers about the cancellation.
+\item The system refunds the requester's payment and releases any locked stakes for the accepted providers.
+\item The system confirms the refund of tokens and updated balances for each affected user.
+\item The system updates the status of the inference request to "Cancelled" in the system records and removes associated data from storage.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item Request is cancelled, tokens are released from escrow and refunded, and affected users are updated.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Unregister as an inference provider for a task}
+
+\textbf{Primary Actor}
+Provider
+
+\textbf{Preconditions}
+\begin{itemize}
+\item Provider is logged in, connected, and registered for a task.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item Provider requests to unregister from a task.
+\item System verifies that the provider is registered for the task and has no pending inference requests.
+\item System prompts the provider to confirm the unregistration and informs them of any consequences, such as loss of reputation or forfeiture of staked tokens.
+\item Provider confirms the unregistration.
+\item System removes the provider from the list of registered providers for the task and updates their profile accordingly.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 1a. Provider is not registered for the task they have selected: System sends an error message indicating that the provider is not registered for the task and cannot unregister.
+\item 2a. Provider has pending inference requests for the task: System sends an error message indicating that the provider cannot unregister until all pending requests are completed or withdrawn.
+\item 4a. Provider does not confirm the unregistration: System cancels the unregistration process and maintains the provider's registration for the task.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item Provider is unregistered from the task, and their profile is updated accordingly. Any staked tokens are released.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: View transaction history and current balances}
+
+\textbf{Primary Actor}
+User (requester or provider)
+
+\textbf{Preconditions}
+\begin{itemize}
+\item User is logged in and authenticated.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item User navigates to the "Transaction History" section of the DAIIM web application.
+\item System retrieves the user's transaction history and current balances from the blockchain.
+\item System displays the user's transaction history and current balances associated with their wallet in a user-friendly format.
+\item User reviews the transaction history and current balances, including details such as transaction IDs, timestamps, amounts, and status.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 2a. System fails to retrieve trasnaction history due to lack of history: System displays a message indicating that there is no transaction history available for the user.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item User has successfully viewed their transaction history and current balances.
+\end{itemize}
+
+\refstepcounter{ucnum} \label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Read documentation and learn how to use the system}
+
+\textbf{Primary Actor}
+User (authenticated or unauthenticated)
+
+\textbf{Preconditions}
+\begin{itemize}
+\item User has the DAIIM browser application open.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item User navigates to the "Documentation" section of the DAIIM web application.
+\item System displays the available documentation, including user guides, tutorials, and FAQs.
+\item User selects the desired documentation to read and follows the instructions provided.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item 2a. System fails to display documentation due to server error: System displays an error message indicating that the documentation could not be retrieved and to try again later.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item User has successfully read the documentation and learned how to use the system.
 \end{itemize}
 
 % ============================================================== 
@@ -767,6 +1269,91 @@ be covered in the Verification and Validation document.}
   correctness, you can characterize how far away from the correct (true)
   solution you are allowed to be.  This is discussed under accuracy.}
 
+
+\subsection{Accuracy}
+
+\noindent \begin{itemize}
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ReputationWeightedAggregate}:] The system shall use an aggregate algorithm with weighting based on the reputation of providers, such that historically reliable providers have greater influence on the aggregate result. Simulation incorporating different types of providers (honest, malicous, etc.) shall be used to verify the accuracy of the aggregate result and the effectiveness of the weighting mechanism.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_AggregationArithmeticErrors}:] The aggregation calculation module shall implement practices to reduce the probability of floating point and overflow errors.
+
+\end{itemize}
+
+\subsection{Usability}
+
+\noindent \begin{itemize}
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Learnability}:] The system shall be learnable and documentation should be accessible such that a user with experience using a browser but no experience using a blockchain or knowledge about ML concepts can learn how to use the system within 5 minutes.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_TwoClickAccess}:] All features on the web application shall be accessible within 2 clicks from the home page.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ErrorVisibility}:] Every error shall be visible and include a name, description, and suggested fix.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ProgressStatus}:] Long operations shall always show progress status.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_TransactionConfirmation}:] Confirmation messages written in plain language shall be displayed after every transaction, indicating what has been recorded and if balances have been updated.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_EmbeddedWalletAccess}:] Requesters will access/create embedded wallet such that they can authenticate and add funds using supported social accounts or emails/numbers without needing knowledge of Web3 wallets.
+
+\end{itemize}
+
+\subsection{Security}
+
+\noindent \begin{itemize}
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_DataEncryption}:] Personal information and sensitive data handled by DAIIM, such as inference inputs, shall be encrypted while it is transferred and while it is stored by the system, so that it is protected from unauthorized access.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_WalletSignature}:] Every action that moves tokens or changes on-chain state shall require a valid wallet signature.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_InputDataAccess}:] Input data shall be accessible via key encryption only by the requester and accepted providers, and deleted after a certain period.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_PredictionsHidden}:] Individual predictions shall be hidden until the prediction phase ends.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_PublicPagesPrivacy}:] Public pages shall display no personal information beyond what providers consented to.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_BlockchainRecords}:] Blockchain shall be used to verify and keep public records of transactions.
+
+\end{itemize}
+
+\subsection{Reliability and Availability}
+
+\noindent \begin{itemize}
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_MinimumProvidersCompletion}:] A task must complete as long as the minimum number of providers for that task return results.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_FinalState}:] A task must reach a final state (completed, failed, cancelled) and all escrowed tokens shall be deposited, slashed, or burned.
+
+\end{itemize}
+
+\subsection{Maintainability}
+
+\noindent \begin{itemize}
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_CodingStandards}:] Code shall follow the standards in the Development Plan, enforced by linting.
+
+\end{itemize}
+
+\subsection{Scalability}
+
+\noindent \begin{itemize}
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ConcurrentRequests}:] The system shall support multiple concurrent inference requests without degradation to performance.
+
+\end{itemize}
+
+\subsection{Portability}
+
+\noindent \begin{itemize}
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_BrowserSupport}:] The system shall be fully operational on current versions of modern browsers with an internet connection.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_NoExtraSoftware}:] The system shall not require installing software other than a browser and having some account that is supported by MetaMask to have an embedded wallet.
+
+\end{itemize}
+
+**The following is rough notes and existing examples**
+
 \noindent \begin{itemize}
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accuracy}:]
@@ -806,6 +1393,76 @@ be covered in the Verification and Validation document.}
 
 \item Other NFRs that might be discussed include verifiability,
   understandability, reusability, performance, reliability and availability, security, and accessibility.  You may have to add other NFRs.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accuracy1}:] 
+  \textbf{Accuracy} 
+  - The system shall use an aggregate algorithm with weighting based on the reputation of providers, such that historically reliable providers have greater influence on the aggregate result. Simulation incorporating different types of providers (honest, malicous, etc.) shall be used to verify the accuracy of the aggregate result and the effectiveness of the weighting mechanism.
+  - The aggregation calculation module shall implement practices to reduce the probability of floating point and overflow errors.
+  - The level of accuracy achieved by the aggregation formula shall be described in the VnV plan document.
+  - Aggregation shall be accurate for simulations with up to 49\% malicious users.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Usability1}:] 
+  \textbf{Usability} 
+  - The system shall be learnable and documentation should be accessible such that a user with experience using a browser but no experience using a blockchain or knowledge about ML concepts can learn how to use the system within 5 minutes.
+  - All features on the web application shall be accessible within 2 clicks from the home page.
+  - Every error shall be visible and include a name, description, and suggested fix.
+  - Long operations shall always show progress status.
+  - Confirmation messages written in plain language shall be displayed after every transaction, indicating what has been recorded and if balances have been updated.
+  - Requesters with no Web3 wallet knowledge can check account balance and add funds 
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Security1}:] 
+  \textbf{Security} 
+    - Personal information and sensitive data handled by DAIIM, such as inference inputs, shall be encrypted while it is transferred and while it is stored by the system, so that it is protected from unauthorized access.
+    - Every action that moves tokens or changes on-chain state shall require a valid wallet signature.
+    - Input data shall be accessible only by the requester and accepted providers, and deleted after a request is completed or cancelled.
+    - Individual predictions shall be hidden until the prediction phase ends.
+    - Public pages shall display no personal information beyond what providers consented to.
+    - Blockchain shall be used to verify and keep public records of transactions.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Reliability_and_Availability}:] 
+  \textbf{Reliability and Availability} 
+    - An inference request must complete as long as the minimum number of providers for that task return results.
+    - A inference request must reach a final state (completed or cancelled) and all escrowed tokens shall be refunded, deposited, slashed, or burned.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Maintainability}:] 
+  \textbf{Maintainability} 
+    - Code shall follow the standards in the Development Plan, enforced by linting.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Scalability}:] 
+  \textbf{Scalability} 
+    - The system shall support multiple concurrent inference requests without degradation to performance.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Portability}:] 
+  \textbf{Portability} 
+    - The system shall be fully operational on current versions of modern browsers with an internet connection.
+    - The system shall not require installing software other than a browser and having some account that is supported by MetaMask to have an embedded wallet.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Transparency}:] 
+  \textbf{Transparency} 
+    - Each transaction shall link to the on-chain record.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accessibility}:] 
+  \textbf{Accessibility} 
+    - The web application shall follow WCAG 2.1 AA guidelines.
+
+
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Usability1}:] \textbf{Usability}
+  Users with no knowledge of decentralized systems or their underlying infrastructure shall be able to define tasks, submit inference requests, and receive results without assistance. In usability testing with participants who have no prior blockchain or Web3 experience, at least USABILITY\_COMPLETION\_RATE of participants shall complete each of these tasks without assistance.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Reliability}:] \textbf{Reliability and Availability}
+  The system shall be capable of storing up to CERTAIN\_SIZE of data at a time, per task (including input data and provider responses). 
+  A task must complete as long as the minimum number of providers for that task return results. Every request shall reach a final state and all escrowed tokens shall be deposited, slashed, or burned.
+ 
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_DataProtection_}:] \textbf{Data Protection}
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Security}:] \textbf{Security}
+  Personal information and sensitive data handled by DAIIM, such as inference inputs, shall be encrypted while it is transferred and while it is stored by the system, so that it is protected from unauthorized access.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Scalability}:] \textbf{Scalability}
+  The system shall support multiple concurrent inference requests without degradation to performance.
+
+\item[]
 
 \end{itemize}
 
@@ -858,7 +1515,50 @@ documents.}
 \toprule
 Stakeholder Req & Use Case & Functional Req \\
 \midrule
-\srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_WalletAuthentication} \\
+\srref{SR_DefineTask} & \ucref{UC_CreateTask}
+  & \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_TaskMaxPredictionTime} \\[0.5em]
+
+\srref{SR_RequestInference} & \ucref{UC_SubmitRequest}, \ucref{UC_AggregateResult}
+  & \rref{FR_RequestSubmission}, \rref{FR_RequestValidation}, \rref{FR_RequestPayment}, \rref{FR_RequestBroadcast}, \rref{FR_FinalResultDelivery}, \rref{FR_RequestHistory} \\[0.5em]
+
+\srref{SR_ReliableInference} & \ucref{UC_AggregateResult}, \ucref{UC_UpdateReputation}, \ucref{UC_CancelRequest}
+  & \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_MinimumAcceptance}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_MinimumPredictions}, \rref{FR_PredictionAggregation}, \rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} \\[0.5em]
+
+\srref{SR_ResilientService} & \ucref{UC_AcceptRequest}, \ucref{UC_SubmitPrediction}, \ucref{UC_CancelRequest}
+  & \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_MinimumAcceptance}, \rref{FR_PredictionPhaseEnd}, \rref{FR_MinimumPredictions} \\[0.5em]
+
+\srref{SR_ResultQuality} & \ucref{UC_AggregateResult}
+  & \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread} \\[0.5em]
+
+\srref{SR_NoCentralAuthority} & \ucref{UC_AcceptRequest}, \ucref{UC_SubmitPrediction}, \ucref{UC_AggregateResult}
+  & \rref{FR_RequestBroadcast}, \rref{FR_PredictionAggregation}, \rref{FR_OnChainRecords} \\[0.5em]
+
+\srref{SR_Transparency} & \ucref{UC_AddFunds}, \ucref{UC_SubmitRequest}, \ucref{UC_ViewHistory}
+  & \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \rref{FR_OnChainRecords} \\[0.5em]
+
+\srref{SR_EaseOfUse} & \ucref{UC_SignIn}, \ucref{UC_SignOut}, \ucref{UC_BrowseMarketplace}, \ucref{UC_ReadDocumentation}
+  & \rref{FR_WalletAuthentication}, \rref{FR_PublicAccess}, \rref{FR_TaskBrowsing} \\[0.5em]
+
+\srref{SR_ProviderParticipation} & \ucref{UC_BrowseMarketplace}, \ucref{UC_ProviderRegistration}, \ucref{UC_AcceptRequest}, \ucref{UC_SubmitPrediction}, \ucref{UC_UnregisterProvider}
+  & \rref{FR_TaskBrowsing}, \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_ProviderWillingUnregistration}, \rref{FR_AcceptancePeriodStart}, \rref{FR_RequestInputDistribution}, \rref{FR_PredictionPhaseStart}, \rref{FR_PredictionSubmission} \\[0.5em]
+
+\srref{SR_ProviderProfit} & \ucref{UC_DistributeRewards}
+  & \rref{FR_DistributeRewards}, \rref{FR_ProviderDashboard} \\[0.5em]
+
+\srref{SR_RewardAccuracy} & \ucref{UC_UpdateReputation}, \ucref{UC_DistributeRewards}
+  & \rref{FR_UpdateProviderReputations}--\rref{FR_DistributeRewards}, \rref{FR_InferenceProviderSlashing}--\rref{FR_ProviderForcedUnregistration} \\[0.5em]
+
+\srref{SR_AutomaticPayment} & \ucref{UC_DistributeRewards}
+  & \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_DistributeRewards}, \rref{FR_OnChainRecords} \\[0.5em]
+
+\srref{SR_DataPrivacy} & \ucref{UC_SubmitRequest}, \ucref{UC_AcceptRequest}
+  & \rref{FR_RequestInputDistribution}, \rref{FR_InputAccessRestriction}, \rref{FR_InputNotOnChain} \\[0.5em]
+
+\srref{SR_DataProtection} & \ucref{UC_SubmitRequest}
+  & \rref{FR_InputNotOnChain} \\[0.5em]
+
+\srref{SR_DataRetention} & \ucref{UC_SubmitRequest}, \ucref{UC_CancelRequest}
+  & \rref{FR_InputDeletion} \\
 \bottomrule
 
 \caption{Traceability Between Stakeholder Requirements, Use Cases, and
@@ -870,7 +1570,32 @@ Functional Requirements} \label{tab:SR2UC2FRtm}
 \toprule
 Functional Req & Nonfunctional Req \\
 \midrule
-\rref{FR_Label1} & \nfrref{NFR_Accuracy} \\
+\rref{FR_WalletAuthentication} & \nfrref{NFR_WalletSignature}, \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_Learnability}, \nfrref{NFR_NoExtraSoftware} \\
+\rref{FR_PublicAccess} & \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_PublicPagesPrivacy}, \nfrref{NFR_Learnability} \\
+\rref{FR_TransactionAuthorization} & \nfrref{NFR_WalletSignature} \\
+\rref{FR_TaskBrowsing} & \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_PublicPagesPrivacy} \\
+\rref{FR_InferenceTaskRegistrationStaking} & \nfrref{NFR_FinalState} \\
+\rref{FR_ProviderDashboard} & \nfrref{NFR_TwoClickAccess} \\
+\rref{FR_RequestSubmission} & \nfrref{NFR_ConcurrentRequests} \\
+\rref{FR_RequestValidation} & \nfrref{NFR_ErrorVisibility} \\
+\rref{FR_RequestBroadcast} & \nfrref{NFR_ConcurrentRequests} \\
+\rref{FR_MinimumAcceptance} & \nfrref{NFR_MinimumProvidersCompletion}, \nfrref{NFR_FinalState} \\
+\rref{FR_RequestInputDistribution} & \nfrref{NFR_InputDataAccess} \\
+\rref{FR_PredictionSubmission} & \nfrref{NFR_PredictionsHidden} \\
+\rref{FR_PredictionValidation} & \nfrref{NFR_ErrorVisibility} \\
+\rref{FR_PredictionPhaseEnd} & \nfrref{NFR_PredictionsHidden} \\
+\rref{FR_MinimumPredictions} & \nfrref{NFR_MinimumProvidersCompletion}, \nfrref{NFR_FinalState} \\
+\rref{FR_PredictionAggregation} & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_MinimumProvidersCompletion} \\
+\rref{FR_RequestHistory} & \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TwoClickAccess} \\
+\rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} & \nfrref{NFR_ReputationWeightedAggregate} \\
+\rref{FR_DistributeRewards} & \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_FinalState} \\
+\rref{FR_InferenceProviderSlashing}--\rref{FR_ProviderForcedUnregistration} & \nfrref{NFR_FinalState} \\
+\rref{FR_TransactionStatus} & \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_ErrorVisibility} \\
+\rref{FR_TransactionVerification} & \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_BlockchainRecords} \\
+\rref{FR_OnChainRecords} & \nfrref{NFR_BlockchainRecords} \\
+\rref{FR_InputAccessRestriction} & \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess} \\
+\rref{FR_InputNotOnChain} & \nfrref{NFR_DataEncryption} \\
+\rref{FR_InputDeletion} & \nfrref{NFR_InputDataAccess} \\
 \bottomrule
 \caption{Traceability Between Functional and Nonfunctional Requirements}
 \label{tab:FR2Rtm}
