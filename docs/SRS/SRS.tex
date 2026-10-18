@@ -488,8 +488,8 @@ This section lists the stakeholder requirements for DAIIM, grouped by the stakeh
   functional requirements and to create test cases.}  
 \plt{Typically 8-15 substantial use cases.}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Sign in to the web application.}
+\refstepcounter{ucnum} \label{UC_SignIn}
+\subsection{\ucref{UC_SignIn}: Sign in to the web application.}
 
 \textbf{Primary Actor}
 User (requester or provider)
@@ -524,7 +524,8 @@ User (requester or provider)
 \item The requester is signed in to the DAIIM web application and can access their profile and other features of the application.
 \end{itemize}
 
-\subsection{\ucref{UC_Label1}: Sign out of the web application.}
+\refstepcounter{ucnum} \label{UC_SignOut}
+\subsection{\ucref{UC_SignOut}: Sign out of the web application.}
 
 \textbf{Primary Actor}
 User (requester or provider)
@@ -555,8 +556,8 @@ User (requester or provider)
 \end{itemize}
 
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Add funds to Web3 Wallet}
+\refstepcounter{ucnum} \label{UC_AddFunds}
+\subsection{\ucref{UC_AddFunds}: Add funds to Web3 Wallet}
 
 \textbf{Primary Actor}
 User (provider or requester)
@@ -591,8 +592,8 @@ User (provider or requester)
 \item The transaction is logged on the blockchain.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Browse marketplace information}
+\refstepcounter{ucnum} \label{UC_BrowseMarketplace}
+\subsection{\ucref{UC_BrowseMarketplace}: Browse marketplace information}
 
 \textbf{Primary Actor}
 User (requester or provider)
@@ -618,8 +619,8 @@ User (requester or provider)
 \item User has successfully browsed the marketplace information.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Create an inference task}
+\refstepcounter{ucnum} \label{UC_CreateTask}
+\subsection{\ucref{UC_CreateTask}: Create an inference task}
 
 \textbf{Primary Actor}
 Authenticated user
@@ -694,8 +695,8 @@ Provider
 \item The registration, stake, and provider's consent are recorded and the provider has the transaction identifier.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Submit an inference request for a task}
+\refstepcounter{ucnum} \label{UC_SubmitRequest}
+\subsection{\ucref{UC_SubmitRequest}: Submit an inference request for a task}
 
 \textbf{Primary Actor}
 Requester
@@ -735,8 +736,8 @@ Requester
 \item The inference request is submitted and requester awaits result.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Accept an inference request for a task}
+\refstepcounter{ucnum} \label{UC_AcceptRequest}
+\subsection{\ucref{UC_AcceptRequest}: Accept an inference request for a task}
 
 \textbf{Primary Actor}
 Provider
@@ -769,8 +770,8 @@ Provider
 \item The provider is registered as an accepted provider for the inference request, and the stake is locked in escrow.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Process and submit a prediction for an inference request}
+\refstepcounter{ucnum} \label{UC_SubmitPrediction}
+\subsection{\ucref{UC_SubmitPrediction}: Process and submit a prediction for an inference request}
 
 \textbf{Primary Actor}
 Provider
@@ -804,8 +805,8 @@ Provider
 \item The provider's prediction is submitted and recorded for the inference request.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Aggregate predictions and produce a final inference result}
+\refstepcounter{ucnum} \label{UC_AggregateResult}
+\subsection{\ucref{UC_AggregateResult}: Aggregate predictions and produce a final inference result}
 
 \textbf{Primary Actor}
 System
@@ -836,8 +837,8 @@ System
 \item Final result is successfully calculated and stored, and the result is displayed to the requester.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Update and maintain provider reputation}
+\refstepcounter{ucnum} \label{UC_UpdateReputation}
+\subsection{\ucref{UC_UpdateReputation}: Update and maintain provider reputation}
 
 \textbf{Primary Actor}
 System
@@ -868,8 +869,8 @@ System
 \item Provider reputations are updated based on the accuracy of their predictions, and any providers with reputations below the minimum threshold are unregistered from the task.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Distribute rewards to inference providers}
+\refstepcounter{ucnum} \label{UC_DistributeRewards}
+\subsection{\ucref{UC_DistributeRewards}: Distribute rewards to inference providers}
 
 \textbf{Primary Actor}
 System
@@ -899,8 +900,8 @@ System
 \item All eligible providers have received their rewards or had their tokens slashed, and their balances have been updated accordingly.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Cancel an inference request with too few participating providers}
+\refstepcounter{ucnum} \label{UC_CancelRequest}
+\subsection{\ucref{UC_CancelRequest}: Cancel an inference request with too few participating providers}
 
 \textbf{Primary Actor}
 System
@@ -930,8 +931,8 @@ System
 \item Request is cancelled, tokens are released from escrow and refunded, and affected users are updated.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Unregister as an inference provider for a task}
+\refstepcounter{ucnum} \label{UC_UnregisterProvider}
+\subsection{\ucref{UC_UnregisterProvider}: Unregister as an inference provider for a task}
 
 \textbf{Primary Actor}
 Provider
@@ -962,8 +963,8 @@ Provider
 \item Provider is unregistered from the task, and their profile is updated accordingly. Any staked tokens are released.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: View transaction history and current balances}
+\refstepcounter{ucnum} \label{UC_ViewHistory}
+\subsection{\ucref{UC_ViewHistory}: View transaction history and current balances}
 
 \textbf{Primary Actor}
 User (requester or provider)
@@ -991,8 +992,8 @@ User (requester or provider)
 \item User has successfully viewed their transaction history and current balances.
 \end{itemize}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Read documentation and learn how to use the system}
+\refstepcounter{ucnum} \label{UC_ReadDocumentation}
+\subsection{\ucref{UC_ReadDocumentation}: Read documentation and learn how to use the system}
 
 \textbf{Primary Actor}
 User (authenticated or unauthenticated)
@@ -1352,119 +1353,6 @@ be covered in the Verification and Validation document.}
 
 \end{itemize}
 
-**The following is rough notes and existing examples**
-
-\noindent \begin{itemize}
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accuracy}:]
-  \textbf{Accuracy} \plt{Characterize the accuracy by giving the context/use for
-    the software.  Maybe something like, ``The accuracy of the computed
-    solutions should meet the level needed for $<$engineering or scientific
-    application$>$.  The level of accuracy achieved by \progname{} shall be
-    described following the procedure given in Section~X of the Verification and
-    Validation Plan.''  If you do this provide a link to the VnV plan.}
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Usability}:] \textbf{Usability}
-  Users with no knowledge of decentralized systems or their underlying
-  infrastructure shall be able to define tasks, submit inference requests, and
-  receive results without assistance. In usability testing with participants
-  who have no prior blockchain or Web3 experience, at least
-  USABILITY\_COMPLETION\_RATE of participants shall complete each of these tasks
-  without assistance.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_DataProtection}:] \textbf{Security}
-  Personal information and sensitive data handled by DAIIM, such as inference
-  inputs, shall be encrypted while it is transferred and while it is stored by
-  the system, so that it is protected from unauthorized access.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Maintainability}:]
-  \textbf{Maintainability} \plt{The effort required to make any of the likely
-    changes listed for \progname{} should be less than FRACTION of the original
-    development time.  FRACTION is then a symbolic constant that can be defined
-    at the end of the report.}
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Portability}:]
-  \textbf{Portability} \plt{This NFR is easier to write than the others.  The
-    systems that \progname{} should run on should be listed here.  When possible
-    the specific versions of the potential operating environments should be
-    given.  To make the NFR verifiable a statement could be made that the tests
-    from a given section of the VnV plan can be successfully run on all of the
-    possible operating environments.}
-
-\item Other NFRs that might be discussed include verifiability,
-  understandability, reusability, performance, reliability and availability, security, and accessibility.  You may have to add other NFRs.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accuracy1}:] 
-  \textbf{Accuracy} 
-  - The system shall use an aggregate algorithm with weighting based on the reputation of providers, such that historically reliable providers have greater influence on the aggregate result. Simulation incorporating different types of providers (honest, malicous, etc.) shall be used to verify the accuracy of the aggregate result and the effectiveness of the weighting mechanism.
-  - The aggregation calculation module shall implement practices to reduce the probability of floating point and overflow errors.
-  - The level of accuracy achieved by the aggregation formula shall be described in the VnV plan document.
-  - Aggregation shall be accurate for simulations with up to 49\% malicious users.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Usability1}:] 
-  \textbf{Usability} 
-  - The system shall be learnable and documentation should be accessible such that a user with experience using a browser but no experience using a blockchain or knowledge about ML concepts can learn how to use the system within 5 minutes.
-  - All features on the web application shall be accessible within 2 clicks from the home page.
-  - Every error shall be visible and include a name, description, and suggested fix.
-  - Long operations shall always show progress status.
-  - Confirmation messages written in plain language shall be displayed after every transaction, indicating what has been recorded and if balances have been updated.
-  - Requesters with no Web3 wallet knowledge can check account balance and add funds 
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Security1}:] 
-  \textbf{Security} 
-    - Personal information and sensitive data handled by DAIIM, such as inference inputs, shall be encrypted while it is transferred and while it is stored by the system, so that it is protected from unauthorized access.
-    - Every action that moves tokens or changes on-chain state shall require a valid wallet signature.
-    - Input data shall be accessible only by the requester and accepted providers, and deleted after a request is completed or cancelled.
-    - Individual predictions shall be hidden until the prediction phase ends.
-    - Public pages shall display no personal information beyond what providers consented to.
-    - Blockchain shall be used to verify and keep public records of transactions.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Reliability_and_Availability}:] 
-  \textbf{Reliability and Availability} 
-    - An inference request must complete as long as the minimum number of providers for that task return results.
-    - A inference request must reach a final state (completed or cancelled) and all escrowed tokens shall be refunded, deposited, slashed, or burned.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Maintainability}:] 
-  \textbf{Maintainability} 
-    - Code shall follow the standards in the Development Plan, enforced by linting.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Scalability}:] 
-  \textbf{Scalability} 
-    - The system shall support multiple concurrent inference requests without degradation to performance.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Portability}:] 
-  \textbf{Portability} 
-    - The system shall be fully operational on current versions of modern browsers with an internet connection.
-    - The system shall not require installing software other than a browser and having some account that is supported by MetaMask to have an embedded wallet.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Transparency}:] 
-  \textbf{Transparency} 
-    - Each transaction shall link to the on-chain record.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accessibility}:] 
-  \textbf{Accessibility} 
-    - The web application shall follow WCAG 2.1 AA guidelines.
-
-
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Usability1}:] \textbf{Usability}
-  Users with no knowledge of decentralized systems or their underlying infrastructure shall be able to define tasks, submit inference requests, and receive results without assistance. In usability testing with participants who have no prior blockchain or Web3 experience, at least USABILITY\_COMPLETION\_RATE of participants shall complete each of these tasks without assistance.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Reliability}:] \textbf{Reliability and Availability}
-  The system shall be capable of storing up to CERTAIN\_SIZE of data at a time, per task (including input data and provider responses). 
-  A task must complete as long as the minimum number of providers for that task return results. Every request shall reach a final state and all escrowed tokens shall be deposited, slashed, or burned.
- 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_DataProtection_}:] \textbf{Data Protection}
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Security}:] \textbf{Security}
-  Personal information and sensitive data handled by DAIIM, such as inference inputs, shall be encrypted while it is transferred and while it is stored by the system, so that it is protected from unauthorized access.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Scalability}:] \textbf{Scalability}
-  The system shall support multiple concurrent inference requests without degradation to performance.
-
-\item[]
-
-\end{itemize}
 
 % ============================================================== 
 \section{AI and Machine Learning Requirements}
