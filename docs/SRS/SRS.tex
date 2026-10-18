@@ -1014,10 +1014,49 @@ Their values are defined in this section for easy maintenance.}
 
 \subsection{Appendix D: Generative AI Disclosure}
 
-\plt{Provide full transparency on how generative AI was used in the creation of
-  this document.  This includes any text, figures, or tables that were generated
-  by AI.  If any skills were created for AI agents to review the documentation,
-  those should be disclosed here.}
+This section provides an overview of how generative AI tools were used in the
+making of this document.
+
+\subsubsection*{AI Tools Used}
+
+\begin{itemize}
+    \item Claude Opus 5.5 (Anthropic), used through Claude Code.
+\end{itemize}
+
+\subsubsection*{How and Where Used}
+
+Claude Opus 5.5 was used throughout this document to help ideate and draft its
+content. The team provided the tool with the Problem Statement and Goals and
+the Development Plan, and used it to brainstorm the stakeholders, stakeholder
+requirements, functional requirements, and non-functional requirements that
+the document should address, and to produce first drafts of the text. In the
+Functional Requirements section, for example, it helped split broad
+descriptions of the marketplace's behaviour into atomic, testable
+requirements, grouped by the phase of an inference request they belong to, and
+it suggested symbolic constants, such as SLASH\_FRACTION, for values that are
+not yet decided. No skills or custom agents were created to review this
+document. It was also used to draft the text of this appendix.
+
+The tool was used as an aid, not as a replacement for the team's own work.
+Team members were involved in every sentence of the document: each AI-assisted
+draft was read, discussed, and edited by the team, and ideas that did not fit
+the project were discarded or rewritten.
+
+\subsubsection*{Verification of AI-Generated Content}
+
+Every sentence in this document was reviewed by at least one team member
+before it was included. AI-assisted content was checked against the Problem
+Statement and Goals and the Development Plan to confirm that it describes
+behaviour the team intends DAIIM to have, that it does not introduce
+requirements or design decisions the team has not agreed to, and that it is
+consistent with the technologies the Development Plan lists. Cross-references
+between requirements were checked by hand, and each requirement was reviewed to
+confirm that it is atomic, testable, and does not prescribe a design. Values
+that are still undecided are left as symbolic constants in
+Appendix~C and will be set once the proof of concept has been evaluated. The
+team remains responsible for the accuracy, completeness, and consistency of
+this document, regardless of whether material was first drafted by a team
+member or with the help of an AI tool.
 
 \subsection{Appendix E: Reflection}
 
@@ -1026,9 +1065,93 @@ Their values are defined in this section for easy maintenance.}
 The information in this section will be used to evaluate the team members on the
 graduate attribute of Lifelong Learning.  
 
-\input{../Reflection.text}
+\begin{enumerate}
+  \item What went well while writing this deliverable?
+  \item What pain points did you experience during this deliverable, and how did
+  you resolve them?
+  \item How many of your requirements were inspired by speaking to your
+  client(s) or their proxies (e.g. your peers, stakeholders, potential users)?
 
-\input{../SRS_Reflection.text}
+  \textbf{Aidan:} Most of our stakeholder requirements were inspired by
+  speaking to our supervisor, who acts as our client, and by discussions with
+  peers who represent the two kinds of users of DAIIM. Of the 15 stakeholder
+  requirements in the Stakeholder Requirements section, roughly 12 came
+  directly out of these conversations:
+  \begin{itemize}
+    \item \textbf{Task requesters (\srref{SR_DefineTask} to
+    \srref{SR_EaseOfUse}):} Conversations about who would actually use a
+    decentralized inference marketplace, such as emergency management agencies
+    forecasting river levels, led us to focus on consensus and reliability.
+    This inspired the requirements that results combine predictions from
+    multiple independent providers (\srref{SR_ReliableInference}), remain
+    available when some providers are offline (\srref{SR_ResilientService}),
+    come with information about their quality (\srref{SR_ResultQuality}), and
+    are not controlled by a single organization
+    (\srref{SR_NoCentralAuthority}). Peers without a blockchain background
+    pointed out that requesters should not need to understand decentralized
+    systems to use DAIIM (\srref{SR_EaseOfUse}), and that they should be able
+    to see and verify the payments they authorize (\srref{SR_Transparency}).
+    \item \textbf{Inference providers (\srref{SR_ProviderParticipation} to
+    \srref{SR_AutomaticPayment}):} Discussions with our supervisor about why
+    anyone would contribute their models to the network shaped all four
+    provider requirements, especially that providers must be able to earn a
+    profit (\srref{SR_ProviderProfit}) and that honest, accurate predictions
+    must be more profitable than dishonest ones (\srref{SR_RewardAccuracy}).
+    These later drove most of the staking, reputation, reward, and penalty
+    functional requirements.
+  \end{itemize}
+  The three secondary stakeholder requirements on data privacy, protection,
+  and retention (\srref{SR_DataPrivacy} to \srref{SR_DataRetention}) were
+  inspired less by direct conversations and more by our own research into
+  regulatory expectations and by the hazards identified in the Hazard
+  Analysis. Similarly, most of the detailed functional requirements, such as
+  the exact rules for acceptance periods, reputation updates, and slashing,
+  were derived by the team from the stakeholder requirements rather than
+  requested directly. In this sense, client and peer conversations set the
+  goals of the system, while the team translated those goals into specific,
+  testable behaviour.
+  \item Which of the courses you have taken, or are currently taking, will help
+  your team to be successful with your capstone project.
+
+  \textbf{Aidan:} I will be focusing on the architecture and endpoints of
+  DAIIM's backend server, and three of the software engineering courses I have
+  taken will help with this work.
+  \begin{itemize}
+    \item \textbf{SFWRENG 2AA4 (Software Design I --- Introduction to Software
+    Development):} This course taught me how to break a system into modules
+    with clear responsibilities and well-defined interfaces, and how to apply
+    design principles such as information hiding, low coupling, and high
+    cohesion. These ideas will guide how I separate the backend's concerns,
+    such as handling inference requests, communicating with providers, and
+    submitting transactions to the on-chain programs, so that each part can be
+    developed and tested independently.
+    \item \textbf{SFWRENG 3A04 (Software Design III --- Large System Design):}
+    This course covered architectural styles, design patterns, and how the
+    components of a large system interact. It will help me choose an
+    architecture for the backend that fits DAIIM's mix of off-chain and
+    on-chain components, and design endpoints that give the frontend and
+    inference providers a clear, consistent interface to the system. It also
+    prepared me to document these decisions in the design documents later in
+    the project.
+    \item \textbf{SFWRENG 2C03 (Data Structures and Algorithms):} This course
+    taught me how to choose data structures and analyze the efficiency of
+    algorithms. This will help me design backend logic that stays efficient as
+    the number of tasks, requests, and providers grows, such as tracking the
+    phase of each active inference request, matching requests to registered
+    providers, and collecting predictions before aggregation.
+  \end{itemize}
+  \item What knowledge and skills will the team collectively need to acquire to
+  successfully complete this capstone project?  Examples of possible knowledge
+  to acquire include domain specific knowledge from the domain of your
+  application, or software engineering knowledge, mechatronics knowledge or
+  computer science knowledge.  Skills may be related to technology, or writing,
+  or presentation, or team management, etc.  You should look to identify at
+  least one item for each team member.
+  \item For each of the knowledge areas and skills identified in the previous
+  question, what are at least two approaches to acquiring the knowledge or
+  mastering the skill?  Of the identified approaches, which will each team
+  member pursue, and why did they make this choice?
+\end{enumerate}
 
 \newpage
 
