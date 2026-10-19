@@ -30,6 +30,8 @@
 %Counters so the labels have a meaningful name
 \newcounter{sanum} %Safety (SA) Requirement Number
 \renewcommand{\thesanum}{FR.SA.\arabic{sanum}}
+\newcounter{snfrnum} %Safety Non-Functional (SA) Requirement Number
+\renewcommand{\thesnfrnum}{NFR.SA.\arabic{snfrnum}}
 
 \begin{document}
 
@@ -384,15 +386,12 @@ rationale design process how and why to fake it.)}
 
 Based on the hazard analysis above, the following safety and security requirements have been outlined. Each requirement addresses a hazard in the FMEA table.
 
+\subsection{Functional Requirements}
+
 \noindent \begin{itemize}
 
-% --- H1: A required on-chain transaction does not succeed ---
-
 \item[\refstepcounter{sanum}\thesanum \label{SA_NoDuplicateSubmission}:]
-H1.1 The system shall not resubmit a transaction until it has confirmed that the original transaction was not processed.
-
-\item[\refstepcounter{sanum}\thesanum \label{SA_TransactionStatusLog}:]
-H1.1 The system shall maintain logs of all transaction statuses and log verified transactions publicly on-chain.
+H1.1 The system shall not resubmit a transaction until it has confirmed that the original transaction was not processed and shall maintain logs of all transaction statuses and log verified transactions publicly on-chain.
 
 \item[\refstepcounter{sanum}\thesanum \label{SA_BalanceCheck}:]
 H1.2 The system shall verify if the wallet of a user has sufficient funds before requesting a signature and logging the transaction.
@@ -409,30 +408,11 @@ H1.4 The system shall wait for validity period to end and status to be checked b
 \item[\refstepcounter{sanum}\thesanum \label{SA_FailureRetry}:]
 H1.5 When a transaction fails, the system shall send the error to the user and allow them to retry.
 
-\item[\refstepcounter{sanum}\thesanum \label{SA_ErrorMessageTime}:]
-H1.5 NFR The system shall send readable error messages to users within 2 seconds of a detected failure.
-
-% --- H2: A provider's private key is compromised ---
-
-\item[\refstepcounter{sanum}\thesanum \label{SA_WalletSigning}:]
-H2.1 All signing shall happen within the user's wallet and private information shall not be logged on-chain.
-
-\item[\refstepcounter{sanum}\thesanum \label{SA_TLS}:]
-H2.2 All communication between DAIIM components, and between users and DAIIM, shall use TLS with certificate validation enabled.
-
-\item[\refstepcounter{sanum}\thesanum \label{SA_DependencyScan}:]
-H2.3 The continuous integration pipeline shall scan third-party dependencies for known security vulnerabilities.
-
-% --- H3: A financial operation is handled incorrectly ---
-
 \item[\refstepcounter{sanum}\thesanum \label{SA_TransactionSimulation}:]
 H3.1 Before a transaction is submitted for signing, the system shall simulate it and verify that the resulting balance changes equal the amounts displayed to the user, and shall not submit it otherwise.
 
 \item[\refstepcounter{sanum}\thesanum \label{SA_ChargeEqualsAuthorized}:]
 H3.1 The amount charged to a requester for an inference request shall equal the payment amount the requester authorized.
-
-\item[\refstepcounter{sanum}\thesanum \label{SA_SingleRewardDistribution}:]
-H3.2 NFR The reward for an inference request shall be distributed at most once.
 
 \item[\refstepcounter{sanum}\thesanum \label{SA_RewardValidation}:]
 H3.2 The system shall validate each reward calculation before distributing it, and shall not distribute rewards whose total exceeds the reward for the request.
@@ -440,24 +420,34 @@ H3.2 The system shall validate each reward calculation before distributing it, a
 \item[\refstepcounter{sanum}\thesanum \label{SA_ProviderStatusCheck}:]
 H3.3 The system shall confirm provider status before distributing rewards/slashing tokens.
 
-% --- H4: The final inference result is not reasonably close to the ground truth ---
-
-\item[\refstepcounter{sanum}\thesanum \label{SA_IncentiveSimulation}:]
-H4.1 NFR Simulations shall show that honest providers who make low-error predictions earn a higher expected net reward than providers whose predictions are inaccurate or malicious.
-
 \item[\refstepcounter{sanum}\thesanum \label{SA_GroundTruthTests}:]
-H4.1 **Add this as a feature??** Providers shall be given random tests with a known ground truth to identify malicious providers.
-
-\item[\refstepcounter{sanum}\thesanum \label{SA_ProviderMixSimulation}:]
-H4.2 Simulation shall report the error of the aggregated result against the ground truth for varying proportions of honest and malicious providers.
-
-\item[\refstepcounter{sanum}\thesanum \label{SA_CollusionSimulation}:]
-H4.3 Simulation shall measure the effect of colluding provider groups of different sizes on the accuracy of the result, on reputations, and on rewards.
+H4.1 Providers shall be given random tests with a known ground truth to identify malicious providers.
 
 \item[\refstepcounter{sanum}\thesanum \label{SA_RandomInvitations}:]
-H4.3 **add this as a feature??** The system shall send invitation to accept an inference request to providers randomly, to reduce the possibility of premeditated collusion attacks.
+H4.3 The system shall send invitation to accept an inference request to providers randomly, to reduce the possibility of premeditated collusion attacks.
 
 \end{itemize}
+
+\subsection{Non-Functional Requirements}
+
+\noindent \begin{itemize}
+
+\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_ErrorMessageTime}:]
+H1.5 The system shall send readable error messages to users within 2 seconds of a detected failure.
+
+\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_WalletSigning}:]
+H2.1 All signing shall happen within the user's wallet and private information shall not be logged on-chain.
+
+\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_TLS}:]
+H2.2 All communication between DAIIM components, and between users and DAIIM, shall use TLS with certificate validation enabled.
+
+\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_DependencyScan}:]
+H2.3 The continuous integration pipeline shall scan third-party dependencies for known security vulnerabilities.
+
+\end{itemize}
+
+
+Other mitigation strategies include the implementation of simulations to gather data and justify protocols for mitigating malicous users and collusion attacks.
 
 
 \section{Roadmap}
@@ -465,63 +455,52 @@ H4.3 **add this as a feature??** The system shall send invitation to accept an i
 \wss{Which safety requirements will be implemented as part of the capstone timeline?
 Which requirements will be implemented in the future?}
 
-\section{Roadmap}
 
 \subsection{Requirements Planned During Capstone}
 
-The following requirements will be implemented as part of the capstone timeline:
+The requirements that can be implemented within the timeline of the project are listed below, along with justification.
 
 \begin{itemize}
 
-\item FR.SA.1: Duplicate transactions are the most direct way users could lose funds. Checking a transaction's status before retrying is a small amount of logic, and we will need it as soon as we start testing transactions on Devnet.
+\item \ref{SA_NoDuplicateSubmission}: Duplicate transactions are the most direct way users could lose funds. Checking a transaction's status before retrying is a small amount of logic, and we will need it as soon as we start testing transactions on Devnet. Transaction statuses are also needed to show progress to users and to debug the on-chain programs, and confirmed transactions are already recorded on-chain as part of the core design.
 
-\item FR.SA.2: Transaction statuses are needed both to show progress to users and to debug the on-chain programs. Confirmed transactions are already recorded on-chain as part of the core design, so this adds little extra work.
+\item \ref{SA_BalanceCheck}: Checking balances before asking for a signature avoids failed transactions that could have been prevented. It is a simple lookup and is needed for the transaction preview anyway.
 
-\item FR.SA.3: Checking balances before asking for a signature avoids failed transactions that could have been prevented. It is a simple lookup and is needed for the transaction preview anyway.
+\item \ref{SA_OnChainFundsCheck}: Enforcing this in the on-chain programs protects funds no matter what the client checks, so it belongs with the development of the programs themselves.
 
-\item FR.SA.4: Enforcing this in the on-chain programs protects funds no matter what the client checks, so it belongs with the development of the programs themselves.
+\item \ref{SA_SignedTransactionsOnly}: The blockchain rejects unsigned transactions, so making sure our client never submits one is part of basic transaction handling.
 
-\item FR.SA.5: The blockchain rejects unsigned transactions, so making sure our client never submits one is part of basic transaction handling.
+\item \ref{SA_ExpiryCheck}: Transactions will expire during network congestion on Devnet. Retry handling needs to be built early so that expired transactions are not submitted twice.
 
-\item FR.SA.6: Transactions will expire during network congestion on Devnet. Retry handling needs to be built early so that expired transactions are not submitted twice.
+\item \ref{SA_FailureRetry}: Users must be told when a transaction fails and be able to retry. The same error handling will also be what we rely on for debugging during development.
 
-\item FR.SA.7: Users must be told when a transaction fails and be able to retry. The same error handling will also be what we rely on for debugging during development.
+\item \ref{SA_TransactionSimulation}: Wrong payment amounts are likely to appear while we develop the payment instructions. Simulating transactions before signing will catch them before users are asked to authorize anything.
 
-\item NFR.SA.1: Readable errors matter for both usability and debugging. The time limit is measured inside our own client, so we can test it on Devnet.
+\item \ref{SA_ChargeEqualsAuthorized}: Charging the amount the requester authorized is the core of financial correctness, and a mistake here causes direct losses. It is part of the payment logic in the on-chain programs.
 
-\item FR.SA.8: Signing happens in the user's wallet by design (the embedded wallet for requesters, the provider's own signer through the SDK), so this requirement needs very little extra development.
+\item \ref{SA_RewardValidation}: A total-reward check is a simple invariant in the reward logic, and it catches calculation errors before tokens move.
 
-\item FR.SA.9: TLS with certificate validation is a hosting and library configuration, and it is needed for any deployment, including demos.
+\item \ref{SA_ProviderStatusCheck}: Paying or slashing a provider who is no longer registered would break the stake rules. Checking the provider's status first is a small addition to the staking logic.
 
-\item FR.SA.10: Private keys must never reach our backend. Rejecting requests that do not match the expected schema is cheap to enforce when validating API input.
+\item \ref{SA_ErrorMessageTime}: Readable errors matter for both usability and debugging. The time limit is measured inside our own client, so we can test it on Devnet.
 
-\item FR.SA.12: Wrong payment amounts are likely to appear while we develop the payment instructions. Simulating transactions before signing will catch them before users are asked to authorize anything.
+\item \ref{SA_WalletSigning}: Signing happens in the user's wallet by design (the embedded wallet for requesters, the provider's own signer through the SDK), so this requirement needs very little extra development.
 
-\item FR.SA.13: Charging the amount the requester authorized is the core of financial correctness, and a mistake here causes direct losses. It is part of the payment logic in the on-chain programs.
+\item \ref{SA_TLS}: TLS with certificate validation is a hosting and library configuration, and it is needed for any deployment, including demos.
 
-\item NFR.SA.2: Distributing a reward twice is a likely bug while we develop the reward logic and a direct risk to funds. A flag marking a request as settled prevents it.
-
-\item FR.SA.14: A total-reward check is a simple invariant in the reward logic, and it catches calculation errors before tokens move.
-
-\item FR.SA.15: Paying or slashing a provider who is no longer registered would break the stake rules. Checking the provider's status first is a small addition to the staking logic.
-
-\item NFR.SA.3: Showing that honest providers out-earn malicious ones is the central success criterion of the proof of concept, so it is within the capstone by definition.
-
-\item FR.SA.17: Measuring aggregate error against ground truth for different provider mixes is the main output of the proof-of-concept simulation.
-
-\item FR.SA.18: Collusion is one of the project's main risks, and the proof of concept is where we measure how large a colluding group must be to influence results.
+\item \ref{SA_DependencyScan}: The use of the continuous integration pipeline to scan third-party dependencies will aid in identifying vulnerabilities promptly and is a natural addition when incorporating third party dependencies into the system. Once implemented, the scans will occur automatically.
 
 \end{itemize}
 
 \subsection{Delayed Requirements}
 
-The following requirements are planned for future implementation:
+The requirements that will be implemented in the future and the justification are detailed below.
 
 \begin{itemize}
 
-\item FR.SA.16: Giving providers random tests with known answers needs tasks with known ground truth, test requests that cannot be told apart from real ones (otherwise providers would only behave well on tests), and a way to pay providers for requests that have no requester. It also changes the current design, where providers join by staking alone. This is beyond our timeline, so we will instead simulate the idea in the proof of concept to gather evidence for future work.
+\item \ref{SA_GroundTruthTests}: Giving providers random tests with known answers needs tasks with known ground truth, test requests that cannot be told apart from real ones (otherwise providers would only behave well on tests), and a way to pay providers for requests that have no requester. This is an additional feature that would enhance security and improve provider integrity, but is beyond the scope of the project and is not essential to the main functionality.
 
-\item FR.SA.19: Randomly inviting providers requires a secure, verifiable source of randomness on Solana, and conflicts with the current design in which every registered provider receives each request. It would also require reworking how the minimum number of providers is met. This is deferred, and we will compare it with the current design in simulation.
+\item \ref{SA_RandomInvitations}: Randomly inviting providers requires a secure, verifiable source of randomness on Solana, and conflicts with the current design in which every registered provider receives each request. It would also require reworking how the minimum number of providers is met. 
 
 \end{itemize}
 
