@@ -80,6 +80,12 @@
 \newcommand{\lthelcnum}{LC\thelcnum}
 \newcommand{\lcref}[1]{LC\ref{#1}}
 
+\newcounter{sanum} %Safety (SA) Requirement Number
+\renewcommand{\thesanum}{FR.SA.\arabic{sanum}}
+
+\newcounter{snfrnum} %Safety Non-Functional (SA) Requirement Number
+\renewcommand{\thesnfrnum}{NFR.SA.\arabic{snfrnum}}
+
 \usepackage{fullpage}
 
 \begin{document}
@@ -1185,6 +1191,48 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \end{itemize}
 
+\subsection{Safety Functional Requirements}
+
+\noindent \begin{itemize}
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_NoDuplicateSubmission}:]
+The system shall not resubmit a transaction until it has confirmed that the original transaction was not processed and shall maintain logs of all transaction statuses and log verified transactions publicly on-chain.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_BalanceCheck}:]
+The system shall verify if the wallet of a user has sufficient funds before requesting a signature and logging the transaction.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_OnChainFundsCheck}:]
+The on-chain programs shall reject any transaction that the wallet cannot cover at the time of execution, regardless of any balance check made earlier.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_SignedTransactionsOnly}:]
+The system shall not submit any transaction which is not signed by an authorized wallet on-chain or off-chain.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_ExpiryCheck}:]
+The system shall wait for validity period to end and status to be checked before logging transaction as failed and attempting to reprocess.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_FailureRetry}:]
+When a transaction fails, the system shall send the error to the user and allow them to retry.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_TransactionSimulation}:]
+Before a transaction is submitted for signing, the system shall simulate it and verify that the resulting balance changes equal the amounts displayed to the user, and shall not submit it otherwise.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_ChargeEqualsAuthorized}:]
+The amount charged to a requester for an inference request shall equal the payment amount the requester authorized.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_RewardValidation}:]
+The system shall validate each reward calculation before distributing it, and shall not distribute rewards whose total exceeds the reward for the request.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_ProviderStatusCheck}:]
+The system shall confirm provider status before distributing rewards/slashing tokens.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_GroundTruthTests}:]
+Providers shall be given random tests with a known ground truth to identify malicious providers.
+
+\item[\refstepcounter{sanum}\thesanum \label{SA_RandomInvitations}:]
+The system shall send invitation to accept an inference request to providers randomly, to reduce the possibility of premeditated collusion attacks.
+
+\end{itemize}
+
 Questions / Missing reqs: \\
 - We said that the task requester gets to choose the amount of tokens they want to offer for a request - How can we express this to inference providers in a useful way? Since the total amount does not reflect how much they will earn.\\
   - Unless the requester also gets to choose exactly how many participants are necessary to complete the request.\\
@@ -1336,6 +1384,20 @@ be covered in the Verification and Validation document.}
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_BrowserSupport}:] The system shall be fully operational on current versions of modern browsers with an internet connection.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_NoExtraSoftware}:] The web client shall not require installing software other than a browser and having some account that is supported by MetaMask to have an embedded wallet.
+
+\end{itemize}
+
+\subsection{Safety}
+
+\noindent \begin{itemize}
+
+\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_ErrorMessageTime}:] The system shall send readable error messages to users within 2 seconds of a detected failure.
+
+\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_WalletSigning}:] All signing shall happen within the user's wallet and private information shall not be logged on-chain.
+
+\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_TLS}:] All communication between DAIIM components, and between users and DAIIM, shall use TLS with certificate validation enabled.
+
+\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_DependencyScan}:] The continuous integration pipeline shall scan third-party dependencies for known security vulnerabilities.
 
 \end{itemize}
 
