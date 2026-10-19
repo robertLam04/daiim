@@ -1069,8 +1069,17 @@ graduate attribute of Lifelong Learning.
 
 \begin{enumerate}
   \item What went well while writing this deliverable?
+  
+  \textbf {Nathan}: For the SRS and Hazard Analysis documents, we were able to learn a lot about our project by identifying potential hazards and discussing how we could mitigate them. For example, one of our main concerns was determining how the system would handle collusion attacks, which we discussed further during a meeting with our supervising professor. Through ongoing discussions among team members and with our professor, we were able to identify potential hazards and consider appropriate mitigation strategies
+   We took a similar approach when developing the SRS, first identifying our functional requirements with guidance from our professor and ensuring that the different aspects of our project's scope were adequately represented. Overall, maintaining consistent communication within our team and with our professor allowed us to make incremental progress, receive regular feedback, and address uncertainties as they arose. This helped us ensure that our documents accurately reflected our project's intended scope and that we were progressing in the right direction.
+
   \item What pain points did you experience during this deliverable, and how did
   you resolve them?
+
+  \textbf{Nathan}: One pain point our team encountered during this deliverable was determining the appropriate level of detail to include in certain sections. For example, when writing the critical assumptions in the Hazard Analysis, we were unsure whether explicitly stating that the system required at least one non-malicious inference provider would be too restrictive. Making this a formal assumption could imply that the system depended on this condition to operate correctly, potentially requiring additional assumptions or safety measures to address the risks associated with malicious providers. To address this, we decided to treat malicious provider behaviour as a potential hazard within the Failure Mode and Effects Analysis rather than making the presence of a non-malicious provider a concrete assumption. This allowed us to acknowledge and analyze the risk without assuming that malicious behaviour could be ruled out.
+
+Another pain point was leaving our team review call until the final two days before the deadline. The call lasted over three hours, making it difficult to coordinate everyone's availability and review the document efficiently. For future deliverables, we plan to create pull requests and have our sections ready for review three to four days before the deadline. This will allow team members to review each other's work at times that fit their schedules, provide feedback incrementally, and avoid relying on a single, lengthy meeting close to the deadline.
+
   \item How many of your requirements were inspired by speaking to your
   client(s) or their proxies (e.g. your peers, stakeholders, potential users)?
 
@@ -1141,7 +1150,33 @@ graduate attribute of Lifelong Learning.
     the number of tasks, requests, and providers grows, such as tracking the
     phase of each active inference request, matching requests to registered
     providers, and collecting predictions before aggregation.
+    \end{itemize}
+
+
+  \textbf{Nathan}: A course I have taken in the past that will help our team succeed with this capstone project is 3RA3, which focused on software requirements engineering. In this course, we learned about goal modelling and how to distinguish high-level stakeholder goals from concrete software requirements. This knowledge has been useful throughout the capstone project because it has allowed me to better understand what makes a good goal and how to refine it into requirements that describe what our system should accomplish.
+For example, one of DAIIM's main goals is to provide reliable aggregated inference results. Rather than treating this broad goal as a requirement on its own, we needed to identify the specific system responsibilities that would help achieve it, such as aggregating provider predictions and maintaining provider reputations. Additionally, the knowledge I gained about identifying stakeholders and their goals has helped me consider the different needs of task requesters and inference providers, particularly when designing a marketplace that must balance prediction accuracy with fair provider compensation. Overall, the concepts I learned in 3RA3 have helped me contribute to defining our project's scope and developing requirements that align with its intended goals
+
+
+  \textbf{Robert}:
+
+
+  \textbf{Keira}: 
+  Of the courses I have taken throughout my undergraduate degree, I believe the following three will help my team be successful in this capstone project:
+-	3A04 (Software Design III – Large System Design): In this course, I learned crucial information about sustainable architectures, methodology of making software architecture decisions, and gained experience designing and developing a complex full-stack program. This included identifying requirements, creating a development plan, and implementing the system. I can use the knowledge and experience gained from this course to navigate the design process, making design decisions, and the implementation of the capstone project.
+-	4C03 (Computer Networks and Security): In this course, I learned about different network protocols, as well as encryption and information security. This knowledge is crucial in addressing some of the hazards we identified and meeting some functional and nonfunctional requirements related to data handling and network transactions.
+-	4HC3 (Human Computer Interfaces): I am currently enrolled in this course and I believe the content related to usability requirement development and designing a user interface that meets the needs of the target user will be helpful, as a huge part of our capstone project is related to the web client through which requesters will interact with the system. Some major nonfunctional requirements which will verify if the project is a success with the target requester user group involve making the technical aspects of the system, such as the blockchain and Web3 wallet infrastructure, accessible and learnable to the average user with limited knowledge in these areas.
+  \begin{itemize}
+    \item \textbf{(Software Design III – Large System Design):} 
+    In this course, I learned crucial information about sustainable architectures, methodology of making software architecture decisions, and gained experience designing and developing a complex full-stack program. This included identifying requirements, creating a development plan, and implementing the system. I can use the knowledge and experience gained from this course to navigate the design process, making design decisions, and the implementation of the capstone project.
+
+    \item \textbf{4C03 (Computer Networks and Security):}
+    In this course, I learned about different network protocols, as well as encryption and information security. This knowledge is crucial in addressing some of the hazards we identified and meeting some functional and nonfunctional requirements related to data handling and network transactions.
+
+    \item \textbf{4HC3 (Human Computer Interfaces):} 
+    I am currently enrolled in this course and I believe the content related to usability requirement development and designing a user interface that meets the needs of the target user will be helpful, as a huge part of our capstone project is related to the web client through which requesters will interact with the system. Some major nonfunctional requirements which will verify if the project is a success with the target requester user group involve making the technical aspects of the system, such as the blockchain and Web3 wallet infrastructure, accessible and learnable to the average user with limited knowledge in these areas.
   \end{itemize}
+
+  
   \item What knowledge and skills will the team collectively need to acquire to
   successfully complete this capstone project?  Examples of possible knowledge
   to acquire include domain specific knowledge from the domain of your
@@ -1181,7 +1216,10 @@ graduate attribute of Lifelong Learning.
   question, what are at least two approaches to acquiring the knowledge or
   mastering the skill?  Of the identified approaches, which will each team
   member pursue, and why did they make this choice?
+
+
 \end{enumerate}
+
 
 \newpage
 
