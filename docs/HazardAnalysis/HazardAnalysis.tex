@@ -25,6 +25,8 @@
 \date{}
 
 \input{../Comments.text}
+\renewcommand{\authornote}[3]{}
+\renewcommand{\todo}[1]{}
 \input{../Common.text}
 
 \begin{document}
@@ -42,9 +44,9 @@
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
-October 15 & 1.0 & Nathan: Added Scope and Purpose of Hazard Anaylsis and critical assumptions\\
-Date2 & Name(s) & Description of changes\\
-... & ... & ...\\
+October 15 & Nathan & Added Scope and Purpose of Hazard Analysis and critical assumptions\\
+October 16 & Robert & Added FMEA table\\
+October 19 & Robert & Remove comments, add intro, fix typos \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -61,7 +63,9 @@ Date2 & Name(s) & Description of changes\\
 
 \section{Introduction}
 
-\wss{You can include your definition of what a hazard is here.}
+A hazard is a condition or event that could cause harm or loss. For DAIIM, this
+could include an inaccurate inference,
+exposure of sensitive input data or wallet keys, or mishandling a transaction involving users’ funds
 
 \section{Scope and Purpose of Hazard Analysis}
 
@@ -192,7 +196,7 @@ sensitive.
 
 \item \textbf{Downstream Decisions.} The decisions that task requesters and
 beneficiaries, such as emergency management agencies, make using DAIIM's
-results. DAIIM is responsible for providing accurate results and information
+results. DAIIM is responsible for providing inferences and information
 about their quality, but not for how the results are used.
 
 \item \textbf{Hosting Infrastructure and Browsers.} The cloud or server
@@ -247,7 +251,7 @@ this potential failure mode.}
 }
 \caption{Failure Modes and Effects Analysis} \label{TblFMEA} \\
 \toprule
-\textbf{Failure} & \textbf{Ref.} & \textbf{Failure Modes} & \textbf{Failure Effect} & \textbf{Failure Causes} & \textbf{Recommended Actions} \\
+\textbf{Failure} & \textbf{Ref.} & \textbf{Failure Mode} & \textbf{Failure Effect} & \textbf{Failure Cause} & \textbf{Recommended Action} \\
 \midrule
 \endfirsthead
 
