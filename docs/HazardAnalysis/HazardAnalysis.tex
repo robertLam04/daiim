@@ -257,21 +257,22 @@ this potential failure mode.}
     >{\hsize=1.2\hsize}X
     >{\hsize=1.2\hsize}X
     >{\hsize=1\hsize}X
+    L{1.6cm}
 }
 \caption{Failure Modes and Effects Analysis} \label{TblFMEA} \\
 \toprule
-\textbf{Failure} & \textbf{Ref.} & \textbf{Failure Modes} & \textbf{Failure Effect} & \textbf{Failure Causes} & \textbf{Recommended Actions} \\
+\textbf{Failure} & \textbf{Ref.} & \textbf{Failure Modes} & \textbf{Failure Effect} & \textbf{Failure Causes} & \textbf{Recommended Actions} & \textbf{Safety Reqs.} \\
 \midrule
 \endfirsthead
 
-\multicolumn{6}{c}{{\tablename\ \thetable{} -- continued from previous page}} \\
+\multicolumn{7}{c}{{\tablename\ \thetable{} -- continued from previous page}} \\
 \toprule
-\textbf{Failure} & \textbf{Ref.} & \textbf{Failure Mode} & \textbf{Failure Effect} & \textbf{Failure Cause} & \textbf{Recommended Action} \\
+\textbf{Failure} & \textbf{Ref.} & \textbf{Failure Mode} & \textbf{Failure Effect} & \textbf{Failure Cause} & \textbf{Recommended Action} & \textbf{Safety Reqs.} \\
 \midrule
 \endhead
 
 \midrule
-\multicolumn{6}{r}{{Continued on next page}} \\
+\multicolumn{7}{r}{{Continued on next page}} \\
 \endfoot
 
 \bottomrule
@@ -282,91 +283,105 @@ this potential failure mode.}
 & RPC endpoint is unavailable
 & \multirow[t]{5}{=}{The intended on-chain state change or token transfer is delayed or not recorded. Depending on the operation, an inference request may not be submitted or broadcast, a prediction may not be recorded, a reputation update may be missed, or a token transfer or burn may fail. These failures could result in direct financial losses from missed or incorrect token transfers, indirect financial losses if outdated reputation scores affect provider rewards, or a suboptimal final output due to incorrect provider reputations.}
 & RPC outage, network congestion, or an unavailable endpoint
-& Check transaction status and RPC health. Retry only after confirming that the transaction was not processed, and show the user its current status. \\[1em]
+& Check transaction status and RPC health. Retry only after confirming that the transaction was not processed, and show the user its current status.
+& \ref{SA_NoDuplicateSubmission} \\[1em]
 
 & H1.2
 & The account lacks sufficient funds
 &
 & Insufficient token balance for the transfer or insufficient coin (native-tokens) balance for transaction fees
-& Check involved account balances and explain which balance is insufficient and the required amount; allow the user to add funds and retry. \\[1em]
+& Check involved account balances and explain which balance is insufficient and the required amount; allow the user to add funds and retry.
+& \ref{SA_BalanceCheck}, \ref{SA_OnChainFundsCheck} \\[1em]
 
 & H1.3
 & Wallet authorization is missing or invalid
 &
 & The user rejects the signature request or the submitted signature is invalid
-& Explain that authorization is required and allow the user to initiate another signature request. \\[1em]
+& Explain that authorization is required and allow the user to initiate another signature request.
+& \ref{SA_SignedTransactionsOnly} \\[1em]
 
 & H1.4
 & The transaction expires before confirmation
 &
 & Network or processing latency causes the transaction's validity period to expire
-& Check whether the transaction was processed; if not, regenerate the transaction and resend it. \\[1em]
+& Check whether the transaction was processed; if not, regenerate the transaction and resend it.
+& \ref{SA_ExpiryCheck} \\[1em]
 
 & H1.5
 & Transaction validation or execution failure.
 &
 & Missing or invalid signatures, invalid instruction data or account state, or unmet program constraints, such as insufficient permissions or an account not being authorized to perform the requested operation.
-& Display the failure reason when available and prompt the user to resolve the issue (such as authorizing a different account) before retrying the transaction. \\
+& Display the failure reason when available and prompt the user to resolve the issue (such as authorizing a different account) before retrying the transaction.
+& \ref{SA_FailureRetry}, \ref{SA_ErrorMessageTime} \\
 
 \multirow[t]{3}{=}{A provider's private key is compromised}
 & H2.1
 & The private key is exposed through logs, error messages, or insecure storage
 & \multirow[t]{3}{=}{An attacker may control the provider's wallet, impersonate the provider, access provider data, or transfer or forfeit the provider's funds and stake.}
 & The client library or provider software logs secrets, stores them insecurely, or exposes them to other local processes
-& Keep private keys under the provider's wallet control; do not send them to or store them in the client library. Redact secrets from logs and protect any required local credentials. \\[1em]
+& Keep private keys under the provider's wallet control; do not send them to or store them in the client library. Redact secrets from logs and protect any required local credentials.
+& \ref{SA_WalletSigning} \\[1em]
 
 & H2.2
 & The private key is intercepted during transmission
 &
 & Unencrypted transport, incorrect TLS configuration, or disabled certificate validation
-& Use correctly configured TLS for all communications; validate certificates and never transmit raw private keys through the API. \\[1em]
+& Use correctly configured TLS for all communications; validate certificates and never transmit raw private keys through the API.
+& \ref{SA_TLS} \\[1em]
 
 & H2.3
 & A vulnerable or compromised client-library dependency exposes the private key
 &
 & A security flaw in a third-party software dependency allows an attacker to access or steal private keys used by the library.
-& Minimize the number of third-party dependencies, use audited and trusted package versions, and promptly update dependencies when security vulnerabilities are identified. \\
+& Minimize the number of third-party dependencies, use audited and trusted package versions, and promptly update dependencies when security vulnerabilities are identified.
+& \ref{SA_DependencyScan} \\
 
 \multirow[t]{3}{=}{A financial operation is handled incorrectly, resulting in an incorrect allocation or transfer of tokens.}
 & H3.1
 & The task requester is charged an incorrect amount
 & The task requester is charged more or less tokens than intended, causing direct financial losses for the task requester or task participants.
 & Incorrect financial calculation
-& Validate payment calculations and test the on-chain financial instructions against expected amounts. Before submitting a stake transaction, simulate it using available tools and verify that the expected balance changes match the actual change.\\[1em]
+& Validate payment calculations and test the on-chain financial instructions against expected amounts. Before submitting a stake transaction, simulate it using available tools and verify that the expected balance changes match the actual change.
+& \ref{SA_TransactionSimulation}, \ref{SA_ChargeEqualsAuthorized} \\[1em]
 
 & H3.2
 & Provider rewards are calculated or distributed incorrectly
 & Providers are underpaid, overpaid, or receive duplicate rewards.
 & Incorrect reward calculations, allocation logic, or duplicate processing
-& Validate reward calculations and ensure each request distributes rewards only once.\\[1em]
+& Validate reward calculations and ensure each request distributes rewards only once.
+& \ref{SA_RewardValidation} \\[1em]
 
 & H3.3
 & Staked tokens are returned or burned under the wrong conditions
 & Providers may lose their stake incorrectly or retain tokens that should have been burned.
 & Incorrect handling of voluntary unregistration or forced removal of inference providers
-& Validate stake return and burn instructions with tests for each removal scenario. \\
+& Validate stake return and burn instructions with tests for each removal scenario.
+& \ref{SA_ProviderStatusCheck} \\
 
 \multirow[t]{4}{=}{The final inference result is not reasonably close to the ground truth.}
 & H4.1
 & The aggregation algorithm or reward incentives fail to favor accurate predictions
 & \multirow[t]{4}{=}{Users receive an inaccurate final inference result and may make decisions based on incorrect information. Inaccurate results may also undermine trust in the marketplace and its economic sustainability.}
 & The aggregation method handles provider disagreement or outlying predictions poorly, or token rewards and penalties do not align provider incentives with prediction accuracy
-& Evaluate aggregation on tasks with known ground truth and varied provider prediction quality (see POC plan). Compare the simulated net rewards of honest providers producing low-error predictions with malicious providers. \\[1em]
+& Evaluate aggregation on tasks with known ground truth and varied provider prediction quality (see POC plan). Compare the simulated net rewards of honest providers producing low-error predictions with malicious providers.
+& \ref{SA_GroundTruthTests} \\[1em]
 
 & H4.2
 & Malicious or low-quality providers significantly influence the aggregated result
 &
 & The aggregation and reputation mechanisms do not sufficiently reduce the influence of inaccurate or dishonest predictions
-& Simulate different proportions of honest and malicious providers. Compare aggregated results against known ground truth and report the observed error. Use the results to identify and communicate the provider composition thresholds under which the system is expected to meet its accuracy criteria. \\[1em]
+& Simulate different proportions of honest and malicious providers. Compare aggregated results against known ground truth and report the observed error. Use the results to identify and communicate the provider composition thresholds under which the system is expected to meet its accuracy criteria.
+& -- \\[1em]
 
 & H4.3
 & Colluding providers submit similar inaccurate predictions to manipulate the aggregation
 &
 & A coordinated group constitutes a large enough portion of the network to skew aggregation, reputation scores, or rewards, particularly when ground truth is unavailable
-& Simulate colluding groups of different sizes and measure their effect on result accuracy, reputation, and rewards. Document the provider proportions at which collusion can materially influence results. \\[1em]
+& Simulate colluding groups of different sizes and measure their effect on result accuracy, reputation, and rewards. Document the provider proportions at which collusion can materially influence results.
+& \ref{SA_RandomInvitations} \\[1em]
 
-\rule{0pt}{2.5em} & & & & & \\
-\rule{0pt}{2.5em} & & & & & \\
+\rule{0pt}{2.5em} & & & & & & \\
+\rule{0pt}{2.5em} & & & & & & \\
 
 \end{xltabular}
 \restoregeometry
