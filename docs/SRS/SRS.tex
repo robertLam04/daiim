@@ -513,7 +513,6 @@ User (requester or provider)
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item 4a. User does not have a supported account: User creates a supported account.
 \item 5a. User cancels the sign-in process: System cancels sign-in and redirects user to the public page.
 \item 5b. User fails to input correct credentials: System displays an error message and prompts the user to try signing in again or choose another account.
 \item 6a. System fails to verify the JWT or public key: System displays an error message and prompts the user to try signing in again.
@@ -538,7 +537,7 @@ User (requester or provider)
 \textbf{Main Success Scenario}
 \begin{enumerate}
 \item User clicks the "Sign out" button.
-\item System checks for pending transcations or actions that need to be completed before signing out.
+\item System checks for pending transactions or actions that need to be completed before signing out.
 \item System confirms that there are no pending transactions or actions.
 \item System ends the user's session.
 \item System logs the user out and displays the public page.
@@ -547,7 +546,7 @@ User (requester or provider)
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item 3a. There are pending transactions or actions: System displays a message to the user indicating that they cannot sign out until the pending transactions or actions are completed.
+\item 2a. There are pending transactions or actions: System displays a warning message to the user indicating that they have pending transactions.
 \end{itemize}
 
 \textbf{Postconditions}
@@ -564,7 +563,7 @@ User (provider or requester)
 
 \textbf{Preconditions}
 \begin{itemize}
-\item User (provider or requester) has a supported Web3 wallet installed and authorized.
+\item User (provider or requester) has a supported Web3 wallet authorized.
 \end{itemize}
 
 \textbf{Main Success Scenario}
@@ -606,12 +605,12 @@ User (requester or provider)
 \textbf{Main Success Scenario}
 \begin{enumerate}
 \item User navigates to the "Browse Marketplace" section of the DAIIM web application.
-\item System displays a list of available items (providers, reputations, services, etc.) in the marketplace.
+\item System displays a list of available items (providers, reputations, tasks, etc.) in the marketplace.
 \end{enumerate}
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item 
+\item 2a. System cannot load list of items: System displays error message indicating items cannot be loaded and to try again later.
 \end{itemize}
 
 \textbf{Postconditions}
@@ -632,16 +631,18 @@ Authenticated user
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item User navigates to the "Create Task" section of the DAIIM web application (FR4).
-\item User fills out the task creation form with the required information (FR5).
+\item User navigates to the "Create Task" section of the DAIIM web application.
+\item User fills out the task creation form with the required information.
 \item System validates the information provided.
+\item System requests confirmation of action from user.
+\item User confirms and signs the transaction.
 \item System saves the new task and displays a confirmation message.
 \end{enumerate}
 
 \textbf{Alternative Flows}
 \begin{itemize}
+\item 2a. User cancels the task creation process: System discards the entered information and returns the user to the previous page.
 \item 3a. System detects missing or invalid information: System displays an error message and prompts the user to correct the information before proceeding.
-\item 4a. User cancels the task creation process: System discards the entered information and returns the user to the previous page.
 \end{itemize}
 
 \textbf{Postconditions}
@@ -703,7 +704,7 @@ Requester
 
 \textbf{Preconditions}
 \begin{itemize}
-\item Requester is logged in and authenticated.
+\item Requester is logged in and authenticated and there are at least two providers available and registered for the task.
 \end{itemize}
 
 \textbf{Main Success Scenario}
@@ -726,8 +727,8 @@ Requester
 \item 4a. Input data is invalid or incomplete: System displays an error message and prompts the requester to correct the input data before proceeding.
 \item 6a. Requester cancels the submission: System cancels the inference request and returns the requester to the previous page.
 \item 7a. Payment fails or is declined: System displays an error message and prompts the requester to try again or choose another payment method.
-\item 8a. System fails to process the inference request: System displays an error message and prompts the requester to try again later or contact support.
-\item 8b. System fails to store data in a secure location: System displays an error message and prompts the requester to try again later or contact support, and removes input data from records.
+\item 8a. System fails to process the inference request: System displays an error message and prompts the requester to try again later. Funds are returned to the requester.
+\item 8b. System fails to store data in a secure location: System displays an error message and prompts the requester to try again later, and removes input data from records. Funds are returned to the requester.
 \item 9a. Insufficient registered inference providers accept the request: System displays a message indicating that the inference request cannot be processed at this time and suggests trying again later or selecting a different task, funds are returned to the requester.
 \end{itemize}
 
@@ -752,7 +753,7 @@ Provider
 \item System broadcasts the inference request to all registered providers for the task, indicating the request, expected payout, stake amount, and deadline.
 \item Provider receives the inference request and reviews the details.
 \item Provider accepts the inference request.
-\item System verifies that the provider has sufficient stake and reputation to accept the request.
+\item System verifies that the provider has sufficient funds to stake to accept the request.
 \item System prompts provider to confirm transaction and stake amount.
 \item Provider confirms and signs the transaction.
 \item System locks the stake in escrow and records the provider's acceptance of the inference request.
@@ -760,8 +761,8 @@ Provider
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item 2a. Provider declines the inference request: System records the provider's decision and does not lock any stake.
-\item 4a. Provider does not have sufficient stake or reputation: System sends an error message and prompts the provider to increase their stake or improve their reputation before accepting the request. Provider is not registered as an accepted provider for the request.
+\item 3a. Provider declines the inference request: System records the provider's decision and does not lock any stake.
+\item 4a. Provider does not have sufficient funds: System sends an error message detailing insufficient funds as the cause of rejection. Provider is not registered as an accepted provider for the request.
 \item 5a. Provider cancels the acceptance process: System cancels the acceptance.
 \end{itemize}
 
@@ -784,7 +785,7 @@ Provider
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item System provides the public key for the input data to the provider.
+\item System provides the decryption key for the input data to the accepted provider.
 \item Provider retrieves the input data from the decrypted secure location.
 \item Provider processes the input data using their model to generate a prediction.
 \item Provider submits the prediction to the system for aggregation.
@@ -794,9 +795,8 @@ Provider
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item 2a. Provider fails to decrypt the location or retrieve the input data due to issues with the system: Provider reports the issue to the system. System retries the operation or provides an alternative solution.
-\item 3a. Provider's model fails to generate a prediction due to errors or limitations: Provider has nothing to submit to the system. Provider tokens held in escrow and slashed and reputation is reduced.
-\item 4a. Provider fails to submit the prediction before the deadline: System marks the provider as non-responsive and informs them of the consequences. Provider tokens held in escrow and slashed and reputation is reduced.
+\item 4a. Provider's model fails to generate a prediction due to errors or limitations: Provider has nothing to submit to the system. Provider tokens held in escrow and slashed and reputation is reduced.
+\item 4b. Provider fails to submit the prediction before the deadline: System marks the provider as non-responsive and informs them of the consequences. Provider tokens held in escrow and slashed and reputation is reduced.
 \item 5a. Provider submits an invalid or incomplete prediction: System rejects the submission and informs the provider of rejection and consequences. Provider tokens held in escrow and slashed and reputation is reduced.
 \end{itemize}
 
@@ -820,16 +820,15 @@ System
 \begin{enumerate}
 \item System retrieves all submitted predictions for the inference request.
 \item System calculates the final inference result based on the submitted predictions using a predefined aggregation algorithm for the task, using reputation scores of the providers to weight the predictions.
-\item System stores the final inference result in a secure location.
+\item System stores the final inference result in a secure location and records the final result on-chain.
 \item System displays the final inference result in the requester's dashboard, along with the accuracy information and number of provider results used.
 \item System removes the input data and predictions from the secure location to maintain privacy and data retention policies after a set retention time has elapsed.
 \end{enumerate}
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item 1a. System fails to retrieve all submitted predictions due to issues with the storage or network: System retries the operation or provides an alternative solution.
-\item 2a. System encounters an error during the aggregation process:  **still need to come to a conclusion on how to handle**.
-\item 3a. System detects inconsistencies or anomalies in the submitted predictions: System flags the prvoiders who submitted the inconsistent predictions for further review and potential penalties/reputation reduction.
+\item 1a. System fails to retrieve all submitted predictions due to issues with the storage or network: System retries the operation, ensuring the transaction is not processed twice.
+\item 2a. System encounters an error during the aggregation process: System cahnges request status to failed. Requester is refunded and providers are compensated according to the terms in the contract.
 \end{itemize}
 
 \textbf{Postconditions}
@@ -852,7 +851,7 @@ System
 \begin{enumerate}
 \item System retrieves the submitted predictions from the accepted providers and the final inference result for the inference request.
 \item System calculates the accuracy of each provider's prediction by comparing it to the final inference result.
-\item System updates each provider's reputation score based on the accuracy of their prediction, using a predefined reputation update algorithm for the task.
+\item System updates each provider's reputation score based on the accuracy of their prediction, using the predefined reputation update algorithm outlined in \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, \rref{FR_ReputationDecrease}.
 \item System stores the updated reputation scores in the provider's profile.
 \end{enumerate}
 
@@ -860,7 +859,6 @@ System
 \begin{itemize}
 \item 1a. System fails to retrieve the submitted prediction due to the prediction being rejected or not submitted: System marks the provider as non-responsive and informs them of the consequences. Provider tokens held in escrow and slashed and reputation is reduced.
 \item 2a. System encounters an error during the accuracy calculation or reputation update process: System retries the operation.
-\item 2b. System detects inconsistencies or anomalies in the submitted predictions: System flags the providers who submitted the inconsistent predictions for further review and potential penalties/reputation reduction.
 \item 3a. System calculates a reputation score that is below the minimum threshold for the task: System informs the provider that their reputation score has fallen below the minimum threshold and the consequences, unregisters them from the task, and burns their staked tokens.
 \end{itemize}
 
@@ -921,11 +919,6 @@ System
 \item The system updates the status of the inference request to "Cancelled" in the system records and removes associated data from storage.
 \end{enumerate}
 
-\textbf{Alternative Flows}
-\begin{itemize}
-\item 
-\end{itemize}
-
 \textbf{Postconditions}
 \begin{itemize}
 \item Request is cancelled, tokens are released from escrow and refunded, and affected users are updated.
@@ -984,7 +977,7 @@ User (requester or provider)
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item 2a. System fails to retrieve trasnaction history due to lack of history: System displays a message indicating that there is no transaction history available for the user.
+\item 2a. System fails to retrieve transaction history due to lack of history: System displays a message indicating that there is no transaction history available for the user.
 \end{itemize}
 
 \textbf{Postconditions}
@@ -1277,8 +1270,7 @@ be covered in the Verification and Validation document.}
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ReputationWeightedAggregate}:] The system shall use an aggregate algorithm with weighting based on the reputation of providers, such that historically reliable providers have greater influence on the aggregate result. Simulation incorporating different types of providers (honest, malicous, etc.) shall be used to verify the accuracy of the aggregate result and the effectiveness of the weighting mechanism.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_AggregationArithmeticErrors}:] The aggregation calculation module shall implement practices to reduce the probability of floating point and overflow errors.
-
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_AggregationArithmeticErrors}:] For all predictions, reputation scores, and token amounts within their declared ranges, the aggregation, reputation, and reward calculations shall produce no overflow or underflow. Any arithmetic operation that would overflow shall cause the transaction to fail without changing on-chain state.
 \end{itemize}
 
 \subsection{Usability}
@@ -1305,15 +1297,11 @@ be covered in the Verification and Validation document.}
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_DataEncryption}:] Personal information and sensitive data handled by DAIIM, such as inference inputs, shall be encrypted while it is transferred and while it is stored by the system, so that it is protected from unauthorized access.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_WalletSignature}:] Every action that moves tokens or changes on-chain state shall require a valid wallet signature.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_InputDataAccess}:] Input data shall be accessible via key encryption only by the requester and accepted providers, and deleted after a certain period.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_InputDataAccess}:] Input data shall be encrypted according to industry standard.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_PredictionsHidden}:] Individual predictions shall be hidden until the prediction phase ends.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_PublicPagesPrivacy}:] Public pages shall display no personal information beyond what providers consented to.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_BlockchainRecords}:] Blockchain shall be used to verify and keep public records of transactions.
 
 \end{itemize}
 
@@ -1321,9 +1309,7 @@ be covered in the Verification and Validation document.}
 
 \noindent \begin{itemize}
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_MinimumProvidersCompletion}:] A task must complete as long as the minimum number of providers for that task return results.
-
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_FinalState}:] A task must reach a final state (completed, failed, cancelled) and all escrowed tokens shall be deposited, slashed, or burned.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_FinalState}:] An inference request shall reach a final state (completed, failed, cancelled) and all escrowed tokens shall be deposited, slashed, or burned before the final deadline for the request has elapsed.
 
 \end{itemize}
 
@@ -1349,7 +1335,7 @@ be covered in the Verification and Validation document.}
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_BrowserSupport}:] The system shall be fully operational on current versions of modern browsers with an internet connection.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_NoExtraSoftware}:] The system shall not require installing software other than a browser and having some account that is supported by MetaMask to have an embedded wallet.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_NoExtraSoftware}:] The web client shall not require installing software other than a browser and having some account that is supported by MetaMask to have an embedded wallet.
 
 \end{itemize}
 
@@ -1398,7 +1384,7 @@ flow is: Stakeholder Need -> Use Case -> Requirement}
 \plt{Further traceability to test cases and modules will be given in other
 documents.}
 
-\begin{longtable}{p{0.15\textwidth} p{0.15\textwidth} p{0.20\textwidth} p{0.20\textwidth}}
+\begin{longtable}{p{0.22\textwidth} p{0.30\textwidth} p{0.38\textwidth}}
 
 \toprule
 Stakeholder Req & Use Case & Functional Req \\
@@ -1458,32 +1444,30 @@ Functional Requirements} \label{tab:SR2UC2FRtm}
 \toprule
 Functional Req & Nonfunctional Req \\
 \midrule
-\rref{FR_WalletAuthentication} & \nfrref{NFR_WalletSignature}, \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_Learnability}, \nfrref{NFR_NoExtraSoftware} \\
+\rref{FR_WalletAuthentication} & \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_Learnability}, \nfrref{NFR_NoExtraSoftware} \\
 \rref{FR_PublicAccess} & \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_PublicPagesPrivacy}, \nfrref{NFR_Learnability} \\
-\rref{FR_TransactionAuthorization} & \nfrref{NFR_WalletSignature} \\
+\rref{FR_TaskMaxPredictionTime} & \nfrref{NFR_FinalState} \\
 \rref{FR_TaskBrowsing} & \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_PublicPagesPrivacy} \\
 \rref{FR_InferenceTaskRegistrationStaking} & \nfrref{NFR_FinalState} \\
 \rref{FR_ProviderDashboard} & \nfrref{NFR_TwoClickAccess} \\
 \rref{FR_RequestSubmission} & \nfrref{NFR_ConcurrentRequests} \\
 \rref{FR_RequestValidation} & \nfrref{NFR_ErrorVisibility} \\
 \rref{FR_RequestBroadcast} & \nfrref{NFR_ConcurrentRequests} \\
-\rref{FR_MinimumAcceptance} & \nfrref{NFR_MinimumProvidersCompletion}, \nfrref{NFR_FinalState} \\
+\rref{FR_MinimumAcceptance} & \nfrref{NFR_FinalState} \\
 \rref{FR_RequestInputDistribution} & \nfrref{NFR_InputDataAccess} \\
 \rref{FR_PredictionSubmission} & \nfrref{NFR_PredictionsHidden} \\
 \rref{FR_PredictionValidation} & \nfrref{NFR_ErrorVisibility} \\
-\rref{FR_PredictionPhaseEnd} & \nfrref{NFR_PredictionsHidden} \\
-\rref{FR_MinimumPredictions} & \nfrref{NFR_MinimumProvidersCompletion}, \nfrref{NFR_FinalState} \\
-\rref{FR_PredictionAggregation} & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_MinimumProvidersCompletion} \\
+\rref{FR_PredictionPhaseEnd} & \nfrref{NFR_PredictionsHidden}, \nfrref{NFR_FinalState} \\
+\rref{FR_MinimumPredictions} & \nfrref{NFR_FinalState} \\
+\rref{FR_PredictionAggregation} & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors} \\
 \rref{FR_RequestHistory} & \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TwoClickAccess} \\
-\rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} & \nfrref{NFR_ReputationWeightedAggregate} \\
+\rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors} \\
 \rref{FR_DistributeRewards} & \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_FinalState} \\
-\rref{FR_InferenceProviderSlashing}--\rref{FR_ProviderForcedUnregistration} & \nfrref{NFR_FinalState} \\
+\rref{FR_InferenceProviderSlashing}--\rref{FR_ProviderForcedUnregistration} & \nfrref{NFR_FinalState}, \nfrref{NFR_AggregationArithmeticErrors} \\
 \rref{FR_TransactionStatus} & \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_ErrorVisibility} \\
-\rref{FR_TransactionVerification} & \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_BlockchainRecords} \\
-\rref{FR_OnChainRecords} & \nfrref{NFR_BlockchainRecords} \\
+\rref{FR_TransactionVerification} & \nfrref{NFR_TransactionConfirmation} \\
 \rref{FR_InputAccessRestriction} & \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess} \\
-\rref{FR_InputNotOnChain} & \nfrref{NFR_DataEncryption} \\
-\rref{FR_InputDeletion} & \nfrref{NFR_InputDataAccess} \\
+\rref{FR_InputNotOnChain} & \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess} \\
 \bottomrule
 \caption{Traceability Between Functional and Nonfunctional Requirements}
 \label{tab:FR2Rtm}
