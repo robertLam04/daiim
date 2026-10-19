@@ -25,6 +25,8 @@
 \date{}
 
 \input{../Comments.text}
+\renewcommand{\authornote}[3]{}
+\renewcommand{\todo}[1]{}
 \input{../Common.text}
 
 \begin{document}
@@ -42,9 +44,9 @@
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
-Date1 & Name(s) & Description of changes\\
-Date2 & Name(s) & Description of changes\\
-... & ... & ...\\
+October 15 & Nathan & Added Scope and Purpose of Hazard Analysis and critical assumptions\\
+October 16 & Robert & Added FMEA table\\
+October 19 & Robert & Remove comments, add intro, fix typos \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -61,23 +63,23 @@ Date2 & Name(s) & Description of changes\\
 
 \section{Introduction}
 
-\wss{You can include your definition of what a hazard is here.}
+A hazard is a condition or event that could cause harm or loss. For DAIIM, this
+could include an inaccurate inference,
+exposure of sensitive input data or wallet keys, or mishandling a transaction involving users’ funds
 
 \section{Scope and Purpose of Hazard Analysis}
 
-The purpose of the hazard analysis is to identify potential hazards within the DAIIM system, examine their causes and effects, assess their associated risks, and establish mitigation strategies to eliminate or reduce the likelihood and severity of these hazards. The analysis considers the system components and boundaries defined in Section \ref{sec3}, with particular emphasis on the reliability of AI inference results, the integrity and security of marketplace operations, and the fairness of participant incentives.
+The purpose of the hazard analysis is to identify potential hazards within the DAIIM system, examine their causes and effects, assess their associated risks, and establish mitigation strategies to eliminate or reduce the likelihood and severity of these hazards. The analysis considers the system components and boundaries defined in Section 2, with particular emphasis on the reliability of AI inference results, the integrity and security of marketplace operations, and the fairness of participant incentives.
 The hazard analysis will focus on identifying hazards that may lead to the following:
 \begin{itemize}
-\item \textbf{Inference accuracy and reliability:} Incorrect, inconsistent, or unreliable aggregated predictions resulting from inaccurate model outputs, weaknesses in the aggregation algorithm, or insufficiently reliable inference providers.
+\item \textbf{Inference accuracy:} Incorrect, inconsistent, or unreliable aggregated predictions resulting from inaccurate model outputs, weaknesses in the aggregation algorithm, or insufficiently reliable inference providers.
 \item \textbf{Data and transaction integrity:} Loss, corruption, or inconsistency of inference requests, prediction results, reputation information, or transaction records, potentially resulting in incorrect outcomes or payments.
 
 \item \textbf{Security and malicious participation:} Unauthorized actions or deliberate attempts to manipulate the marketplace, including collusion between inference providers to influence aggregated predictions, reputation scores, or reward distribution.
 
 \item \textbf{System availability and reliability:} Failure to submit, process, or return inference requests due to unavailable providers, failed transactions, or disruptions affecting the application's operation.
 
-\item \textbf{Economic incentives and fairness:} Vulnerabilities in the reward and penalty mechanisms that allow dishonest behaviour to be more profitable than honest participation, discourage legitimate providers, or undermine the economic sustainability of the marketplace.
-
-\item \textbf{Usability and transparency:} User confusion or errors when interacting with the marketplace, particularly when submitting inference requests, authorizing blockchain transactions, or interpreting prediction results and transaction statuses.
+\item \textbf{Economic incentives and fairness:} Incorrect payment calculations, reward distributions, or stake handling that result in financial losses for task requesters or inference providers. The analysis also considers weaknesses in the reward and penalty mechanisms that fail to incentivize accurate predictions, allow malicious or colluding providers to benefit unfairly, or undermine the reliability and economic sustainability of the marketplace.
 
 \end{itemize}
 The analysis will consider hazards arising from the interactions between the application's components, including the off-chain backend, AI inference providers, aggregation and reputation mechanisms, and on-chain programs. External dependencies, such as blockchain network infrastructure and third-party inference services, will be considered where their failures or limitations could affect the safety, security, reliability, or intended operation of DAIIM. Hardware failures and other external events beyond the system's boundaries will otherwise remain outside the scope of the analysis.
@@ -194,7 +196,7 @@ sensitive.
 
 \item \textbf{Downstream Decisions.} The decisions that task requesters and
 beneficiaries, such as emergency management agencies, make using DAIIM's
-results. DAIIM is responsible for providing accurate results and information
+results. DAIIM is responsible for providing inferences and information
 about their quality, but not for how the results are used.
 
 \item \textbf{Hosting Infrastructure and Browsers.} The cloud or server
@@ -216,14 +218,9 @@ The following assumptions describe the conditions under which the DAIIM system i
     \item This assumption defines the expected capabilities of participating providers. Provider unavailability, insufficient computational resources, and failed inference requests remain potential hazards.
 \end{itemize}
 
-\item A minimum number of inference providers is available during the initial operation of the marketplace.
+\item A minimum number of two inference providers is available during the initial operation of the marketplace.
 \begin{itemize}
-    \item This assumption establishes that the marketplace has some initial provider participation to process inference requests and evaluate the aggregation, reputation, and reward mechanisms. However, the number of providers may be insufficient, providers may produce inaccurate predictions, and some providers may behave maliciously or collude. These possibilities remain potential hazards to be considered in the hazard analysis.
-\end{itemize}
-
-\item Task requesters provide inference task definitions and input data in formats supported by the system.
-\begin{itemize}
-    \item This assumption establishes the expected input requirements for inference requests. Invalid, incomplete, or malformed inputs should be considered where they could cause processing failures or incorrect results.
+    \item This assumption establishes that the marketplace has some initial provider participation to process inference requests and evaluate the aggregation, reputation, and reward mechanisms. 
 \end{itemize}
 
 \item Users have access to a modern web browser and an internet connection to interact with the application.
@@ -254,7 +251,7 @@ this potential failure mode.}
 }
 \caption{Failure Modes and Effects Analysis} \label{TblFMEA} \\
 \toprule
-\textbf{Failure} & \textbf{Ref.} & \textbf{Failure Modes} & \textbf{Failure Effect} & \textbf{Failure Causes} & \textbf{Recommended Actions} \\
+\textbf{Failure} & \textbf{Ref.} & \textbf{Failure Mode} & \textbf{Failure Effect} & \textbf{Failure Cause} & \textbf{Recommended Action} \\
 \midrule
 \endfirsthead
 

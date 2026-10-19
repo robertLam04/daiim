@@ -56,6 +56,8 @@
 }
 
 \input{../Comments.text}
+\renewcommand{\authornote}[3]{}
+\renewcommand{\todo}[1]{}
 \input{../Common.text}
 
 % Used so that cross-references have a meaningful prefix
@@ -90,7 +92,7 @@
 
 \begin{document}
 
-\title{Software Requirements Specification for \progname: subtitle describing software} 
+\title{Software Requirements Specification for \progname{}:\newline A Decentralized Marketplace for AI Inference}
 \author{\authname}
 \date{\today}
 	
@@ -112,6 +114,9 @@
 October 8 & 1.0 & Aidan: Added sections 1.1 to 1.5 (Purpose, Scope, Stakeholders, Definitions and Acronyms, and Characteristics of Intended Reader)\\
 October 11 & 1.0 & Robert: Added major functional requirements\\
 October 11 & 1.0 & Aidan: Grouped functional requirements into categories and added functional requirements derived from the stakeholder requirements\\
+October 11 & 1.0 & Nathan: Added all of section 2, likely changes and unlikely changes\\
+October 16 & 1.0 & Robert: Added data and AI reqs sections\\
+October 19 & 1.0 & Robert: Fix typos, add acronyms, add subtitle, remove instructions\\
 \bottomrule
 \end{tabularx}
 
@@ -255,6 +260,8 @@ Term & Definition\\
 \midrule
 AI & Artificial Intelligence.\\
 ML & Machine Learning.\\
+MAE & Mean Absolute Error, the arithmetic mean of the absolute differences between predicted and ground-truth values.\\
+JSON & JavaScript Object Notation, a text-based data format used to represent structured data.\\
 DAIIM & Decentralized Artificial Intelligence Inference Marketplace, the system specified in this document.\\
 Task & A problem to be solved via machine learning, such as predicting a biomarker level or a stock price.\\
 Task definition & A specification of a task, including the expected input and output types.\\
@@ -298,112 +305,99 @@ problem, the vision, and the interfaces between the system and its environment.
 This section also describes user characteristics and lists the system
 constraints.
 
-\plt{The purpose of this section is to provide general information about the
-  system so that the specific requirements in the later sections will be easier to
-  understand. The general system description section is designed to be
-  changeable independent of changes to the functional requirements documented in
-  the specific system description. The general system description provides a
-  context for a family of related models.  The general description can stay the
-  same, while specific details are changed between family members.}
-
 \subsection{Problem Statement}
 
-\plt{Current situation, problem, impact, desired improvement.  You will likely borrow some text from your problem description document.}
+AI inference services often rely on centralized providers, which can create single points of failure and leave users dependent on a single service for their results. Users may also have limited visibility into how results are obtained, how reliable they are, and whether the service provider is operating as expected.
+These limitations raise concerns about service availability, trust, and the ability to assess the quality of inference results. Relying on a single provider also limits opportunities for independent providers to contribute their inference capabilities to a shared marketplace.
+DAIIM addresses the need for an approach to AI inference that supports greater reliability, accountability, and participation. The underlying problem is how to provide users with confidence in inference results while allowing multiple providers to participate and be evaluated fairly, without requiring users to rely entirely on one centralized service.
 
-TODO
 
 \subsection{Product Vision}
 
-\plt{A clear and concise statement of the product's purpose and goals.}
 
-\plt{The goal statements are functional and nonfunctional objectives that system
-  under consideration should achieve. Goals provide criteria for sufficient
-  completeness of a requirements specification and for requirements pertinence.
-  Goals will be refined by requirements.  The goals are written abstractly, with
-  a minimal amount of technical language.  They should be understandable by
-  non-domain experts.}
+DAIIM aims to make AI inference more reliable, transparent, and accessible by connecting users who need predictions with independent providers who can supply them. By combining predictions from multiple providers and making relevant performance and transaction information available, the marketplace seeks to build trust in inference results while creating opportunities for providers to offer their services.
+The system's goals are to:
+\begin{itemize}
+\item Improve the reliability of inference results by combining predictions from multiple independent providers, assessing the quality of their contributions, and reducing dependence on any single provider.
+\item Create a fair and accountable marketplace in which providers can build reputations and receive compensation based on their performance.
+\item Make marketplace activities transparent by allowing users to inspect aggregated results, relevant provider performance information, and records of transactions and payments.
+\item Make AI inference accessible to users without requiring prior knowledge of AI or Web3 technologies, while giving inference providers a way to offer their services and earn compensation for their contributions.
+\end{itemize}
 
-\plt{You will likely borrow from your goal statements in your problem
-description document.}
 
-TODO
+
   
 \subsection{System Context}
 
-\plt{Include users, external systems, APIs, databases, and third-party services.}
+\subsubsection{System Context Diagram}
 
-\plt{Your system context will include a figure that shows the abstract view of
-  the software.  In some cases the diagram will show other external
-  entities, besides the user.  For instance, when the software product is a
-  library, the user will be another software program, not an actual end user.
-  If there are system constraints that the software must work with external
-  libraries, these libraries can also be shown on the System Context diagram.
-  They should only be named with a specific library name if this is required by
-  the system constraint.}
-
-\begin{figure}[h!]
-\begin{center}
- \includegraphics[width=0.6\textwidth]{SystemContextFigure}
-\caption{System Context}
-\label{Fig_SystemContext} 
-\end{center}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{DAIIM-System-Context-Diagram.png}
+    \caption{System Context}
+    \label{Fig_SystemContext}
 \end{figure}
 
-\plt{For each of the entities in the system context diagram its responsibilities
-  should be listed.  Whenever possible the system should check for data quality,
-  but for some cases the user will need to assume that responsibility.  The list
-  of responsibilities should be about the inputs and outputs only, and they
-  should be abstract.  Details should not be presented here.  However, the
-  information should not be so abstract as to just say ``inputs'' and
-  ``outputs''.  A summarizing phrase can be used to characterize the inputs.
-  For instance, saying ``material properties'' provides some information, but it
-  stays away from the detail of listing every required properties.}
+\subsubsection{Responsibilities}
+\begin{itemize}
 
+\item \textbf{Task Requester Responsibilities:}
 \begin{itemize}
-\item User Responsibilities:
-\begin{itemize}
-\item 
-\end{itemize}
-\item \progname{} Responsibilities:
-\begin{itemize}
-\item Detect data type mismatch, such as a string of characters instead of a
-  floating point number
-\item 
-\end{itemize}
+    \item Define the inference task by specifying the problem to be solved, the expected input and output formats, and other required task settings.
+    \item Submit requests for predictions using an existing task definition and input data that conforms to the task's requirements.
+    \item Specify the amount of tokens offered for an inference request and authorize the associated payment transaction.
+    \item Receive the final aggregated prediction, information about the range of provider predictions, the number of providers that submitted predictions, and the request status.
+    \item View the status and results of previously submitted inference requests.
 \end{itemize}
 
-\plt{Identify in what context the software will typically be used.  Is it for
-exploration? education? engineering work? scientific work?. Identify whether it
-will be used for mission-critical or safety-critical applications.} 
+\item \textbf{Inference Provider Responsibilities:}
+\begin{itemize}
+    \item Register to provide predictions for an inference task by staking the required amount of tokens.
+    \item Receive information about available requests for tasks they are registered for, including the task requirements, input data, proposed payment, and relevant timing information.
+    \item Accept or decline participation in available inference requests.
+    \item Submit a prediction that conforms to the task's required output format for each request they accept.
+    \item Access information about their reputation, staked tokens, and rewards earned for each registered task.
+\end{itemize}
 
-\plt{This additional context information is needed to determine how much effort
-should be devoted to the rationale section.  If the application is
-safety-critical, the bar is higher.  This is currently less structured, but
-analogous to, the idea to the Automotive Safety Integrity Levels (ASILs) that
-McSCert uses in their automotive hazard analyses.}
+\item \textbf{Blockchain Network Responsibilities:}
+\begin{itemize}
+    \item Process marketplace transactions authorized by users, including transactions related to request payments, provider stakes, and provider compensation.
+    \item Record marketplace information designated for on-chain storage, including request payments, provider stakes, aggregated results, reputation updates, and reward distributions.
+    \item Make transaction status and transaction records available for verification.
+\end{itemize}
+
+
+\end{itemize}
+
+
+\subsubsection{Operating Context and Safety Significance}
+DAIIM is intended to be used as a web-based marketplace for requesting and evaluating AI inference results from multiple independent providers. Users submit inference requests through the system and receive aggregated predictions along with information about the contributing providers and the results they submitted. Blockchain technology is a required component of DAIIM, supporting transparent and verifiable records of marketplace activities, including provider stakes, payments, aggregated results, and reward distributions.
+DAIIM may be used in applications where reliable predictions are important, such as wildfire detection, where inaccurate or unavailable results could delay the identification of potential hazards. By combining predictions from multiple providers, the system aims to reduce dependence on any single provider and improve the reliability and availability of inference results. However, using multiple providers does not guarantee a correct result, as providers may submit inaccurate predictions or share similar sources of error.
+Although DAIIM does not directly control physical systems or make decisions on behalf of its users, its results may inform safety-critical applications where incorrect predictions could have serious consequences. Users are therefore responsible for validating aggregated results and determining whether they are sufficiently reliable for their intended use. The system must also account for risks such as provider collusion, unavailable providers, failed transactions, and incorrect aggregation or reputation calculations, as these may affect the trustworthiness of its results and marketplace operations.
+
+
 
 \subsection{User Characteristics} \label{SecUserCharacteristics}
+DAIIM is intended to support users with varying levels of technical expertise.
+\begin{itemize}
+\item \textbf{Task Requesters:} Task requesters should have a basic understanding of the inference task they wish to perform and be able to provide the required input data. They should be able to use a modern web browser and interpret the inference results presented by the system. They are not expected to understand the internal aggregation, reputation, or reward algorithms.
+\item \textbf{Inference Providers:} Inference providers should have sufficient technical knowledge and computational resources to execute the inference tasks they accept. They should understand the requirements for submitting predictions in a format supported by the marketplace.
 
-\plt{This section summarizes the knowledge/skills expected of the user.
-  Measuring usability, which is often a required non-function requirement,
-  requires knowledge of a typical user.  As mentioned above, the user is a
-  different role from the ``intended reader,'' as given in
-  Section~\ref{sec_IntendedReader}.  As in Section~\ref{sec_IntendedReader}, the
-  user characteristics should be specific an unambiguous.  For instance, ``The
-  end user of \progname{} should have an understanding of undergraduate Level 1
-  Calculus and Physics.''}
+
+\end{itemize}
+The user interface should minimize the technical knowledge required to submit requests and interpret results, while provider participation may require greater technical expertise.
+
+
 
 \subsection{System Constraints}
 
-\plt{System constraints differ from other type of requirements because they
-  limit the developers' options in the system design and they identify how the
-  eventual system must fit into the world. This is the only place in the SRS
-  where design decisions can be specified.  That is, the quality requirement for
-  abstraction is relaxed here.  However, system constraints should only be
-  included if they are truly required.}
+\begin{itemize}
+\item \textbf{Web3 browser compatibility:} The user-facing application must be accessed through a web browser that supports the Web3 wallet extensions required to authenticate users and authorize blockchain transactions.
+\item \textbf{Inference type and data compatibility:} The system is restricted to regression-based inference for the initial project. Inference requests must provide input data in a supported format, and provider predictions must conform to the expected numerical output format so that results can be validated and aggregated consistently.
+\item \textbf{Blockchain integration:} Marketplace operations that require on-chain execution must be compatible with the blockchain network selected for the project. The system must account for possible transaction delays or failures.
+\end{itemize}
 
-\plt{This is where you would mention platform constrains, and licensing
-restrictions.}
+
 
 % ============================================================== 
 \section{Stakeholder Requirements}
@@ -1103,11 +1097,11 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistration}:] The system shall allow authenticated users to register as inference providers for an inference task by staking the required minimum amount of tokens (reference the min \# tokens).
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistration}:] The system shall allow authenticated users to register as inference providers for an inference task by staking the required minimum amount of tokens.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistrationStaking}:] When a provider registers for an inference task, the system shall lock the required minimum stake for that task in escrow. The system shall return the provider's stake when the applicable conditions for releasing it are met.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderWillingUnregistration}:] The system shall allow registered inference providers to unregister from an inference task, provided they have not accepted any acitve inference requests for that task. Upon unregistration, the provider shall be removed from the list of registered providers for the task, and their remaining staked tokens shall be returned to their token account. Upon re-registering for an inference task, the provider shall start with the baseline reputation score for that task, regardless of their previous reputation score.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderWillingUnregistration}:] The system shall allow registered inference providers to unregister from an inference task, provided they have not accepted any active inference requests for that task. Upon unregistration, the provider shall be removed from the list of registered providers for the task, and their remaining staked tokens shall be returned to their token account. Upon re-registering for an inference task, the provider shall start with the baseline reputation score for that task, regardless of their previous reputation score.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderDashboard}:] The system shall allow inference providers to view their reputation score, staked tokens, and rewards earned for each inference task they are registered for.
 
@@ -1181,8 +1175,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationPenaltyCap}:] The system shall limit the reputation decrease a provider receives for a single inference request to at most MAX\_REPUTATION\_PENALTY, regardless of how far the provider's prediction is from the final aggregated result.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_DistributeRewards}:] The system shall distribute the inference request's reward among all providers whose predictions contributed to the final aggregated result and whose reputation did not decrease as a result of the request, in proportion to each provider's reputation score. Each eligible provider $i$ shall receive $R \cdot r_i / \sum_j r_j$, where $R$ is the reward for the request, $r_i$ is the reputation score used to weight provider $i$'s prediction in the final aggregated result, and the sum is over all eligible providers.
-
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_DistributeRewards}:] The system shall distribute the inference request's reward among all providers whose predictions contributed to the final aggregated result and whose reputation did not decrease as a result of the request, in proportion to each provider's reputation score. 
 \end{itemize}
 
 \subsection{Penalties}
@@ -1194,6 +1187,8 @@ The functional requirements are grouped by the area of DAIIM they describe.
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashInvalidPrediction}:] When the system rejects a provider's prediction under \rref{FR_PredictionValidation}, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoShow}:] When a provider that accepted an inference request has not submitted any prediction for the request by the end of the prediction phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderMinimumStakeUnregistration}:] Whenever a provider's stake for an inference task falls below MINIMUM\_PROVIDER\_STAKE, the system shall automatically unregister the provider from that task.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashRepeatedOffenses}:] When a provider has been slashed for at least REPEAT\_OFFENSE\_COUNT of the last REPEAT\_OFFENSE\_WINDOW inference requests they accepted for a task, the system shall unregister the provider from the task and burn their remaining stake for the task.
 
@@ -1269,58 +1264,83 @@ The system shall send invitation to accept an inference request to providers ran
 
 \end{itemize}
 
-Questions / Missing reqs: \\
-- We said that the task requester gets to choose the amount of tokens they want to offer for a request - How can we express this to inference providers in a useful way? Since the total amount does not reflect how much they will earn.\\
-  - Unless the requester also gets to choose exactly how many participants are necessary to complete the request.\\
-- What happens if aggregation fails? Should add req for this\\
-- What happens if not enough providers accept? Should add req for this\\
-- Rewards distribution and provider reputation update may be changed after POC\\
-- Need to define some of the thresholds used in reqs above: min reputation, amount to stake, min inference request payment etc.\\
-
 \plt{The requirements are given labels so that they can be referenced in other
 parts of the SRS.  The label names should be meaningful mnemonics, not numbers.}
 
 % ============================================================== 
 \section{Data Requirements}
 
-\plt{The Data Requirements section describes what information the system must manage.
-  It includes the major data entities, their attributes, and the relationships
-  between them.  It also includes a data dictionary that defines the meaning of
-  each attribute.}
-
 \subsection{Major Data Entities}
 
-\plt{What information must exist for the system to accomplish its goals?}
-
-\plt{For each entity, provide a short explanation.}
-
 \begin{itemize}
-\item User
-\item Song
-\item Session
-\item Report
+\item Model Providers: Network contributors identified by a wallet address, with a list of registered inference tasks and a reputation for each task.
+\item Inference Tasks: A task defined by its description and input and output formats, with a list of registered inference providers.
+\item Inference Requests: A consumer's request for an inference task, including associated inference task, input data, cost, information about the requester, individual provider inferences and the final aggregated inference.
+\item Token Economics: Network-wide totals describing token supply, staking, escrow, burns, and reward distributions.
+\item Network Participation Metrics: Measurements summarizing model providers' participation in inference tasks and requests across the network.
 \end{itemize}
 
 \subsection{Data Dictionary}
 
 \plt{For each entity, define all important attributes.}
 
-\begin{longtable}{p{0.20\textwidth} p{0.20\textwidth} p{0.45\textwidth}}
+\begin{longtable}{p{0.16\textwidth} p{0.22\textwidth} p{0.15\textwidth} p{0.35\textwidth}}
 \toprule
-Attribute & Type & Description\\
+Entity & Attribute & Type & Description\\
 \midrule
-user\_id & UUID & Unique identifier\\
-email & String & User email address\\
+Model Provider & Wallet address & Address & Provider's wallet\\
+ & Registered tasks & Task IDs & Tasks the provider joined\\
+ & Task reputation & Number & Reputation for a task\\
+ & Task stake & Integer & Stake for a task\\
+Inference Task & Task ID & Identifier & Unique task identifier\\
+ & Name and type & String & Task name and category\\
+ & Description & String & Problem addressed by the task\\
+ & Input schema & JSON & Valid request input format\\
+ & Output schema & JSON & Valid prediction format\\
+ & Minimum providers & Integer & Required participants per request\\
+ & Timing limits & Timestamp & Acceptance and prediction periods\\
+ & Reputation tolerance & Number & Threshold for reputation changes\\
+ & Minimum stake & Number & Stake required for registration\\
+Inference Request & Request ID & Identifier & Unique request identifier\\
+ & Task ID & Identifier & Requested inference task\\
+ & Requester wallet & Address & Wallet of the requester\\
+ & Input data & JSON & Data submitted for inference\\
+ & Cost & Number & Offered payment\\
+ & Status & Status & Current request state\\
+ & Provider predictions & List<Output Type> & Predictions submitted for the request\\
+ & Aggregated result & Output Type & Final inference result\\
+ & Submission time & Timestamp & Request creation time\\
+Token Economics & Total minted & Number of tokens & Tokens minted across the network\\
+ & Total staked & Number of tokens & Tokens staked by providers\\
+ & Request escrow & Number of tokens & Tokens escrowed for inference requests\\
+ & Total burned & Number of tokens & Tokens permanently removed from supply\\
+ & Rewards distributed & Number of tokens & Tokens paid to providers as rewards\\
 \bottomrule
 \caption{Data Dictionary} \label{tab:DataDictionary}
 \end{longtable}
 
 \subsection{Privacy and Data Retention}
 
-\plt{Discuss storage, retention, deletion, privacy controls,
- consent, encryption, and compliance requirements.}
+DAIIM will use a semi-private approach for inference request input data. Inputs
+will be encrypted and made accessible only to the requester and providers that
+accept the request. By submitting a request, the requester consents to the
+input being shared with those providers and should not submit data they
+consider fully private or confidential. Input data will be stored only as long
+as needed to fulfill the request and will be deleted from storage controlled by
+the system once the request is completed or cancelled, following established
+data-minimization and retention practices. The system will not store readable
+input data on the blockchain. DAIIM's handling of personal data must follow
+applicable privacy and data-protection laws for its deployment and users; the
+specific obligations will depend on the relevant jurisdictions.
 
-TODO
+Other data, including wallet addresses, provider reputations, task definitions,
+request status and results, and token-economics records, will be collected and
+retained only as needed to operate the marketplace, provide its features, and
+meet applicable legal obligations. Information needed for public marketplace
+and blockchain functions may be visible to other users; users should be
+informed that blockchain records may be permanent and cannot necessarily be
+deleted. Data stored off-chain will be protected against unauthorized access
+and encrypted in transit and at rest where appropriate.
 
 % ============================================================== 
 \section{Non-Functional Requirements}
@@ -1441,31 +1461,33 @@ be covered in the Verification and Validation document.}
 % ============================================================== 
 \section{AI and Machine Learning Requirements}
 
-\plt{Refer to
-\href{https://gitlab.cas.mcmaster.ca/courses/capstone/-/blob/main/Lectures/Lxx_DrMosserGuestLecture/2026_09_Capstone.pdf?ref_type=heads}{Dr.
-Mosser's guest lecture} on AI requirements.}
-
-\plt{Include only when applicable.}
-
-\subsection{Model Inputs}
-
-TODO
-
-\subsection{Model Outputs}
-
-TODO
+This section describes how DAIIM supports machine-learning inference, evaluates
+prediction quality, and communicates the limitations of its results. The
+project scope focuses on regression tasks: each task defines its input and
+output schemas, providers submit numerical predictions, and the system combines
+those predictions into a reputation-weighted result.
 
 \subsection{Evaluation Metrics}
 
-\plt{Accuracy, Precision, Recall, F1, BLEU, WER, etc.}
-
-TODO
+For regression tasks with available ground-truth values, DAIIM will evaluate
+predictions using mean absolute error (MAE), calculated as the arithmetic mean
+of the absolute differences between predicted and ground-truth values across
+evaluated requests:
+\[
+\mathrm{MAE} = \frac{1}{n}\sum_{i=1}^{n} \lvert \hat{y}_i - y_i \rvert,
+\]
+where $n$ is the number of evaluated requests, $\hat{y}_i$ is a predicted
+value, and $y_i$ is its ground-truth value. MAE will be reported in the units
+of the task's output. Ground truth may not exist or may become available only
+later. DAIIM will calculate and display MAE for available
+predictions and aggregated results.
 
 \subsection{Known Limitations}
 
-\plt{Explicitly document expected failure modes.}
-
-TODO
+The system aggregates provider predictions but does not independently verify
+that the final result is correct. Decentralization, provider reputation, and
+staking are intended to encourage reliable predictions, but the system cannot
+guarantee that a result is accurate or suitable for its intended use.
 
 % ============================================================== 
 \section{Requirements Traceability Matrices}
@@ -1655,21 +1677,21 @@ units and scale of the task's output.
 \section{Likely Changes}    
 
 \noindent \begin{itemize}
-
-\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_meaningfulLabel}:] \plt{Give
-    the likely changes, with traceability to the entity that is likely to change.}
-
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_inferenceModels}:] The set of supported AI inference models may expand beyond the regression model used in the initial proof of concept. The inference processing and aggregation components may need to be adapted to support additional model types.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_providerParticipation}:] The number and behaviour of participating inference providers may change over time as providers join or leave the marketplace. The system's aggregation, reputation, and reward mechanisms may need to accommodate different levels of provider participation.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_aggregation}:] The prediction aggregation, reputation, and reward mechanisms may be refined as the proof of concept is evaluated. These changes may be required to improve prediction reliability and address issues such as inaccurate predictions, malicious providers, or collusion.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_userRequirements}:] User requirements for the marketplace interface and the presentation of inference results may evolve as the system is tested. The interface may need to be updated to improve usability and make prediction quality information easier to understand.
 \end{itemize}
+
 
 \section{Unlikely Changes}    
 
 \noindent \begin{itemize}
-
-\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_meaningfulLabel}:] \plt{Give
-    the unlikely changes.  The design can assume that the changes listed will
-    not occur.}
-
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_corePurpose}:] The fundamental purpose of DAIIM is unlikely to change. The system will continue to provide a marketplace for requesting AI inference and obtaining aggregated predictions from participating providers.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_softwarePlatform}:] The system is unlikely to move away from its intended web-based form during the scope of this project. Users will continue to access the marketplace through a modern web browser with an internet connection.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_softwareOnly}:] The project is unlikely to introduce a physical hardware component. DAIIM will remain a software-based system that coordinates inference requests, provider predictions, and marketplace operations.
 \end{itemize}
+
 
 \newpage{}
 
@@ -1677,9 +1699,11 @@ units and scale of the task's output.
 
 \subsection{Appendix A: Additional Materials}
 
-TODO
+Additional materials are not included in this SRS.
 
 \subsection{Appendix B: Development Plan}
+
+The development plan is not included in this SRS; see the separate Development Plan document.
 
 \plt{This section is optional.  It is used to explain the plan for developing
   the software.  In particular, this section gives a list of the order in which
@@ -1700,6 +1724,7 @@ Their values are defined in this section for easy maintenance.}
 
 \begin{itemize}
 \item USABILITY\_COMPLETION\_RATE: the minimum fraction of usability test participants who must complete each task without assistance (\nfrref{NFR_Usability}). To be determined.
+\item MINIMUM\_PROVIDER\_STAKE: the minimum stake a provider must maintain for an inference task to remain registered for that task (\rref{FR_ProviderMinimumStakeUnregistration}). To be determined.
 \item MAX\_REPUTATION\_PENALTY: the maximum reputation decrease a provider can receive for a single inference request (\rref{FR_ReputationPenaltyCap}). To be determined.
 \item SLASH\_FRACTION: the fraction of a provider's stake slashed for an invalid prediction or for not submitting a prediction (\rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}). To be determined.
 \item REPEAT\_OFFENSE\_COUNT: the number of slashing offences that causes a provider to be unregistered (\rref{FR_SlashRepeatedOffenses}). To be determined.
@@ -1708,10 +1733,49 @@ Their values are defined in this section for easy maintenance.}
 
 \subsection{Appendix D: Generative AI Disclosure}
 
-\plt{Provide full transparency on how generative AI was used in the creation of
-  this document.  This includes any text, figures, or tables that were generated
-  by AI.  If any skills were created for AI agents to review the documentation,
-  those should be disclosed here.}
+This section provides an overview of how generative AI tools were used in the
+making of this document.
+
+\subsubsection*{AI Tools Used}
+
+\begin{itemize}
+    \item Claude Opus 5.5 (Anthropic), used through Claude Code.
+\end{itemize}
+
+\subsubsection*{How and Where Used}
+
+Claude Opus 5.5 was used throughout this document to help ideate and draft its
+content. The team provided the tool with the Problem Statement and Goals and
+the Development Plan, and used it to brainstorm the stakeholders, stakeholder
+requirements, functional requirements, and non-functional requirements that
+the document should address, and to produce first drafts of the text. In the
+Functional Requirements section, for example, it helped split broad
+descriptions of the marketplace's behaviour into atomic, testable
+requirements, grouped by the phase of an inference request they belong to, and
+it suggested symbolic constants, such as SLASH\_FRACTION, for values that are
+not yet decided. No skills or custom agents were created to review this
+document. It was also used to draft the text of this appendix.
+
+The tool was used as an aid, not as a replacement for the team's own work.
+Team members were involved in every sentence of the document: each AI-assisted
+draft was read, discussed, and edited by the team, and ideas that did not fit
+the project were discarded or rewritten.
+
+\subsubsection*{Verification of AI-Generated Content}
+
+Every sentence in this document was reviewed by at least one team member
+before it was included. AI-assisted content was checked against the Problem
+Statement and Goals and the Development Plan to confirm that it describes
+behaviour the team intends DAIIM to have, that it does not introduce
+requirements or design decisions the team has not agreed to, and that it is
+consistent with the technologies the Development Plan lists. Cross-references
+between requirements were checked by hand, and each requirement was reviewed to
+confirm that it is atomic, testable, and does not prescribe a design. Values
+that are still undecided are left as symbolic constants in
+Appendix~C and will be set once the proof of concept has been evaluated. The
+team remains responsible for the accuracy, completeness, and consistency of
+this document, regardless of whether material was first drafted by a team
+member or with the help of an AI tool.
 
 \subsection{Appendix E: Reflection}
 
@@ -1720,16 +1784,214 @@ Their values are defined in this section for easy maintenance.}
 The information in this section will be used to evaluate the team members on the
 graduate attribute of Lifelong Learning.  
 
-\input{../Reflection.text}
+\begin{enumerate}
+  \item What went well while writing this deliverable?
+  
+  \textbf {Nathan}: For the SRS and Hazard Analysis documents, we were able to learn a lot about our project by identifying potential hazards and discussing how we could mitigate them. For example, one of our main concerns was determining how the system would handle collusion attacks, which we discussed further during a meeting with our supervising professor. Through ongoing discussions among team members and with our professor, we were able to identify potential hazards and consider appropriate mitigation strategies
+   We took a similar approach when developing the SRS, first identifying our functional requirements with guidance from our professor and ensuring that the different aspects of our project's scope were adequately represented. Overall, maintaining consistent communication within our team and with our professor allowed us to make incremental progress, receive regular feedback, and address uncertainties as they arose. This helped us ensure that our documents accurately reflected our project's intended scope and that we were progressing in the right direction.
 
-\input{../SRS_Reflection.text}
+  \item What pain points did you experience during this deliverable, and how did
+  you resolve them?
+
+  \textbf{Nathan}: One pain point our team encountered during this deliverable was determining the appropriate level of detail to include in certain sections. For example, when writing the critical assumptions in the Hazard Analysis, we were unsure whether explicitly stating that the system required at least one non-malicious inference provider would be too restrictive. Making this a formal assumption could imply that the system depended on this condition to operate correctly, potentially requiring additional assumptions or safety measures to address the risks associated with malicious providers. To address this, we decided to treat malicious provider behaviour as a potential hazard within the Failure Mode and Effects Analysis rather than making the presence of a non-malicious provider a concrete assumption. This allowed us to acknowledge and analyze the risk without assuming that malicious behaviour could be ruled out.
+
+Another pain point was leaving our team review call until the final two days before the deadline. The call lasted over three hours, making it difficult to coordinate everyone's availability and review the document efficiently. For future deliverables, we plan to create pull requests and have our sections ready for review three to four days before the deadline. This will allow team members to review each other's work at times that fit their schedules, provide feedback incrementally, and avoid relying on a single, lengthy meeting close to the deadline.
+
+  \item How many of your requirements were inspired by speaking to your
+  client(s) or their proxies (e.g. your peers, stakeholders, potential users)?
+
+  \textbf{Aidan:} Most of our stakeholder requirements were inspired by
+  speaking to our supervisor, who acts as our client, and by discussions with
+  peers who represent the two kinds of users of DAIIM. Of the 15 stakeholder
+  requirements in the Stakeholder Requirements section, roughly 12 came
+  directly out of these conversations:
+  \begin{itemize}
+    \item \textbf{Task requesters (\srref{SR_DefineTask} to
+    \srref{SR_EaseOfUse}):} Conversations about who would actually use a
+    decentralized inference marketplace, such as emergency management agencies
+    forecasting river levels, led us to focus on consensus and reliability.
+    This inspired the requirements that results combine predictions from
+    multiple independent providers (\srref{SR_ReliableInference}), remain
+    available when some providers are offline (\srref{SR_ResilientService}),
+    come with information about their quality (\srref{SR_ResultQuality}), and
+    are not controlled by a single organization
+    (\srref{SR_NoCentralAuthority}). Peers without a blockchain background
+    pointed out that requesters should not need to understand decentralized
+    systems to use DAIIM (\srref{SR_EaseOfUse}), and that they should be able
+    to see and verify the payments they authorize (\srref{SR_Transparency}).
+    \item \textbf{Inference providers (\srref{SR_ProviderParticipation} to
+    \srref{SR_AutomaticPayment}):} Discussions with our supervisor about why
+    anyone would contribute their models to the network shaped all four
+    provider requirements, especially that providers must be able to earn a
+    profit (\srref{SR_ProviderProfit}) and that honest, accurate predictions
+    must be more profitable than dishonest ones (\srref{SR_RewardAccuracy}).
+    These later drove most of the staking, reputation, reward, and penalty
+    functional requirements.
+  \end{itemize}
+  The three secondary stakeholder requirements on data privacy, protection,
+  and retention (\srref{SR_DataPrivacy} to \srref{SR_DataRetention}) were
+  inspired less by direct conversations and more by our own research into
+  regulatory expectations and by the hazards identified in the Hazard
+  Analysis. Similarly, most of the detailed functional requirements, such as
+  the exact rules for acceptance periods, reputation updates, and slashing,
+  were derived by the team from the stakeholder requirements rather than
+  requested directly. In this sense, client and peer conversations set the
+  goals of the system, while the team translated those goals into specific,
+  testable behaviour.
+  \item Which of the courses you have taken, or are currently taking, will help
+  your team to be successful with your capstone project.
+
+  \textbf{Aidan:} I will be focusing on the architecture and endpoints of
+  DAIIM's backend server, and three of the software engineering courses I have
+  taken will help with this work.
+  \begin{itemize}
+    \item \textbf{SFWRENG 2AA4 (Software Design I --- Introduction to Software
+    Development):} This course taught me how to break a system into modules
+    with clear responsibilities and well-defined interfaces, and how to apply
+    design principles such as information hiding, low coupling, and high
+    cohesion. These ideas will guide how I separate the backend's concerns,
+    such as handling inference requests, communicating with providers, and
+    submitting transactions to the on-chain programs, so that each part can be
+    developed and tested independently.
+    \item \textbf{SFWRENG 3A04 (Software Design III --- Large System Design):}
+    This course covered architectural styles, design patterns, and how the
+    components of a large system interact. It will help me choose an
+    architecture for the backend that fits DAIIM's mix of off-chain and
+    on-chain components, and design endpoints that give the frontend and
+    inference providers a clear, consistent interface to the system. It also
+    prepared me to document these decisions in the design documents later in
+    the project.
+    \item \textbf{SFWRENG 2C03 (Data Structures and Algorithms):} This course
+    taught me how to choose data structures and analyze the efficiency of
+    algorithms. This will help me design backend logic that stays efficient as
+    the number of tasks, requests, and providers grows, such as tracking the
+    phase of each active inference request, matching requests to registered
+    providers, and collecting predictions before aggregation.
+    \end{itemize}
+
+
+  \textbf{Nathan}: A course I have taken in the past that will help our team succeed with this capstone project is 3RA3, which focused on software requirements engineering. In this course, we learned about goal modelling and how to distinguish high-level stakeholder goals from concrete software requirements. This knowledge has been useful throughout the capstone project because it has allowed me to better understand what makes a good goal and how to refine it into requirements that describe what our system should accomplish.
+For example, one of DAIIM's main goals is to provide reliable aggregated inference results. Rather than treating this broad goal as a requirement on its own, we needed to identify the specific system responsibilities that would help achieve it, such as aggregating provider predictions and maintaining provider reputations. Additionally, the knowledge I gained about identifying stakeholders and their goals has helped me consider the different needs of task requesters and inference providers, particularly when designing a marketplace that must balance prediction accuracy with fair provider compensation. Overall, the concepts I learned in 3RA3 have helped me contribute to defining our project's scope and developing requirements that align with its intended goals
+
+
+  \textbf{Robert}:
+  I am currently taking COMPSCI 4CR3 (Applied Cryptography), and the course
+  will help me understand the cryptographic foundations of the project's
+  blockchain and cryptocurrency components. Later in the course, we will
+  discuss blockchain technology, which will help me better understand how
+  DAIIM's blockchain components are implemented. Specifically, the security
+  aspects of private-key cryptography and digital signatures are important to
+  the project. A private key is used to sign transactions, allowing users to
+  authorize actions with their wallets. Understanding
+  these mechanisms will help me reason about how authorization and escrow work
+  in DAIIM, and why protecting private keys is essential. Furthermore, having
+  a solid understanding of key signing will be useful in creating a user interface
+  that is able to abstract away a lot of this complexity while still giving users
+  enough information to understand the actions they are taking.
+
+  \textbf{Keira}: 
+  Of the courses I have taken throughout my undergraduate degree, I believe the following three will help my team be successful in this capstone project:
+  \begin{itemize}
+    \item \textbf{(Software Design III – Large System Design):} 
+    In this course, I learned crucial information about sustainable architectures, methodology of making software architecture decisions, and gained experience designing and developing a complex full-stack program. This included identifying requirements, creating a development plan, and implementing the system. I can use the knowledge and experience gained from this course to navigate the design process, making design decisions, and the implementation of the capstone project.
+
+    \item \textbf{4C03 (Computer Networks and Security):}
+    In this course, I learned about different network protocols, as well as encryption and information security. This knowledge is crucial in addressing some of the hazards we identified and meeting some functional and nonfunctional requirements related to data handling and network transactions.
+
+    \item \textbf{4HC3 (Human Computer Interfaces):} 
+    I am currently enrolled in this course and I believe the content related to usability requirement development and designing a user interface that meets the needs of the target user will be helpful, as a huge part of our capstone project is related to the web client through which requesters will interact with the system. Some major nonfunctional requirements which will verify if the project is a success with the target requester user group involve making the technical aspects of the system, such as the blockchain and Web3 wallet infrastructure, accessible and learnable to the average user with limited knowledge in these areas.
+  \end{itemize}
+
+  
+  \item What knowledge and skills will the team collectively need to acquire to
+  successfully complete this capstone project?  Examples of possible knowledge
+  to acquire include domain specific knowledge from the domain of your
+  application, or software engineering knowledge, mechatronics knowledge or
+  computer science knowledge.  Skills may be related to technology, or writing,
+  or presentation, or team management, etc.  You should look to identify at
+  least one item for each team member.
+
+  Much of the knowledge and skills our team will need to collectively acquire to successfully complete
+  this capstone project are related to domain specific knowledge and specific expected technology. 
+  This project is highly technical and we will be using tools that we do not have previous experience 
+  of implementing. 
+
+  Having worked with Dr. Hassan before, Robert was the only member with experience using Solana Devnet 
+  and Solana Mainnet to test and implement blockchain transactions and programs. Aidan and Keira had 
+  no previous knowledge of or experience with blockchains or smart contracts, and had overcome this 
+  learning curve through research. Robert was able to share resources that he had cited 
+  previously in his research work, which helped support their learning at the beginning of the project.
+
+  The token economics is another area with which all members do not have or have little experience. 
+  As most members do not have experience with Solana, blockchain, or wallets, it naturally follows
+  that experience using SOL tokens on blockchain is something that will have to be acquired for the 
+  success of the project.
+
+  None of our four members have implemented an embedded Web3 wallet in our previous 
+  projects. Our supervisor, Dr. Hassan, made us aware of the availability of the tool for embedding
+  the wallet in a way that is more familiar to the average user with no experience with Web3 wallets. 
+  This will help support our usability non-functional requirements for the users.
+
+  Additionally, a major part of the project is determining a reliable aggregation algorithm for regression.
+  This requires foundational knowledge in theoretical mathematics and precision errors. Malicious providers 
+  and collusion attacks also pose a major risk to the system. Understanding methods to combat these risks
+  is necessary for the success of the system and completion of the project.
+
+
+  \item For each of the knowledge areas and skills identified in the previous
+  question, what are at least two approaches to acquiring the knowledge or
+  mastering the skill?  Of the identified approaches, which will each team
+  member pursue, and why did they make this choice?
+
+  The team will use a combination of independent study and practical
+  experimentation to build the knowledge needed for DAIIM.
+
+  \begin{itemize}
+    \item \textbf{Blockchain, smart contracts, and wallets:} One approach is to
+    study the official Solana, Anchor, and wallet documentation, along with
+    cryptography resources on keys and transaction signatures. A second
+    approach is to build and test small programs and wallet flows on Solana
+    Devnet, including transactions that lock and release test funds from
+    escrow. The team can follow this
+    \href{https://paulx.dev/blog/2021/01/14/programming-on-solana-an-introduction/}
+    {Solana escrow tutorial} as a practical starting point. Robert will draw
+    on his prior Solana experience and his Applied
+    Cryptography coursework to guide the team's understanding of transactions,
+    signatures, and escrow security. The other team members will use a combination of
+    reading documentation and following these practical tutorials to get up to speed on this topic.
+
+    \item \textbf{Token economics and incentives:} The team can learn through
+    researching existing web3 and decentralized application that use a similar
+    token curated registry mechanism and by discussion with the supervisor. Our
+    supervisor has direct experience building a decentralized learning
+    platform for educators and learners, and several connections to other
+    developers who worked on this project. Robert and Kiera will focus on
+    traditional research techniques. All four members will participate in
+    discussions with the supervisor and other developers to ask questions,
+    learn from their experience, and understand practical considerations for
+    designing the system's token economics.
+
+    \item \textbf{Regression aggregation}
+    One approach is to study statistical measures and aggregation methods,
+    including how outliers and numerical precision affect results. A second is
+    to implement experiments using synthetic predictions and known ground
+    truth, varying the proportions of accurate, inaccurate, and colluding
+    providers. All members will contribute to the proof of
+    concept (POC), with Robert leading from experience with his previous project.
+    Aidan will conduct additional research on regression
+    aggregation methods to inform the design and evaluation of the simulations.
+
+    \item \textbf{Embedded wallets:} The frontend developers can first
+    study the wallet integration documentation and example applications, then
+    build a small prototype and test the connection, signing, and transaction
+    status flows. Aidan and Nathan will focus on learning and prototyping the
+    integration, while the rest of the team will review the flow and give
+    feedback from the perspective of users who are less familiar with Web3.
+  \end{itemize}
+
+\end{enumerate}
+
 
 \newpage
-
-\bibliographystyle {plainnat}
-\bibliography {../../refs/References}
-
-\newpage
-
 
 \end{document}
