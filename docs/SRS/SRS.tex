@@ -272,6 +272,8 @@ On-chain & Recorded on, or executed by, a blockchain.\\
 Web3 & Applications built on blockchains, where users interact with the system through their own blockchain accounts and authorize actions by signing transactions.\\
 Token & A digital asset on a blockchain, used by DAIIM to compensate inference providers.\\
 TEE & Trusted Execution Environment. A secure area of a processor that protects the code and data loaded inside it from unauthorized access.\\
+TLS & Transport Layer Security. A cryptographic network protocol for protecting data in transit and support data authentication and integrity.\\
+PIPEDA & Personal Information Protection and Electronic Documents Act. A Canadian federal act defines how to protect personal information that is collected, used, or disclosed.\\
 \bottomrule
 \caption{Definitions and Acronyms} \label{tab:DefinitionsAndAcronyms}
 \end{longtable}
@@ -529,6 +531,9 @@ User (requester or provider)
 \item The requester is signed in to the DAIIM web application and can access their profile and other features of the application.
 \end{itemize}
 
+\textbf{Related Requirements:} \rref{FR_WalletAuthentication}, \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_Learnability}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_BrowserSupport}, \nfrref{NFR_NoExtraSoftware}, \ref{SA_WalletSigning}, \ref{SA_TLS}.
+
+
 \refstepcounter{ucnum} \label{UC_SignOut}
 \subsection{\ucref{UC_SignOut}: Sign out of the web application.}
 
@@ -559,6 +564,8 @@ User (requester or provider)
 \begin{itemize}
 \item The user is signed out of the DAIIM web application and returns to the public page where they cannot access their profile or other features of the application.
 \end{itemize}
+
+\textbf{Related Requirements:} \rref{FR_TransactionStatus}, \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_ProgressStatus}.
 
 
 \refstepcounter{ucnum} \label{UC_AddFunds}
@@ -597,6 +604,8 @@ User (provider or requester)
 \item The transaction is logged on the blockchain.
 \end{itemize}
 
+\textbf{Related Requirements:} \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \ref{SA_FailureRetry}, \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_ProgressStatus}, \ref{SA_ErrorMessageTime}, \ref{SA_WalletSigning}, \ref{SA_TLS}.
+
 \refstepcounter{ucnum} \label{UC_BrowseMarketplace}
 \subsection{\ucref{UC_BrowseMarketplace}: Browse marketplace information}
 
@@ -623,6 +632,8 @@ User (requester or provider)
 \begin{itemize}
 \item User has successfully browsed the marketplace information.
 \end{itemize}
+
+\textbf{Related Requirements:} \rref{FR_PublicAccess}, \rref{FR_TaskBrowsing}, \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_PublicPagesPrivacy}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_BrowserSupport}.
 
 \refstepcounter{ucnum} \label{UC_CreateTask}
 \subsection{\ucref{UC_CreateTask}: Create an inference task}
@@ -655,6 +666,8 @@ Authenticated user
 \begin{itemize}
 \item The new inference task is created and stored in the system.
 \end{itemize}
+
+\textbf{Related Requirements:} \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_TaskMaxPredictionTime}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \ref{SA_BalanceCheck}, \ref{SA_SignedTransactionsOnly}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_TwoClickAccess}.
 
 \refstepcounter{ucnum} \label{UC_ProviderRegistration}
 \subsection{\ucref{UC_ProviderRegistration}: Register as an inference provider for a task}
@@ -702,6 +715,8 @@ Provider
 \item The registration, stake, and provider's consent are recorded and the provider has the transaction identifier.
 \end{itemize}
 
+\textbf{Related Requirements:} \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_ProviderWillingUnregistration}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \rref{FR_OnChainRecords}, \ref{SA_NoDuplicateSubmission}, \ref{SA_BalanceCheck}, \ref{SA_OnChainFundsCheck}, \ref{SA_SignedTransactionsOnly}, \ref{SA_FailureRetry}, \ref{SA_TransactionSimulation}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_PublicPagesPrivacy}, \ref{SA_WalletSigning}, \ref{SA_ErrorMessageTime}.
+
 \refstepcounter{ucnum} \label{UC_SubmitRequest}
 \subsection{\ucref{UC_SubmitRequest}: Submit an inference request for a task}
 
@@ -743,6 +758,8 @@ Requester
 \item The inference request is submitted and requester awaits result.
 \end{itemize}
 
+\textbf{Related Requirements:} \rref{FR_RequestSubmission}, \rref{FR_RequestValidation}, \rref{FR_RequestPayment}, \rref{FR_RequestBroadcast}, \rref{FR_MinimumAcceptance}, \rref{FR_RequestHistory}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_InputAccessRestriction}, \rref{FR_InputNotOnChain}, \rref{FR_InputDeletion}, \ref{SA_NoDuplicateSubmission}, \ref{SA_BalanceCheck}, \ref{SA_TransactionSimulation}, \ref{SA_ChargeEqualsAuthorized}, \ref{SA_FailureRetry}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess}, \nfrref{NFR_ConcurrentRequests}, \nfrref{NFR_FinalState}, \ref{SA_TLS}.
+
 \refstepcounter{ucnum} \label{UC_AcceptRequest}
 \subsection{\ucref{UC_AcceptRequest}: Accept an inference request for a task}
 
@@ -776,6 +793,8 @@ Provider
 \begin{itemize}
 \item The provider is registered as an accepted provider for the inference request, and the stake is locked in escrow.
 \end{itemize}
+
+\textbf{Related Requirements:} \rref{FR_RequestBroadcast}, \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \ref{SA_BalanceCheck}, \ref{SA_OnChainFundsCheck}, \ref{SA_SignedTransactionsOnly}, \ref{SA_RandomInvitations}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}, \ref{SA_WalletSigning}.
 
 \refstepcounter{ucnum} \label{UC_SubmitPrediction}
 \subsection{\ucref{UC_SubmitPrediction}: Process and submit a prediction for an inference request}
@@ -811,6 +830,8 @@ Provider
 \item The provider's prediction is submitted and recorded for the inference request.
 \end{itemize}
 
+\textbf{Related Requirements:} \rref{FR_RequestInputDistribution}, \rref{FR_InputAccessRestriction}, \rref{FR_PredictionPhaseStart}, \rref{FR_PredictionSubmission}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_PredictionPhaseEnd}, \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}, \ref{SA_GroundTruthTests}, \nfrref{NFR_PredictionsHidden}, \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess}, \nfrref{NFR_ErrorVisibility}, \ref{SA_TLS}.
+
 \refstepcounter{ucnum} \label{UC_AggregateResult}
 \subsection{\ucref{UC_AggregateResult}: Aggregate predictions and produce a final inference result}
 
@@ -842,6 +863,8 @@ System
 \item Final result is successfully calculated and stored, and the result is displayed to the requester.
 \end{itemize}
 
+\textbf{Related Requirements:} \rref{FR_MinimumPredictions}, \rref{FR_PredictionAggregation}, \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread}, \rref{FR_RequestHistory}, \rref{FR_OnChainRecords}, \rref{FR_InputDeletion}, \ref{SA_NoDuplicateSubmission}, \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_PredictionsHidden}, \nfrref{NFR_FinalState}.
+
 \refstepcounter{ucnum} \label{UC_UpdateReputation}
 \subsection{\ucref{UC_UpdateReputation}: Update and maintain provider reputation}
 
@@ -866,12 +889,15 @@ System
 \item 1a. System fails to retrieve the submitted prediction due to the prediction being rejected or not submitted: System marks the provider as non-responsive and informs them of the consequences. Provider tokens held in escrow and slashed and reputation is reduced.
 \item 2a. System encounters an error during the accuracy calculation or reputation update process: System retries the operation.
 \item 3a. System calculates a reputation score that is below the minimum threshold for the task: System informs the provider that their reputation score has fallen below the minimum threshold and the consequences, unregisters them from the task, and burns their staked tokens.
+\item 3b. Provider has been slashed for at least REPEAT\_OFFENSE\_COUNT of the last REPEAT\_OFFENSE\_WINDOW: Provider is notified of offense and concequences. Provider is unregistered from the task and tokens are burned.
 \end{itemize}
 
 \textbf{Postconditions}
 \begin{itemize}
 \item Provider reputations are updated based on the accuracy of their predictions, and any providers with reputations below the minimum threshold are unregistered from the task.
 \end{itemize}
+
+\textbf{Related Requirements:} \rref{FR_UpdateProviderReputations}, \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, \rref{FR_ReputationDecrease}, \rref{FR_ReputationPenaltyCap}, \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}, \rref{FR_ProviderForcedUnregistration}, \rref{FR_OnChainRecords}, \ref{SA_ProviderStatusCheck}, \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors}.
 
 \refstepcounter{ucnum} \label{UC_DistributeRewards}
 \subsection{\ucref{UC_DistributeRewards}: Distribute rewards to inference providers}
@@ -904,6 +930,8 @@ System
 \item All eligible providers have received their rewards or had their tokens slashed, and their balances have been updated accordingly.
 \end{itemize}
 
+\textbf{Related Requirements:} \rref{FR_DistributeRewards}, \rref{FR_ProviderDashboard}, \rref{FR_OnChainRecords}, \ref{SA_NoDuplicateSubmission}, \ref{SA_RewardValidation}, \ref{SA_ProviderStatusCheck}, \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_FinalState}, \nfrref{NFR_TransactionConfirmation}.
+
 \refstepcounter{ucnum} \label{UC_CancelRequest}
 \subsection{\ucref{UC_CancelRequest}: Cancel an inference request with too few participating providers}
 
@@ -929,6 +957,8 @@ System
 \begin{itemize}
 \item Request is cancelled, tokens are released from escrow and refunded, and affected users are updated.
 \end{itemize}
+
+\textbf{Related Requirements:} \rref{FR_AcceptancePeriodEnd}, \rref{FR_MinimumAcceptance}, \rref{FR_MinimumPredictions}, \rref{FR_RequestHistory}, \rref{FR_InputDeletion}, \ref{SA_NoDuplicateSubmission}, \nfrref{NFR_FinalState}, \nfrref{NFR_TransactionConfirmation}.
 
 \refstepcounter{ucnum} \label{UC_UnregisterProvider}
 \subsection{\ucref{UC_UnregisterProvider}: Unregister as an inference provider for a task}
@@ -962,6 +992,8 @@ Provider
 \item Provider is unregistered from the task, and their profile is updated accordingly. Any staked tokens are released.
 \end{itemize}
 
+\textbf{Related Requirements:} \rref{FR_ProviderWillingUnregistration}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_ProviderDashboard}, \ref{SA_ProviderStatusCheck}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}.
+
 \refstepcounter{ucnum} \label{UC_ViewHistory}
 \subsection{\ucref{UC_ViewHistory}: View transaction history and current balances}
 
@@ -991,6 +1023,8 @@ User (requester or provider)
 \item User has successfully viewed their transaction history and current balances.
 \end{itemize}
 
+\textbf{Related Requirements:} \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \rref{FR_RequestHistory}, \rref{FR_ProviderDashboard}, \rref{FR_OnChainRecords}, \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_ProgressStatus}.
+
 \refstepcounter{ucnum} \label{UC_ReadDocumentation}
 \subsection{\ucref{UC_ReadDocumentation}: Read documentation and learn how to use the system}
 
@@ -1018,6 +1052,8 @@ User (authenticated or unauthenticated)
 \begin{itemize}
 \item User has successfully read the documentation and learned how to use the system.
 \end{itemize}
+
+\textbf{Related Requirements:} \nfrref{NFR_Learnability}, \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_BrowserSupport}.
 
 % ============================================================== 
 \section{Functional Requirements}
@@ -1325,17 +1361,17 @@ be covered in the Verification and Validation document.}
 
 \noindent \begin{itemize}
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Learnability}:] The system shall be learnable and documentation should be accessible such that a user with experience using a browser but no experience using a blockchain or knowledge about ML concepts can learn how to use the system within 5 minutes.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Learnability}:] The system shall be learnable and documentation should be accessible such that a user with experience using a browser but no experience using a blockchain or knowledge about ML concepts can learn how to use the system within 5 minutes, verified through usability testing.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_TwoClickAccess}:] All features on the web application shall be accessible within 2 clicks from the home page.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_TwoClickAccess}:] All features on the web application shall be accessible within 2 clicks from the home page, verified through usability testing.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ErrorVisibility}:] Every error shall be visible and include a name, description, and suggested fix.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ErrorVisibility}:] Every user-facing error shall be visible and include a name, description, and suggested fix, verified through usability testing.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ProgressStatus}:] Long operations shall always show progress status.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ProgressStatus}:] Long operations shall always show progress status, verified via testing.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_TransactionConfirmation}:] Confirmation messages written in plain language shall be displayed after every transaction, indicating what has been recorded and if balances have been updated.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_TransactionConfirmation}:] Confirmation messages written in plain language shall be displayed after every transaction, indicating what has been recorded and if balances have been updated, verified via testing.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_EmbeddedWalletAccess}:] Requesters will access/create embedded wallet such that they can authenticate and add funds using supported social accounts or emails/numbers without needing knowledge of Web3 wallets.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_EmbeddedWalletAccess}:] Requesters will access/create embedded wallet such that they can authenticate and add funds using supported social accounts or emails/numbers without needing knowledge of Web3 wallets, verified through user testing.
 
 \end{itemize}
 
@@ -1343,13 +1379,13 @@ be covered in the Verification and Validation document.}
 
 \noindent \begin{itemize}
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_DataEncryption}:] Personal information and sensitive data handled by DAIIM, such as inference inputs, shall be encrypted while it is transferred and while it is stored by the system, so that it is protected from unauthorized access.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_DataEncryption}:] The system shall follow PIPEDA guidelines such that personal information and sensitive data handled by DAIIM, such as inference inputs, shall be encrypted while it is transferred and while it is stored by the system, so that it is protected from unauthorized access, verified through security audits.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_InputDataAccess}:] Input data shall be encrypted according to industry standard.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_PredictionsHidden}:] Individual predictions shall be hidden until the prediction phase ends.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_PredictionsHidden}:] Individual predictions shall be hidden until the prediction phase end, verified with simulation testing.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_PublicPagesPrivacy}:] Public pages shall display no personal information beyond what providers consented to.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_PublicPagesPrivacy}:] Public pages shall display no personal information beyond what providers consented to, in accordance to PIPEDA.
 
 \end{itemize}
 
@@ -1357,7 +1393,7 @@ be covered in the Verification and Validation document.}
 
 \noindent \begin{itemize}
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_FinalState}:] An inference request shall reach a final state (completed, failed, cancelled) and all escrowed tokens shall be deposited, slashed, or burned before the final deadline for the request has elapsed.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_FinalState}:] An inference request shall reach a final state (completed, failed, cancelled) and all escrowed tokens shall be deposited, slashed, or burned before the final deadline for the request has elapsed, verified through simulation.
 
 \end{itemize}
 
@@ -1377,7 +1413,7 @@ be covered in the Verification and Validation document.}
 
 \end{itemize}
 
-\subsection{Portability}
+\subsection{Portability and Installability}
 
 \noindent \begin{itemize}
 
@@ -1395,9 +1431,9 @@ be covered in the Verification and Validation document.}
 
 \item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_WalletSigning}:] All signing shall happen within the user's wallet and private information shall not be logged on-chain.
 
-\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_TLS}:] All communication between DAIIM components, and between users and DAIIM, shall use TLS with certificate validation enabled.
+\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_TLS}:] All communication between DAIIM components, and between users and DAIIM, shall use TLS with certificate validation enabled to ensure data protection.
 
-\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_DependencyScan}:] The continuous integration pipeline shall scan third-party dependencies for known security vulnerabilities.
+\item[\refstepcounter{snfrnum}\thesnfrnum \label{SA_DependencyScan}:] The system shall scan third-party dependencies for known security vulnerabilities, verified through testing.
 
 \end{itemize}
 
@@ -1455,13 +1491,13 @@ Stakeholder Req & Use Case & Functional Req \\
   & \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_TaskMaxPredictionTime} \\[0.5em]
 
 \srref{SR_RequestInference} & \ucref{UC_SubmitRequest}, \ucref{UC_AggregateResult}
-  & \rref{FR_RequestSubmission}, \rref{FR_RequestValidation}, \rref{FR_RequestPayment}, \rref{FR_RequestBroadcast}, \rref{FR_FinalResultDelivery}, \rref{FR_RequestHistory} \\[0.5em]
+  & \rref{FR_RequestSubmission}, \rref{FR_RequestValidation}, \rref{FR_RequestPayment}, \rref{FR_RequestBroadcast}, \rref{FR_FinalResultDelivery}, \rref{FR_RequestHistory}, \ref{SA_ChargeEqualsAuthorized} \\[0.5em]
 
-\srref{SR_ReliableInference} & \ucref{UC_AggregateResult}, \ucref{UC_UpdateReputation}, \ucref{UC_CancelRequest}
-  & \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_MinimumAcceptance}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_MinimumPredictions}, \rref{FR_PredictionAggregation}, \rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} \\[0.5em]
+\srref{SR_ReliableInference} & \ucref{UC_AggregateResult}, \ucref{UC_UpdateReputation}, \ucref{UC_CancelRequest}, \ucref{UC_SubmitPrediction}
+  & \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_MinimumAcceptance}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_MinimumPredictions}, \rref{FR_PredictionAggregation}, \rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap}, \ref{SA_GroundTruthTests}, \ref{SA_RandomInvitations} \\[0.5em]
 
 \srref{SR_ResilientService} & \ucref{UC_AcceptRequest}, \ucref{UC_SubmitPrediction}, \ucref{UC_CancelRequest}
-  & \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_MinimumAcceptance}, \rref{FR_PredictionPhaseEnd}, \rref{FR_MinimumPredictions} \\[0.5em]
+  & \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_MinimumAcceptance}, \rref{FR_PredictionPhaseEnd}, \rref{FR_MinimumPredictions}, \ref{SA_ExpiryCheck}, \ref{SA_FailureRetry} \\[0.5em]
 
 \srref{SR_ResultQuality} & \ucref{UC_AggregateResult}
   & \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread} \\[0.5em]
@@ -1469,11 +1505,11 @@ Stakeholder Req & Use Case & Functional Req \\
 \srref{SR_NoCentralAuthority} & \ucref{UC_AcceptRequest}, \ucref{UC_SubmitPrediction}, \ucref{UC_AggregateResult}
   & \rref{FR_RequestBroadcast}, \rref{FR_PredictionAggregation}, \rref{FR_OnChainRecords} \\[0.5em]
 
-\srref{SR_Transparency} & \ucref{UC_AddFunds}, \ucref{UC_SubmitRequest}, \ucref{UC_ViewHistory}
-  & \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \rref{FR_OnChainRecords} \\[0.5em]
+\srref{SR_Transparency} & \ucref{UC_AddFunds}, \ucref{UC_SubmitRequest}, \ucref{UC_ViewHistory}, \ucref{UC_ProviderRegistration}
+  & \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \rref{FR_OnChainRecords}, \ref{SA_NoDuplicateSubmission}, \ref{SA_BalanceCheck}, \ref{SA_OnChainFundsCheck}, \ref{SA_SignedTransactionsOnly}, \ref{SA_TransactionSimulation}, \ref{SA_ChargeEqualsAuthorized} \\[0.5em]
 
 \srref{SR_EaseOfUse} & \ucref{UC_SignIn}, \ucref{UC_SignOut}, \ucref{UC_BrowseMarketplace}, \ucref{UC_ReadDocumentation}
-  & \rref{FR_WalletAuthentication}, \rref{FR_PublicAccess}, \rref{FR_TaskBrowsing} \\[0.5em]
+  & \rref{FR_WalletAuthentication}, \rref{FR_PublicAccess}, \rref{FR_TaskBrowsing}, \ref{SA_BalanceCheck}, \ref{SA_FailureRetry} \\[0.5em]
 
 \srref{SR_ProviderParticipation} & \ucref{UC_BrowseMarketplace}, \ucref{UC_ProviderRegistration}, \ucref{UC_AcceptRequest}, \ucref{UC_SubmitPrediction}, \ucref{UC_UnregisterProvider}
   & \rref{FR_TaskBrowsing}, \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_ProviderWillingUnregistration}, \rref{FR_AcceptancePeriodStart}, \rref{FR_RequestInputDistribution}, \rref{FR_PredictionPhaseStart}, \rref{FR_PredictionSubmission} \\[0.5em]
@@ -1482,10 +1518,10 @@ Stakeholder Req & Use Case & Functional Req \\
   & \rref{FR_DistributeRewards}, \rref{FR_ProviderDashboard} \\[0.5em]
 
 \srref{SR_RewardAccuracy} & \ucref{UC_UpdateReputation}, \ucref{UC_DistributeRewards}
-  & \rref{FR_UpdateProviderReputations}--\rref{FR_DistributeRewards}, \rref{FR_InferenceProviderSlashing}--\rref{FR_ProviderForcedUnregistration} \\[0.5em]
+  & \rref{FR_UpdateProviderReputations}--\rref{FR_DistributeRewards}, \rref{FR_InferenceProviderSlashing}--\rref{FR_ProviderForcedUnregistration}, \ref{SA_RewardValidation}, \ref{SA_ProviderStatusCheck} \\[0.5em]
 
 \srref{SR_AutomaticPayment} & \ucref{UC_DistributeRewards}
-  & \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_DistributeRewards}, \rref{FR_OnChainRecords} \\[0.5em]
+  & \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_DistributeRewards}, \rref{FR_OnChainRecords}, \ref{SA_RewardValidation} \\[0.5em]
 
 \srref{SR_DataPrivacy} & \ucref{UC_SubmitRequest}, \ucref{UC_AcceptRequest}
   & \rref{FR_RequestInputDistribution}, \rref{FR_InputAccessRestriction}, \rref{FR_InputNotOnChain} \\[0.5em]
@@ -1501,24 +1537,25 @@ Stakeholder Req & Use Case & Functional Req \\
 Functional Requirements} \label{tab:SR2UC2FRtm}
 \end{longtable}
 
-\begin{longtable}{p{0.20\textwidth} p{0.20\textwidth}}
+\begin{longtable}{p{0.40\textwidth} p{0.50\textwidth}}
 
 \toprule
 Functional Req & Nonfunctional Req \\
 \midrule
-\rref{FR_WalletAuthentication} & \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_Learnability}, \nfrref{NFR_NoExtraSoftware} \\
+\rref{FR_WalletAuthentication} & \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_Learnability}, \nfrref{NFR_NoExtraSoftware}, \ref{SA_WalletSigning} \\
+\rref{FR_TransactionAuthorization} & \ref{SA_WalletSigning} \\
 \rref{FR_PublicAccess} & \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_PublicPagesPrivacy}, \nfrref{NFR_Learnability} \\
 \rref{FR_TaskMaxPredictionTime} & \nfrref{NFR_FinalState} \\
 \rref{FR_TaskBrowsing} & \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_PublicPagesPrivacy} \\
 \rref{FR_InferenceTaskRegistrationStaking} & \nfrref{NFR_FinalState} \\
 \rref{FR_ProviderDashboard} & \nfrref{NFR_TwoClickAccess} \\
 \rref{FR_RequestSubmission} & \nfrref{NFR_ConcurrentRequests} \\
-\rref{FR_RequestValidation} & \nfrref{NFR_ErrorVisibility} \\
+\rref{FR_RequestValidation} & \nfrref{NFR_ErrorVisibility}, \ref{SA_ErrorMessageTime} \\
 \rref{FR_RequestBroadcast} & \nfrref{NFR_ConcurrentRequests} \\
 \rref{FR_MinimumAcceptance} & \nfrref{NFR_FinalState} \\
-\rref{FR_RequestInputDistribution} & \nfrref{NFR_InputDataAccess} \\
+\rref{FR_RequestInputDistribution} & \nfrref{NFR_InputDataAccess}, \ref{SA_TLS} \\
 \rref{FR_PredictionSubmission} & \nfrref{NFR_PredictionsHidden} \\
-\rref{FR_PredictionValidation} & \nfrref{NFR_ErrorVisibility} \\
+\rref{FR_PredictionValidation} & \nfrref{NFR_ErrorVisibility}, \ref{SA_ErrorMessageTime} \\
 \rref{FR_PredictionPhaseEnd} & \nfrref{NFR_PredictionsHidden}, \nfrref{NFR_FinalState} \\
 \rref{FR_MinimumPredictions} & \nfrref{NFR_FinalState} \\
 \rref{FR_PredictionAggregation} & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors} \\
@@ -1526,10 +1563,22 @@ Functional Req & Nonfunctional Req \\
 \rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors} \\
 \rref{FR_DistributeRewards} & \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_FinalState} \\
 \rref{FR_InferenceProviderSlashing}--\rref{FR_ProviderForcedUnregistration} & \nfrref{NFR_FinalState}, \nfrref{NFR_AggregationArithmeticErrors} \\
-\rref{FR_TransactionStatus} & \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_ErrorVisibility} \\
+\rref{FR_TransactionStatus} & \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_ErrorVisibility}, \ref{SA_ErrorMessageTime} \\
 \rref{FR_TransactionVerification} & \nfrref{NFR_TransactionConfirmation} \\
-\rref{FR_InputAccessRestriction} & \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess} \\
+\rref{FR_InputAccessRestriction} & \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess}, \ref{SA_TLS} \\
 \rref{FR_InputNotOnChain} & \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess} \\
+\midrule
+\ref{SA_NoDuplicateSubmission} & \nfrref{NFR_FinalState}, \nfrref{NFR_TransactionConfirmation} \\
+\ref{SA_BalanceCheck} & \nfrref{NFR_ErrorVisibility} \\
+\ref{SA_OnChainFundsCheck} & \nfrref{NFR_FinalState} \\
+\ref{SA_SignedTransactionsOnly} & \ref{SA_WalletSigning} \\
+\ref{SA_ExpiryCheck} & \nfrref{NFR_ProgressStatus}, \nfrref{NFR_FinalState} \\
+\ref{SA_FailureRetry} & \nfrref{NFR_ErrorVisibility}, \ref{SA_ErrorMessageTime} \\
+\ref{SA_TransactionSimulation} & \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_AggregationArithmeticErrors} \\
+\ref{SA_ChargeEqualsAuthorized} & \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_AggregationArithmeticErrors} \\
+\ref{SA_RewardValidation} & \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_FinalState} \\
+\ref{SA_ProviderStatusCheck} & \nfrref{NFR_FinalState} \\
+\ref{SA_GroundTruthTests} & \nfrref{NFR_ReputationWeightedAggregate} \\
 \bottomrule
 \caption{Traceability Between Functional and Nonfunctional Requirements}
 \label{tab:FR2Rtm}
