@@ -1,7 +1,7 @@
 %% Common Parts
 
-\newcommand{\progname}{Software Engineering} % PUT YOUR PROGRAM NAME HERE
-\newcommand{\authname}{Team 6, Blockchainerz
+\newcommand{\progname}{DAIIM} % PUT YOUR PROGRAM NAME HERE
+\newcommand{\authname}{Team 6,
 \\ Robert Lam
 \\ Nathan Hum
 \\ Aidan Lao

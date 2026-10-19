@@ -56,6 +56,8 @@
 }
 
 \input{../Comments.text}
+\renewcommand{\authornote}[3]{}
+\renewcommand{\todo}[1]{}
 \input{../Common.text}
 
 % Used so that cross-references have a meaningful prefix
@@ -84,7 +86,7 @@
 
 \begin{document}
 
-\title{Software Requirements Specification for \progname: subtitle describing software} 
+\title{Software Requirements Specification for \progname{}:\newline A Decentralized Marketplace for AI Inference}
 \author{\authname}
 \date{\today}
 	
@@ -107,8 +109,8 @@ October 8 & 1.0 & Aidan: Added sections 1.1 to 1.5 (Purpose, Scope, Stakeholders
 October 11 & 1.0 & Robert: Added major functional requirements\\
 October 11 & 1.0 & Aidan: Grouped functional requirements into categories and added functional requirements derived from the stakeholder requirements\\
 October 11 & 1.0 & Nathan: Added all of section 2, likely changes and unlikely changes\\
-
 October 16 & 1.0 & Robert: Added data and AI reqs sections\\
+October 19 & 1.0 & Robert: Fix typos, add acronyms, add subtitle, remove instructions\\
 \bottomrule
 \end{tabularx}
 
@@ -252,6 +254,8 @@ Term & Definition\\
 \midrule
 AI & Artificial Intelligence.\\
 ML & Machine Learning.\\
+MAE & Mean Absolute Error, the arithmetic mean of the absolute differences between predicted and ground-truth values.\\
+JSON & JavaScript Object Notation, a text-based data format used to represent structured data.\\
 DAIIM & Decentralized Artificial Intelligence Inference Marketplace, the system specified in this document.\\
 Task & A problem to be solved via machine learning, such as predicting a biomarker level or a stock price.\\
 Task definition & A specification of a task, including the expected input and output types.\\
@@ -555,11 +559,11 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistration}:] The system shall allow authenticated users to register as inference providers for an inference task by staking the required minimum amount of tokens (reference the min \# tokens).
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistration}:] The system shall allow authenticated users to register as inference providers for an inference task by staking the required minimum amount of tokens.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistrationStaking}:] When a provider registers for an inference task, the system shall lock the required minimum stake for that task in escrow. The system shall return the provider's stake when the applicable conditions for releasing it are met.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderWillingUnregistration}:] The system shall allow registered inference providers to unregister from an inference task, provided they have not accepted any acitve inference requests for that task. Upon unregistration, the provider shall be removed from the list of registered providers for the task, and their remaining staked tokens shall be returned to their token account. Upon re-registering for an inference task, the provider shall start with the baseline reputation score for that task, regardless of their previous reputation score.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderWillingUnregistration}:] The system shall allow registered inference providers to unregister from an inference task, provided they have not accepted any active inference requests for that task. Upon unregistration, the provider shall be removed from the list of registered providers for the task, and their remaining staked tokens shall be returned to their token account. Upon re-registering for an inference task, the provider shall start with the baseline reputation score for that task, regardless of their previous reputation score.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderDashboard}:] The system shall allow inference providers to view their reputation score, staked tokens, and rewards earned for each inference task they are registered for.
 
@@ -680,14 +684,6 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \end{itemize}
 
-Questions / Missing reqs: \\
-- We said that the task requester gets to choose the amount of tokens they want to offer for a request - How can we express this to inference providers in a useful way? Since the total amount does not reflect how much they will earn.\\
-  - Unless the requester also gets to choose exactly how many participants are necessary to complete the request.\\
-- What happens if aggregation fails? Should add req for this\\
-- What happens if not enough providers accept? Should add req for this\\
-- Rewards distribution and provider reputation update may be changed after POC\\
-- Need to define some of the thresholds used in reqs above: min reputation, amount to stake, min inference request payment etc.\\
-
 % ============================================================== 
 \section{Data Requirements}
 
@@ -716,8 +712,8 @@ Model Provider & Wallet address & Address & Provider's wallet\\
 Inference Task & Task ID & Identifier & Unique task identifier\\
  & Name and type & String & Task name and category\\
  & Description & String & Problem addressed by the task\\
- & Input schema & Json & Valid request input format\\
- & Output schema & Json & Valid prediction format\\
+ & Input schema & JSON & Valid request input format\\
+ & Output schema & JSON & Valid prediction format\\
  & Minimum providers & Integer & Required participants per request\\
  & Timing limits & Timestamp & Acceptance and prediction periods\\
  & Reputation tolerance & Number & Threshold for reputation changes\\
@@ -725,7 +721,7 @@ Inference Task & Task ID & Identifier & Unique task identifier\\
 Inference Request & Request ID & Identifier & Unique request identifier\\
  & Task ID & Identifier & Requested inference task\\
  & Requester wallet & Address & Wallet of the requester\\
- & Input data & Json & Data submitted for inference\\
+ & Input data & JSON & Data submitted for inference\\
  & Cost & Number & Offered payment\\
  & Status & Status & Current request state\\
  & Provider predictions & List<Output Type> & Predictions submitted for the request\\
@@ -841,10 +837,18 @@ those predictions into a reputation-weighted result.
 
 \subsection{Evaluation Metrics}
 
-Evaluation will focus on accuracy score, as this is appropriate for regression tasks.
-Ground truth may not exist or may become available only later; when it does
-become available, the corresponding accuracy metrics will be provided and
-displayed in the system.
+For regression tasks with available ground-truth values, DAIIM will evaluate
+predictions using mean absolute error (MAE), calculated as the arithmetic mean
+of the absolute differences between predicted and ground-truth values across
+evaluated requests:
+\[
+\mathrm{MAE} = \frac{1}{n}\sum_{i=1}^{n} \lvert \hat{y}_i - y_i \rvert,
+\]
+where $n$ is the number of evaluated requests, $\hat{y}_i$ is a predicted
+value, and $y_i$ is its ground-truth value. MAE will be reported in the units
+of the task's output. Ground truth may not exist or may become available only
+later. DAIIM will calculate and display MAE for available
+predictions and aggregated results.
 
 \subsection{Known Limitations}
 
@@ -984,9 +988,11 @@ units and scale of the task's output.
 
 \subsection{Appendix A: Additional Materials}
 
-TODO
+Additional materials are not included in this SRS.
 
 \subsection{Appendix B: Development Plan}
+
+The development plan is not included in this SRS; see the separate Development Plan document.
 
 \plt{This section is optional.  It is used to explain the plan for developing
   the software.  In particular, this section gives a list of the order in which
@@ -1158,7 +1164,19 @@ For example, one of DAIIM's main goals is to provide reliable aggregated inferen
 
 
   \textbf{Robert}:
-
+  I am currently taking COMPSCI 4CR3 (Applied Cryptography), and the course
+  will help me understand the cryptographic foundations of the project's
+  blockchain and cryptocurrency components. Later in the course, we will
+  discuss blockchain technology, which will help me better understand how
+  DAIIM's blockchain components are implemented. Specifically, the security
+  aspects of private-key cryptography and digital signatures are important to
+  the project. A private key is used to sign transactions, allowing users to
+  authorize actions with their wallets. Understanding
+  these mechanisms will help me reason about how authorization and escrow work
+  in DAIIM, and why protecting private keys is essential. Furthermore, having
+  a solid understanding of key signing will be useful in creating a user interface
+  that is able to abstract away a lot of this complexity while still giving users
+  enough information to understand the actions they are taking.
 
   \textbf{Keira}: 
   Of the courses I have taken throughout my undergraduate degree, I believe the following three will help my team be successful in this capstone project:
@@ -1214,16 +1232,55 @@ For example, one of DAIIM's main goals is to provide reliable aggregated inferen
   mastering the skill?  Of the identified approaches, which will each team
   member pursue, and why did they make this choice?
 
+  The team will use a combination of independent study and practical
+  experimentation to build the knowledge needed for DAIIM.
+
+  \begin{itemize}
+    \item \textbf{Blockchain, smart contracts, and wallets:} One approach is to
+    study the official Solana, Anchor, and wallet documentation, along with
+    cryptography resources on keys and transaction signatures. A second
+    approach is to build and test small programs and wallet flows on Solana
+    Devnet, including transactions that lock and release test funds from
+    escrow. The team can follow this
+    \href{https://paulx.dev/blog/2021/01/14/programming-on-solana-an-introduction/}
+    {Solana escrow tutorial} as a practical starting point. Robert will draw
+    on his prior Solana experience and his Applied
+    Cryptography coursework to guide the team's understanding of transactions,
+    signatures, and escrow security. The other team members will use a combination of
+    reading documentation and following these practical tutorials to get up to speed on this topic.
+
+    \item \textbf{Token economics and incentives:} The team can learn through
+    researching existing web3 and decentralized application that use a similar
+    token curated registry mechanism and by discussion with the supervisor. Our
+    supervisor has direct experience building a decentralized learning
+    platform for educators and learners, and several connections to other
+    developers who worked on this project. Robert and Kiera will focus on
+    traditional research techniques. All four members will participate in
+    discussions with the supervisor and other developers to ask questions,
+    learn from their experience, and understand practical considerations for
+    designing the system's token economics.
+
+    \item \textbf{Regression aggregation}
+    One approach is to study statistical measures and aggregation methods,
+    including how outliers and numerical precision affect results. A second is
+    to implement experiments using synthetic predictions and known ground
+    truth, varying the proportions of accurate, inaccurate, and colluding
+    providers. All members will contribute to the proof of
+    concept (POC), with Robert leading from experience with his previous project.
+    Aidan will conduct additional research on regression
+    aggregation methods to inform the design and evaluation of the simulations.
+
+    \item \textbf{Embedded wallets:} The frontend developers can first
+    study the wallet integration documentation and example applications, then
+    build a small prototype and test the connection, signing, and transaction
+    status flows. Aidan and Nathan will focus on learning and prototyping the
+    integration, while the rest of the team will review the flow and give
+    feedback from the perspective of users who are less familiar with Web3.
+  \end{itemize}
 
 \end{enumerate}
 
 
 \newpage
-
-\bibliographystyle {plainnat}
-\bibliography {../../refs/References}
-
-\newpage
-
 
 \end{document}
