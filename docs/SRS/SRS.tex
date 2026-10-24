@@ -837,13 +837,13 @@ System
 
 \textbf{Preconditions}
 \begin{itemize}
-\item All required predictions have been submitted and verified.
+\item The prediction phase has ended, and at least the task's minimum number of providers with non-zero reputation have submitted valid predictions.
 \end{itemize}
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
 \item System retrieves all submitted predictions for the inference request.
-\item System calculates the final inference result based on the submitted predictions using a predefined aggregation algorithm for the task, using reputation scores of the providers to weight the predictions.
+\item System calculates the final inference result from the valid predictions of providers with non-zero reputation, using the weighted-median algorithm specified in Appendix~A (\nameref{App_WeightedMedian}) and the reputation snapshot defined in \rref{FR_PredictionAggregation}.
 \item System stores the final inference result in a secure location and records the final result on-chain.
 \item System displays the final inference result in the requester's dashboard, along with the accuracy information and number of provider results used.
 \item System removes the input data and predictions from the secure location to maintain privacy and data retention policies after a set retention time has elapsed.
@@ -875,9 +875,9 @@ System
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item System retrieves the submitted predictions from the accepted providers and the final inference result for the inference request.
-\item System calculates the accuracy of each provider's prediction by comparing it to the final inference result.
-\item System updates each provider's reputation score based on the accuracy of their prediction, using the predefined reputation update algorithm outlined in \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, \rref{FR_ReputationDecrease}.
+\item System retrieves valid submitted predictions from providers whose reputation score at the end of the prediction phase, before any reputation updates for that request, was non-zero, and retrieves the final inference result.
+\item System calculates the accuracy of each provider's prediction by comparing it to the final inference result produced using the weighted-median algorithm in Appendix~A (\nameref{App_WeightedMedian}).
+\item System updates the reputation score of each provider whose valid prediction was included in the aggregate, based on the accuracy of their prediction and using the reputation update rules in \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, and \rref{FR_ReputationDecrease}.
 \item System stores the updated reputation scores in the provider's profile.
 \end{enumerate}
 
@@ -937,12 +937,12 @@ System
 
 \textbf{Preconditions}
 \begin{itemize}
-\item Too few providers have accepted the inference request before the deadline.
+\item The prediction phase has ended with fewer than the task's minimum number of providers with non-zero reputation having submitted valid predictions.
 \end{itemize}
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item The system identifies that too few providers have accepted the inference request.
+\item The system identifies that fewer than the task's minimum number of providers with non-zero reputation submitted valid predictions.
 \item The system cancels the inference request.
 \item The system notifies the requester and accepted providers about the cancellation.
 \item The system refunds the requester's payment and releases any locked stakes for the accepted providers.
@@ -1146,7 +1146,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionPhaseEnd}:] The system shall end the prediction phase when it has received a prediction from every provider that accepted the request or when the maximum prediction time has elapsed, whichever occurs first. The system shall not accept predictions after the phase has ended.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumPredictions}:] If fewer than the task's minimum number of participating providers have submitted predictions when the prediction phase ends, the system shall cancel the request and return the requester's escrowed payment.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumPredictions}:] When the prediction phase ends, the system shall count the providers who submitted a valid prediction and whose reputation score is non-zero. If fewer than the task's minimum number of providers meet these conditions, the system shall cancel the request and return the requester's escrowed payment.
 
 \end{itemize}
 
@@ -1154,11 +1154,11 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionAggregation}:] Once the prediction phase ends, the system shall aggregate the predictions into a final numerical result using a weighted aggregation algorithm in which each provider's reputation determines the weight assigned to its prediction.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionAggregation}:] The system shall aggregate only valid submitted predictions from providers whose reputation score at the end of the prediction phase, before any reputation updates for that request, is non-zero. For each included prediction, its weight shall be that reputation score divided by the sum of the reputation scores of all included providers. The system shall calculate the final numerical result using the weighted-median algorithm specified in Appendix~A (\nameref{App_WeightedMedian}).
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_FinalResultDelivery}:] The system shall return the final aggregated result, time elapsed since submitting the request and the number of inference providers that submitted predictions, to the user that submitted the inference request.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_FinalResultDelivery}:] The system shall return the final aggregated result, time elapsed since submitting the request, and the number of provider predictions included in the aggregation to the user that submitted the inference request.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ResultSpread}:] The system shall return, with each final aggregated result, the minimum and maximum of the predictions submitted for the request.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ResultSpread}:] The system shall return, with each final aggregated result, the minimum and maximum of the predictions included in the aggregation.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestHistory}:] The system shall allow requesters to view the status of each inference request they have submitted and, once available, its final aggregated result.
 
@@ -1168,8 +1168,8 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:]
-After the final aggregated result for an inference request is computed, the system shall update the reputation score of each provider that submitted a valid prediction for the request. For each such provider $i$, the system shall compute $d_i$, the absolute difference between the provider's prediction and the final aggregated result, and $\bar{d}$, the average of $d_j$ over all providers that submitted valid predictions for the request. The system shall maintain each provider's reputation score within the inclusive range $[0,100]$. If a provider's reputation score reaches $0$, the system shall remove the provider from the marketplace.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:] After the final aggregated result for an inference request is computed, the system shall update the reputation score of each provider whose valid prediction was included in the aggregate under \rref{FR_PredictionAggregation}. For each such provider $i$, the system shall compute $d_i$, the absolute difference between the provider's prediction and the final aggregated result, and $\bar{d}$, the average of $d_j$ over all providers whose valid predictions were included in the aggregate.
+
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationIncrease}:] The system shall increase the reputation score of a provider whose distance $d_i$ is less than or equal to the average distance $\bar{d}$.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationUnchanged}:] The system shall leave unchanged the reputation score of a provider whose distance $d_i$ is greater than $\bar{d}$ but less than or equal to $\bar{d} + T$, where $T$ is the task's reputation tolerance.
@@ -1293,7 +1293,8 @@ Entity & Attribute & Type & Description\\
 \midrule
 Model Provider & Wallet address & Address & Provider's wallet\\
  & Registered tasks & Task IDs & Tasks the provider joined\\
- & Task reputation & Number & Provider's reputation for a task, ranging from 0 to 100. Providers whose reputation reaches 0 are removed from the marketplace.\\ & Task stake & Integer & Stake for a task\\
+ & Task reputation & Number & Reputation for a task\\
+ & Task stake & Integer & Stake for a task\\
 Inference Task & Task ID & Identifier & Unique task identifier\\
  & Name and type & String & Task name and category\\
  & Description & String & Problem addressed by the task\\
@@ -1374,7 +1375,7 @@ be covered in the Verification and Validation document.}
 
 \noindent \begin{itemize}
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ReputationWeightedAggregate}:] The system shall use an aggregate algorithm with weighting based on the reputation of providers, such that historically reliable providers have greater influence on the aggregate result. Simulation incorporating different types of providers (honest, malicous, etc.) shall be used to verify the accuracy of the aggregate result and the effectiveness of the weighting mechanism.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ReputationWeightedAggregate}:] Simulation tests shall verify that the system's aggregate results match the weighted-median algorithm specified in Appendix~A (\nameref{App_WeightedMedian}) for the tested predictions and reputation weights, including the worked examples in that appendix.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_AggregationArithmeticErrors}:] For all predictions, reputation scores, and token amounts within their declared ranges, the aggregation, reputation, and reward calculations shall produce no overflow or underflow. Any arithmetic operation that would overflow shall cause the transaction to fail without changing on-chain state.
 \end{itemize}
@@ -1701,7 +1702,47 @@ units and scale of the task's output.
 
 \subsection{Appendix A: Additional Materials}
 
-Additional materials are not included in this SRS.
+\subsubsection{Weighted-Median Aggregation Algorithm}
+\label{App_WeightedMedian}
+
+Only valid predictions submitted by providers with a non-zero reputation score
+at the end of the prediction phase are included. This reputation snapshot is
+taken before any reputation updates for that inference request. Each included
+prediction's weight is its provider's reputation score divided by the sum of
+the included providers' reputation scores. The weights are positive and sum
+to 1. \rref{FR_MinimumPredictions} requires at least the task's minimum number of included predictions
+before aggregation begins.
+
+\begin{verbatim}
+Algorithm WeightedMedian
+Input:  Valid predictions p[1..n] from providers with non-zero reputation,
+        and corresponding normalized weights w[1..n] where each w[i] > 0
+        and sum(w[i]) = 1
+Output: The weighted median rounded to 4 decimal places
+
+1.  Create a list L of pairs (p[i], w[i]) for i = 1 to n.
+2.  Sort L in nondecreasing order by prediction value.
+3.  Set cumulativeWeight <- 0.
+4.  Set previousPrediction <- NONE.
+5.  For each pair (value, weight) in L, in sorted order:
+6.      previousWeight <- cumulativeWeight.
+7.      cumulativeWeight <- cumulativeWeight + weight.
+8.      If cumulativeWeight > 0.5:
+9.          If previousWeight = 0.5:
+10.             result <- (previousPrediction + value) / 2.
+11.         Else:
+12.             result <- value.
+13.         Return result rounded to 4 decimal places.
+14.     Set previousPrediction <- value.
+15. Return an aggregation error.
+\end{verbatim}
+
+Read the predictions in increasing order, adding their weights as you go. The
+result is the prediction where the running total first goes above 0.5. If the
+running total was exactly 0.5 just before that prediction, use the average of
+that prediction and the preceding prediction instead. Round the result to four
+decimal places; if the value is exactly halfway between two possible rounded
+values, round away from zero.
 
 \subsection{Appendix B: Development Plan}
 
