@@ -1168,8 +1168,8 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:] After the final aggregated result for an inference request is computed, the system shall update the reputation score of each provider that submitted a prediction for the request. For each such provider $i$, the system shall compute $d_i$, the absolute difference between the provider's prediction and the final aggregated result, and $\bar{d}$, the average of $d_j$ over all providers that submitted predictions for the request.
-
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:]
+After the final aggregated result for an inference request is computed, the system shall update the reputation score of each provider that submitted a valid prediction for the request. For each such provider $i$, the system shall compute $d_i$, the absolute difference between the provider's prediction and the final aggregated result, and $\bar{d}$, the average of $d_j$ over all providers that submitted valid predictions for the request. The system shall maintain each provider's reputation score within the inclusive range $[0,100]$. If a provider's reputation score reaches $0$, the system shall remove the provider from the marketplace.
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationIncrease}:] The system shall increase the reputation score of a provider whose distance $d_i$ is less than or equal to the average distance $\bar{d}$.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationUnchanged}:] The system shall leave unchanged the reputation score of a provider whose distance $d_i$ is greater than $\bar{d}$ but less than or equal to $\bar{d} + T$, where $T$ is the task's reputation tolerance.
@@ -1293,8 +1293,7 @@ Entity & Attribute & Type & Description\\
 \midrule
 Model Provider & Wallet address & Address & Provider's wallet\\
  & Registered tasks & Task IDs & Tasks the provider joined\\
- & Task reputation & Number & Reputation for a task\\
- & Task stake & Integer & Stake for a task\\
+ & Task reputation & Number & Provider's reputation for a task, ranging from 0 to 100. Providers whose reputation reaches 0 are removed from the marketplace.\\ & Task stake & Integer & Stake for a task\\
 Inference Task & Task ID & Identifier & Unique task identifier\\
  & Name and type & String & Task name and category\\
  & Description & String & Problem addressed by the task\\
