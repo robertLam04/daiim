@@ -986,10 +986,10 @@ Provider
 
 \textbf{Postconditions}
 \begin{itemize}
-\item Provider is unregistered from the task, and their profile is updated accordingly. Any staked tokens are released.
+\item Provider is unregistered from the task, and their remaining stake is returned or burned according to \rref{FR_ProviderUnregistrationStakeReturn}.
 \end{itemize}
 
-\textbf{Related Requirements:} \rref{FR_ProviderWillingUnregistration}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_ProviderDashboard}, \ref{SA_ProviderStatusCheck}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}.
+\textbf{Related Requirements:} \rref{FR_ProviderWillingUnregistration}, \rref{FR_ProviderUnregistrationStakeReturn}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_ProviderDashboard}, \ref{SA_ProviderStatusCheck}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}.
 
 \refstepcounter{ucnum} \label{UC_ViewHistory}
 \subsection{\ucref{UC_ViewHistory}: View transaction history and current balances}
@@ -1104,7 +1104,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistrationStaking}:] When a provider registers for an inference task, the system shall lock the required minimum stake for that task in escrow. The system shall return the provider's stake when the applicable conditions for releasing it are met.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderWillingUnregistration}:] The system shall allow registered inference providers to unregister from an inference task, provided they have not accepted any active inference requests for that task. Upon unregistration, the provider shall be removed from the list of registered providers for the task, and their remaining staked tokens shall be returned to their token account. Upon re-registering for an inference task, the provider shall start with the baseline reputation score for that task, regardless of their previous reputation score.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderWillingUnregistration}:] The system shall allow registered inference providers to unregister from an inference task, provided they have not accepted any active inference requests for that task. Upon unregistration, the provider shall be removed from the list of registered providers for the task, and the provider's remaining stake shall be returned or burned according to \rref{FR_ProviderUnregistrationStakeReturn}.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderDashboard}:] The system shall allow inference providers to view their reputation score, staked tokens, and rewards earned for each inference task they are registered for.
 
@@ -1186,7 +1186,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceProviderSlashing}:] The system shall slash a provider's stake only under the conditions specified in \rref{FR_SlashInvalidPrediction} and \rref{FR_SlashNoShow}, and shall burn a provider's remaining stake only under the conditions specified in \rref{FR_SlashRepeatedOffenses} and \rref{FR_ProviderForcedUnregistration}.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceProviderSlashing}:] The system shall slash a provider's stake only under the conditions specified in \rref{FR_SlashInvalidPrediction} and \rref{FR_SlashNoShow}, and shall burn a provider's remaining stake only under the conditions specified in \rref{FR_SlashRepeatedOffenses}, \rref{FR_ProviderForcedUnregistration}, and \rref{FR_ProviderUnregistrationStakeReturn}.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashInvalidPrediction}:] When the system rejects a provider's prediction under \rref{FR_PredictionValidation}, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
 
@@ -1196,7 +1196,9 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashRepeatedOffenses}:] When a provider has been slashed for at least REPEAT\_OFFENSE\_COUNT of the last REPEAT\_OFFENSE\_WINDOW inference requests they accepted for a task, the system shall unregister the provider from the task and burn their remaining stake for the task.
 
- \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderForcedUnregistration}:] The system shall automatically unregister any inference provider whose reputation score reaches $0$. Upon unregistering, the system shall burn the provider's remaining staked tokens for the associated inference task.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderForcedUnregistration}:] The system shall automatically unregister any inference provider whose reputation score reaches $0$. Upon unregistering, the system shall burn the provider's remaining staked tokens for the associated inference task.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderUnregistrationStakeReturn}:] When a provider voluntarily unregisters from an inference task under \rref{FR_ProviderWillingUnregistration}, let $R$ be the provider's current reputation score and $R_{\text{exit}} > 0$ be the task's reputation threshold for a reduced stake return. If $R \ge R_{\text{exit}}$, the system shall return the entirety of the provider's remaining stake to their token account. If $0 \le R < R_{\text{exit}}$, the system shall return $\frac{R}{R_{\text{exit}}}$ of their remaining stake to their token account and burn the remainder.
 \end{itemize}
 
 \subsection{Transparency}
@@ -1665,6 +1667,41 @@ The minimum stake must balance two concerns. It must be high enough that
 registering many fake providers is expensive, but low enough that honest new
 providers, who have not yet earned any rewards, are not discouraged from
 joining.
+
+\subsection{Voluntary Unregistration and Stake Return}
+
+Because DAIIM is permissionless, there is no viable way to keep track of individual
+users and determine if a given entity has multiple accounts. Unlike a
+conventional system that may identify users through information such as a phone
+number, email address, or IP address, DAIIM identifies providers by wallet
+address, and anyone can create additional wallet addresses at no cost.
+
+This makes reputation resets possible even when the same-wallet registration
+history is retained: a provider can register a new wallet and receive the
+baseline reputation specified in UC6. A provider can also finish any active
+requests, voluntarily unregister, and re-register after their reputation has
+decreased. Valid but poor predictions can decrease reputation without
+triggering stake slashing under \rref{FR_SlashInvalidPrediction} or
+\rref{FR_SlashNoShow}; the provider can reuse any returned stake for a new
+registration. Under \rref{FR_ProviderUnregistrationStakeReturn}, the fraction of a provider's
+remaining stake returned on voluntary unregistration depends on their reputation
+score relative to the task's exit threshold $R_{\text{exit}}$. This is intended
+to discourage providers from unregistering and re-registering solely to restore their
+reputation to its baseline value, while still allowing providers to leave a task
+and recover some or all of their stake.
+
+The exit threshold $R_{\text{exit}}$ must be chosen intelligiently to prevent re-registration
+attacks while still remaining financially attractive to participate.
+If $R_{\text{exit}}$ is too high,
+providers whose predictions have been poor may lose a substantial part of
+their stake when they decide to stop participating, even if their poor
+performance was not intentional. If it is too low, a provider may retain most
+of their stake after a meaningful reputation decline and have little financial
+reason not to reset their reputation by leaving and re-registering. The task's
+$R_{\text{exit}}$ should be chosen to allow providers to recognize
+that a task is not a good fit and exit without excessive financial loss, while
+making reputation resets through repeated unregistration and re-registration
+costly enough to discourage continued abuse.
 
 \subsection{Reputation Tolerance}
 
