@@ -1295,15 +1295,19 @@ Entity & Attribute & Type & Description\\
 \midrule
 Model Provider & Wallet address & Address & Provider's wallet\\
  & Registered tasks & Task IDs & Tasks the provider joined\\
- & Task reputation & Number & Provider's reputation for a task, ranging from 0 to 100. Providers whose reputation reaches 0 are removed from the marketplace.\\ & Task stake & Integer & Stake for a task\\
+ & Task reputations & List<Number> & List of this Provider's reputation for registered tasks. Ranging from 0 to 100\\
+ & Amount Staked & List<Integer> & List of staked tokens per registerd task\\
 Inference Task & Task ID & Identifier & Unique task identifier\\
  & Name and type & String & Task name and category\\
  & Description & String & Problem addressed by the task\\
  & Input schema & JSON & Valid request input format\\
  & Output schema & JSON & Valid prediction format\\
  & Minimum providers & Integer & Required participants per request\\
- & Timing limits & Timestamp & Acceptance and prediction periods\\
+ & Acceptance period & Duration & Time allowed for providers to accept a request\\
+ & Maximum prediction time & Duration & Maximum time for providers to submit predictions after the acceptance period\\
  & Reputation tolerance & Number & Threshold for reputation changes\\
+ & Baseline reputation & Number & Reputation assigned to a provider when they register for the task\\
+ & Exit reputation threshold ($R_{\text{exit}}$) & Number & Positive reputation threshold for determining the stake returned upon voluntary unregistration\\
  & Minimum stake & Number & Stake required for registration\\
 Inference Request & Request ID & Identifier & Unique request identifier\\
  & Task ID & Identifier & Requested inference task\\
@@ -1311,7 +1315,7 @@ Inference Request & Request ID & Identifier & Unique request identifier\\
  & Input data & JSON & Data submitted for inference\\
  & Cost & Number & Offered payment\\
  & Status & Status & Current request state\\
- & Provider predictions & List<Output Type> & Predictions submitted for the request\\
+ & Provider predictions & List<Provider Prediction> & Provider predictions submitted for the request\\
  & Aggregated result & Output Type & Final inference result\\
  & Submission time & Timestamp & Request creation time\\
 Token Economics & Total minted & Number of tokens & Tokens minted across the network\\
