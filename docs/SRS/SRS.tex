@@ -791,7 +791,7 @@ Provider
 \item The provider is registered as an accepted provider for the inference request, and the stake is locked in escrow.
 \end{itemize}
 
-\textbf{Related Requirements:} \rref{FR_RequestBroadcast}, \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \ref{SA_BalanceCheck}, \ref{SA_OnChainFundsCheck}, \ref{SA_SignedTransactionsOnly}, \ref{SA_RandomInvitations}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}, \ref{SA_WalletSigning}.
+\textbf{Related Requirements:} \rref{FR_RequestBroadcast}, \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \ref{SA_BalanceCheck}, \ref{SA_OnChainFundsCheck}, \ref{SA_SignedTransactionsOnly}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}, \ref{SA_WalletSigning}.
 
 \refstepcounter{ucnum} \label{UC_SubmitPrediction}
 \subsection{\ucref{UC_SubmitPrediction}: Process and submit a prediction for an inference request}
@@ -827,7 +827,7 @@ Provider
 \item The provider's prediction is submitted and recorded for the inference request.
 \end{itemize}
 
-\textbf{Related Requirements:} \rref{FR_RequestInputDistribution}, \rref{FR_InputAccessRestriction}, \rref{FR_PredictionPhaseStart}, \rref{FR_PredictionSubmission}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_PredictionPhaseEnd}, \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}, \ref{SA_GroundTruthTests}, \nfrref{NFR_PredictionsHidden}, \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess}, \nfrref{NFR_ErrorVisibility}, \ref{SA_TLS}.
+\textbf{Related Requirements:} \rref{FR_RequestInputDistribution}, \rref{FR_InputAccessRestriction}, \rref{FR_PredictionPhaseStart}, \rref{FR_PredictionSubmission}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_PredictionPhaseEnd}, \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}, \nfrref{NFR_PredictionsHidden}, \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess}, \nfrref{NFR_ErrorVisibility}, \ref{SA_TLS}.
 
 \refstepcounter{ucnum} \label{UC_AggregateResult}
 \subsection{\ucref{UC_AggregateResult}: Aggregate predictions and produce a final inference result}
@@ -1120,7 +1120,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestPayment}:] When submitting an inference request, the system shall require the requester to choose a payment amount in tokens greater than the minimum and prompt them to authorize, through their connected wallet, a transaction transferring that amount of tokens into escrow.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestBroadcast}:] After an inference request is submitted, the system shall broadcast its task definition, proposed payment amount, acceptance-period expiry time, and maximum prediction time to all providers registered for the task.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestBroadcast}:] After an inference request is submitted, the system shall broadcast its task definition, proposed payment amount, acceptance-period expiry time, and maximum prediction time to every provider registered for the task.
 
 \end{itemize}
 
@@ -1128,7 +1128,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_AcceptancePeriodStart}:] Upon broadcast of an inference request, the system shall automatically begin the acceptance period, during which providers registered for the task may accept or decline participation.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_AcceptancePeriodStart}:] Upon broadcast of an inference request, the system shall automatically begin the acceptance period, during which every provider registered for the task may accept or decline participation.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_AcceptancePeriodEnd}:] At the specified expiry time, the system shall end the acceptance period. All registered providers that have not accepted the request will be treated as non-participating. Inference request acceptances from inference providers outside of the acceptance period will not be considered.
 
@@ -1260,12 +1260,6 @@ The system shall validate each reward calculation before distributing it, and sh
 
 \item[\refstepcounter{sanum}\thesanum \label{SA_ProviderStatusCheck}:]
 The system shall confirm provider status before distributing rewards/slashing tokens.
-
-\item[\refstepcounter{sanum}\thesanum \label{SA_GroundTruthTests}:]
-Providers shall be given random tests with a known ground truth to identify malicious providers.
-
-\item[\refstepcounter{sanum}\thesanum \label{SA_RandomInvitations}:]
-The system shall send invitation to accept an inference request to providers randomly, to reduce the possibility of premeditated collusion attacks.
 
 \end{itemize}
 
@@ -1524,7 +1518,7 @@ Stakeholder Req & Use Case & Functional Req \\
   & \rref{FR_RequestSubmission}, \rref{FR_RequestValidation}, \rref{FR_RequestPayment}, \rref{FR_RequestBroadcast}, \rref{FR_FinalResultDelivery}, \rref{FR_RequestHistory}, \ref{SA_ChargeEqualsAuthorized} \\[0.5em]
 
 \srref{SR_ReliableInference} & \ucref{UC_AggregateResult}, \ucref{UC_UpdateReputation}, \ucref{UC_CancelRequest}, \ucref{UC_SubmitPrediction}
-  & \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_MinimumAcceptance}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_MinimumPredictions}, \rref{FR_PredictionAggregation}, \rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap}, \ref{SA_GroundTruthTests}, \ref{SA_RandomInvitations} \\[0.5em]
+  & \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_MinimumAcceptance}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_MinimumPredictions}, \rref{FR_PredictionAggregation}, \rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} \\[0.5em]
 
 \srref{SR_ResilientService} & \ucref{UC_AcceptRequest}, \ucref{UC_SubmitPrediction}, \ucref{UC_CancelRequest}
   & \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_MinimumAcceptance}, \rref{FR_PredictionPhaseEnd}, \rref{FR_MinimumPredictions}, \ref{SA_ExpiryCheck}, \ref{SA_FailureRetry} \\[0.5em]
@@ -1608,7 +1602,6 @@ Functional Req & Nonfunctional Req \\
 \ref{SA_ChargeEqualsAuthorized} & \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_AggregationArithmeticErrors} \\
 \ref{SA_RewardValidation} & \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_FinalState} \\
 \ref{SA_ProviderStatusCheck} & \nfrref{NFR_FinalState} \\
-\ref{SA_GroundTruthTests} & \nfrref{NFR_ReputationWeightedAggregate} \\
 \bottomrule
 \caption{Traceability Between Functional and Nonfunctional Requirements}
 \label{tab:FR2Rtm}
@@ -1717,12 +1710,46 @@ providers would lose reputation on every request, even when all predictions are
 close together. $T$ is set per task because an acceptable margin depends on the
 units and scale of the task's output.
 
-\section{Likely Changes}    
+\subsection{Request Broadcast and Collusion} \label{sec_RationaleBroadcast}
+
+Every provider registered for a task receives each of its inference requests,
+and any of them may accept (\rref{FR_RequestBroadcast},
+\rref{FR_AcceptancePeriodStart}). The system does not invite a random subset of
+providers, and it does not cap how many providers can accept a request.
+
+The Hazard Analysis (H4.3) identified collusion as a risk: a coordinated group
+of providers could submit similar inaccurate predictions to skew the aggregated
+result, reputations, and rewards. Inviting only a random subset of providers to
+each request would reduce this risk, because colluders could not know in advance
+which of them would be invited to the same request. Their combined weight in the
+aggregate would also vary from request to request instead of being fixed. This
+mitigation is not part of the current scope, for three reasons:
+
+\begin{itemize}
+\item It requires a secure and verifiable source of randomness on Solana, so
+  that providers cannot predict or influence who gets invited.
+\item Inviting fewer providers makes it less likely that a request reaches the
+  task's minimum number of participating providers
+  (\rref{FR_TaskMinimumProviders}, \rref{FR_MinimumAcceptance}), so the
+  minimum-provider rules would need to be reworked.
+\item With broadcast to all providers, a colluding group must make up a large
+  share of the providers on a task to have much influence. Reputation-weighted
+  aggregation (\rref{FR_PredictionAggregation}) and staking already make this
+  costly.
+\end{itemize}
+
+Instead, the proof of concept will simulate colluding groups of different sizes
+to measure how much they can affect results, and compare the broadcast design
+with random invitation. Random invitation is recorded as a possible future
+change in \lcref{LC_randomInvitations}.
+
+\section{Likely Changes}
 
 \noindent \begin{itemize}
 \item[LC\refstepcounter{lcnum}\thelcnum\label{LC_inferenceModels}:] The set of supported AI inference models may expand beyond the regression model used in the initial proof of concept. The inference processing and aggregation components may need to be adapted to support additional model types.
 \item[LC\refstepcounter{lcnum}\thelcnum\label{LC_providerParticipation}:] The number and behaviour of participating inference providers may change over time as providers join or leave the marketplace. The system's aggregation, reputation, and reward mechanisms may need to accommodate different levels of provider participation.
 \item[LC\refstepcounter{lcnum}\thelcnum\label{LC_aggregation}:] The prediction aggregation, reputation, and reward mechanisms may be refined as the proof of concept is evaluated. These changes may be required to improve prediction reliability and address issues such as inaccurate predictions, malicious providers, or collusion.
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_randomInvitations}:] Inference requests may in the future be sent to a randomly selected subset of registered providers instead of to every registered provider, to make premeditated collusion harder (see \hyperref[sec_RationaleBroadcast]{Request Broadcast and Collusion}). This would replace the broadcast and eligibility rules in \rref{FR_RequestBroadcast} and \rref{FR_AcceptancePeriodStart}.
 \item[LC\refstepcounter{lcnum}\thelcnum\label{LC_userRequirements}:] User requirements for the marketplace interface and the presentation of inference results may evolve as the system is tested. The interface may need to be updated to improve usability and make prediction quality information easier to understand.
 \end{itemize}
 
