@@ -30,6 +30,7 @@ September 27 & Keira & Write custom documents and reflection \\
 September 28 & Robert & Revise problem statement \\
 September 28 & All & Review document and fix formatting \\
 October 10 & Robert & Ensure goals support claims made in prob statement. Ensure all goals are measureable. \\
+October 26 & Keira & Made Section 1.3 inputs/outputs less abstract \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -52,18 +53,41 @@ Our aim is to provide consumers with accurate AI predictions through a decentral
 of providers, reducing reliance on centralized solutions.
 
 \subsection{Inputs and Outputs}
+\label{subsec:inputs_and_outputs}
 
-The inputs to the system consists of task definitions, inference requests, and network participation.
-Task definitions are specification of a problem to be solved via machine learning, including the expected input and output types.
-Inference requests ask the network to perform inference for a given task and include
-input data or some specification of where to find the input data.
-Network participation includes machine learning 
-predictions for individual inference requests that are supplied to the network by an individual.
-\\\\
-The system outputs aggregated inference results and maintains information about the network.
-The aggregated inference results include the final prediction for a given inference request, as well as information about the quality of the prediction.
+Task requesters and inference providers are the primary users of DAIIM (see Section \ref{stakeholders}).
+
+The inputs to the system consist of task definitions, inference requests, network participation, and token stakes.
+
+Task definitions are specifications of a problem to be solved via machine learning, including the 
+expected input and output types for a machine learning model. Task definitions may be created 
+by any user of the system and serve as a shared contract that defines what task requesters must 
+provide and what inference providers must return.
+
+An inference request is an instance of a task definition. 
+Inference requests are submitted by task requesters and include all necessary data required for inference providers 
+to run their models, in accordance with the associated task definition.
+
+Network participation includes machine learning predictions for individual inference requests that are 
+supplied to the network by individual inference providers.
+
+Tokens are input into the system by requesters as payment for the request and providers participating in an inference request as collateral for the prediction accuracy.
+
+\newline
+The outputs of the system include an aggregated inference result, information about the network, and token payouts.
+
+The system outputs an aggregated inference result related to an inference request to the original task requester, 
+based on the predictions from participating providers. 
+The aggregated inference result includes the final prediction for a given inference request, as well as information 
+about the quality of the prediction.
+
+Information about the network is also maintained in the system and output for transparent viewing for all users, including 
+active providers and task definitions.
+
+Tokens are output to users participating in an inference request in relation to the status of that inference request.
 
 \subsection{Stakeholders}
+\label{subsec:stakeholders}
 
 \begin{itemize}
     \item \textbf{Task requesters} \newline
