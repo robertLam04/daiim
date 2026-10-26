@@ -1142,11 +1142,11 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_OnePredictionPerProvider}:] The system shall accept at most one prediction from each provider for a given inference request.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionValidation}:] The system shall reject predictions that do not conform to the task's output schema.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionValidation}:] The system shall reject predictions that do not conform to the task’s output schema. Rejected predictions shall not count toward the minimum number of participating providers required to submit predictions for an inference request.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionPhaseEnd}:] The system shall end the prediction phase when it has received a prediction from every provider that accepted the request or when the maximum prediction time has elapsed, whichever occurs first. The system shall not accept predictions after the phase has ended.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumPredictions}:] When the prediction phase ends, the system shall count the providers who submitted a valid prediction and whose reputation score is non-zero. If fewer than the task's minimum number of providers meet these conditions, the system shall cancel the request and return the requester's escrowed payment.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumPredictions}:] When the prediction phase ends, if fewer than the task’s minimum required number of valid predictions have been received, the system shall cancel the inference request and return the requester’s escrowed payment.
 
 \end{itemize}
 
