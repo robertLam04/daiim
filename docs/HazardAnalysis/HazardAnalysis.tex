@@ -71,9 +71,39 @@ October 19 & Keira & Added column to FMEA table to map hazards to requirements\\
 
 \section{Introduction}
 
-A hazard is a condition or event that could cause harm or loss. For DAIIM, this
-could include an inaccurate inference,
-exposure of sensitive input data or wallet keys, or mishandling a transaction involving users’ funds
+\section{Introduction}
+
+A hazard is a condition or event that could cause harm or loss. For
+\progname{}, this could include an inaccurate inference, exposure of sensitive
+input data or wallet keys, or mishandling a transaction involving users' funds.
+
+Hazard analysis is especially important for \progname{} because errors cannot be
+easily corrected after the fact. Blockchain transactions are irreversible, so
+there is no central party that can intervene to reverse a harmful outcome.
+Identifying potential hazards early allows the team to address them while the design
+is still flexible.
+
+Three groups could be harmed:
+\begin{itemize}
+    \item \textbf{Task requesters} could receive inaccurate or manipulated
+    predictions, have their input data exposed, or lose fees paid for requests
+    that are never fulfilled.
+    \item \textbf{Inference providers} could lose payments or deposits through
+    contract flaws, have wallet keys stolen, or be unfairly penalized by an
+    incorrect reputation update.
+    \item \textbf{Downstream beneficiaries}, such as patients affected by a
+    healthcare study or users of a decentralized finance platform that relies on
+    \progname{} predictions, could be harmed by decisions based on a faulty
+    prediction.
+\end{itemize}
+
+The rest of this document is organized as follows. Section~\ref{sec:scope}
+defines the scope and purpose of the analysis. Section~\ref{sec:boundaries}
+describes the system boundaries and components. Section~\ref{sec:assumptions}
+lists the assumptions the analysis relies on. Section~\ref{sec:fmea} presents
+the failure modes and effects analysis (FMEA), which records each failure mode
+with its causes, effects, and recommended actions. Section~\ref{sec:reqs} turns
+those actions into safety and security requirements.
 
 \section{Scope and Purpose of Hazard Analysis}
 
