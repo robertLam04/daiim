@@ -29,7 +29,8 @@ September 27 & Aidan & Added stakeholders and environment \\
 September 27 & Keira & Write custom documents and reflection \\
 September 28 & Robert & Revise problem statement \\
 September 28 & All & Review document and fix formatting \\
-October 10 & Robert & Ensure goals support claims made in prob statement. Ensure all goals are measureable. \\
+October 10 & Robert & Ensure goals support claims made in prob statement. Ensure all goals are measurable. \\
+October 27 & Robert & Fix typos and grammar inconsistencies.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -41,20 +42,20 @@ October 10 & Robert & Ensure goals support claims made in prob statement. Ensure
 
 Current AI inference markets are increasingly concentrated around a small number of large organizations~\cite{vipra2023market}.
 As the artificial intelligence (AI) industry continues to grow, we become increasingly reliant on centralized providers for AI models, data, hardware, and compute.
-This centralization increases the risk of biased outputs because of the lack of diversity in training algorithms and data used by these companies~\cite{rolf2021representation}.
-Furthermore, the oligopilized nature of the AI market creates a risk of censorship and manipulation of AI outputs. The lack of transparency from these companies and the black-box nature of many AI models makes it difficult for consumers to verify the quality and reliability of their inferences.
+This centralization increases the risk of biased outputs because of the lack of diverse data and training algorithms used by these companies~\cite{rolf2021representation}.
+Furthermore, the oligopolistic nature of the inference market creates a risk of censorship and manipulation of model outputs. The lack of transparency from these companies and the black-box nature of many AI models make it difficult for consumers to verify the quality and reliability of the inferences they receive.
 Lastly, the centralized nature of the compute infrastructure used by these companies creates potential single points of failure. According to the 2026 Stanford AI Index, NVIDIA accounts for over 60\% of total global AI compute capacity~\cite{aiindex2026}. 
 This concentration poses a significant risk of disruption to AI markets in the event of a single failure. 
 \newline
 
 Our project is called DAIIM: Decentralized Artificial Intelligence Inference Marketplace.
 Our aim is to provide consumers with accurate AI predictions through a decentralized network
-of providers, reducing reliance on centralized solutions.
+of providers, reducing the reliance on centralized solutions.
 
 \subsection{Inputs and Outputs}
 
-The inputs to the system consists of task definitions, inference requests, and network participation.
-Task definitions are specification of a problem to be solved via machine learning, including the expected input and output types.
+The inputs to the system consist of task definitions, inference requests, and network participation.
+Task definitions are specifications of a problem to be solved via machine learning, including the expected input and output types.
 Inference requests ask the network to perform inference for a given task and include
 input data or some specification of where to find the input data.
 Network participation includes machine learning 
@@ -72,38 +73,39 @@ The aggregated inference results include the final prediction for a given infere
     Similarly, decentralized finance platforms could make requests to predict various regression inferences (such as stock prices) while still complying with privacy constraints.
 
     \item \textbf{Inference providers} \newline
-    Inference providers are people with computing resources and models, and want to monetize their regression models.
+    Inference providers are people with computing resources and models who want to monetize their regression models.
     These people usually have specialized or powerful models that can be used to make predictions for a given task.
    
-    \item \textbf{Data Providers}   \newline
+    \item \textbf{Data providers}   \newline
     Data providers are people with data that can be used to train models for a given task.
     They would be interested in helping the inference providers improve their models by providing them with data to train on.
 \end{itemize}
 
 \subsection{Environment}
 
-This software is compatible with any computer running a modern browser that is connected to wifi. There is no hardware component. 
+This software is compatible with any computer running a modern browser that is connected to the internet. There is no hardware component. 
 
 \section{Goals}
 
-This project has a total of five primary goals.
+This project has five primary goals.
 
 \subsection{Transparency and Decentralization}
 Enable inference consumers and model providers to participate in a transparent inference marketplace
 that does not rely on a single centralized entity. The marketplace’s core logic,
 including payments, ownership, and settlement, will be deployed as smart contracts
-on a public blockchain. This ensures there are publicly verifiable records of requests, provider submissions, aggregated results, provider reputation etc.
+on a public blockchain. This ensures there are publicly verifiable records of requests, 
+provider submissions, aggregated results, provider reputation and rewards payments.
 The system should require participation by multiple independent providers per inference,
 to reduce reliance on a narrow set of machine learning models and make the sources of
-inference more diverse. This goal will be measured by whether end-to-end testing demonstrate
+inference more diverse. This goal will be measured by whether end-to-end testing demonstrates
 that a request can proceed through provider submission and settlement without
 a centralized coordinator, that the relevant marketplace state can be
 verified from on-chain records, and that at least two independent providers
 can participate in fulfilling requests.
 
-\subsection{Web3 Usability and Transparency}
+\subsection{Web3 Usability}
 
-Provide a user-friendly Web3 experience that abstracts unnecessary
+Provide a user-friendly Web3 experience that hides unnecessary
 blockchain complexity while maintaining transparency into the actions and
 transactions performed by the system. The application should clearly
 communicate the purpose and consequences of actions requiring user
@@ -128,7 +130,7 @@ multiple registered providers makes the network more reliable by allowing
 requests to be fulfilled by available providers when others are unavailable.
 Reliability will be measured by the request-completion rate: the percentage
 of submitted requests that receive an aggregated result within a predefined
-time limit. Tests will vary the number of participating providers while, and compare completion rates to assess
+time limit. Tests will vary the number of participating providers, and compare completion rates to assess
 how provider count affects reliability.
 The accuracy of aggregate network predictions will be evaluated against ground
 truths revealed at a later time. For example, for a weather forecasting task,
@@ -167,7 +169,7 @@ determine whether the aggregated results improve over time.
 
 \section{Stretch Goals}
 
-This project has a total of two stretch goals, which outline additional
+This project has two stretch goals, which outline additional
 features that could be implemented after the primary goals have been
 achieved.
 
@@ -193,14 +195,14 @@ marketplace and inference functionality.
 
 A cognitive walkthrough will be performed using a wireframe prototype of the 
 planned interface of the application from the point of view of the inference requesters. 
-This will aid in mapping the entire process of DAIMM and generally smooth out any remaining 
+This will aid in mapping the entire process of \progname{} and generally smooth out any remaining 
 ambiguity. The results of the cognitive walkthrough will provide essential insight into the 
 required user feedback and how to make the UI accessible and learnable for the expected users 
 to ensure the application is simple to understand and enjoyable to use. 
 
 \subsection{Business Plan}
 
-A business plan will be developed, once a proof of concept has met expectations. The goal 
+A business plan will be developed once a proof of concept has met expectations. The goal 
 of the business plan is to detail how the decentralized AI marketplace can be implemented 
 such that developers and stakeholders can be compensated, and will further explain the 
 business strategy behind the tokenomics. The business plan would include a description
@@ -226,7 +228,7 @@ the competition and positioning, and the execution plan and milestones.
 
     Our team discussed our skills and experience, and ideas for features of the application. We considered the timeline and budget, and ultimately we think we can reasonably accomplish the project over the next few terms given our skill and experience levels.
 
-    Initially, we brainstormed goals that we later deemed to be too ambitious for the scope of the project. For example, we had planned to try to implement multiple types of inferences. Upon further inspection, we realized that not only was this goal too solution-oriented, it was beyond what we could determine was reasonably feasible within the timeline of the project, considering the other features we are planning to implement. We instead included this as a stretch goal.
+    Initially, we brainstormed goals that we later deemed to be too ambitious for the scope of the project. For example, we had planned to try to implement multiple types of inferences. Upon further inspection, we realized that not only was this goal too solution-oriented, but it was also beyond what we could determine was reasonably feasible within the timeline of the project, considering the other features we are planning to implement. We instead included this as a stretch goal.
 \end{enumerate}
 
 \begin{thebibliography}{9}
