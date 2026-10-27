@@ -32,7 +32,7 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
+Oct 26 & 1.0 & Added system tests for authentication and task creation\\
 Date 2 & 1.1 & Notes\\
 \bottomrule
 \end{tabularx}
@@ -293,7 +293,7 @@ authenticated features are available.
 \item The user remains unauthenticated, no profile or authenticated features become available.
 \end{itemize}
 
-Test Case Derivation: \rref{FR_WalletAuthentication} requires the authentication
+Test Case Derivation: FR1 requires the authentication
 response to verify ownership of the connected wallet address.
 
 How test will be performed: For each wallet, start from a signed-out session,
@@ -335,7 +335,7 @@ profile or authenticated features while signed out.
 wallet. The system grants the user access to authenticated features.
 \end{itemize}
 
-Test Case Derivation: \rref{FR_WalletAuthentication} requires the system to
+Test Case Derivation: FR1 requires the system to
 verify ownership of the wallet address and associate that verified address
 with the same user profile on every successful authentication, including
 after sign-out. The second successful authentication must restore
@@ -391,10 +391,10 @@ wallet-creation confirmation or address, and does not authenticate the user or
 create a wallet.
 \end{itemize}
 
-Test Case Derivation: \rref{FR_EmbeddedWalletCreation} requires successful creation
+Test Case Derivation: FR2 requires successful creation
 for supported identity input after authentication, with the public address and
 confirmation as outputs. The system must reject malformed identity input
-before wallet creation. \rref{FR_WalletAuthentication} requires the successful
+before wallet creation. FR1 requires the successful
 wallet authentication to identify the user.
 
 How test will be performed: For each valid test identity, call the
@@ -446,7 +446,7 @@ failure and does not create an authenticated session or grant access to a
 profile.
 \end{itemize}
 
-Test Case Derivation: \rref{FR_WalletAuthentication} requires each verified
+Test Case Derivation: FR1 requires each verified
 wallet address to remain associated with the same user profile after sign-out.
 Each successful response must restore the mapped existing profile rather
 than create another account. The failed authentication response does not verify
@@ -512,15 +512,15 @@ the system rejects the definition, and no task is created.
 and no successful task-creation transaction occurs.
 \end{itemize}
 
-Test Case Derivation: \rref{FR_InferenceTaskDefinition} requires a task name,
+Test Case Derivation: FR6 requires a task name,
 description, type, input schema, and output schema; the incompatible-schema
 case checks that the definition matches the numerical regression task.
-\rref{FR_MinimumProvidersFloor} requires at least 2 providers, so a value of 1
-must be rejected. \rref{FR_InferenceTaskCreation} permits authenticated users
-to create tasks, while \rref{FR_TransactionAuthorization} requires wallet
+FR8 requires at least 2 providers, so a value of 1
+must be rejected. FR5 permits authenticated users
+to create tasks, while FR4 requires wallet
 approval before an on-chain state change. Therefore, the valid task should be
 created only after approval, and rejecting authorization should leave it
-uncreated. \rref{FR_TransactionStatus} and \rref{FR_TransactionVerification}
+uncreated. FR50 and FR51
 require a final transaction status and a transaction identifier that can be
 used to verify the successful instruction.
 
