@@ -395,7 +395,7 @@ The user interface should minimize the technical knowledge required to submit re
 \subsection{System Constraints}
 
 \begin{itemize}
-\item \textbf{Web3 browser compatibility:} The user-facing application must be accessed through a web browser that supports the Web3 wallet extensions required to authenticate users and authorize blockchain transactions.
+\item \textbf{Web3 browser compatibility:} The user-facing application must be accessed through a web browser that supports authentication with either an embedded wallet or a compatible Web3 wallet extension, and authorization of blockchain transactions through the selected wallet.
 \item \textbf{Inference type and data compatibility:} The system is restricted to regression-based inference for the initial project. Inference requests must provide input data in a supported format, and provider predictions must conform to the expected numerical output format so that results can be validated and aggregated consistently.
 \item \textbf{Blockchain integration:} Marketplace operations that require on-chain execution must be compatible with the blockchain network selected for the project. The system must account for possible transaction delays or failures.
 \end{itemize}
@@ -501,26 +501,26 @@ User (requester or provider)
 
 \textbf{Preconditions}
 \begin{itemize}
-\item User has an account that is supported by MetaMask authentication (Google, Twitter, email, SMS, etc.).
+\item User has access to either a supported account for embedded-wallet authentication or a compatible Web3 wallet extension.
 \end{itemize}
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
 \item User opens the DAIIM web application in a browser.
 \item User clicks the "Sign in" button.
-\item System displays a list of supported sign-in methods.
-\item User selects their preferred sign-in method (ie. Google, Twitter, email, SMS, existing supported wallet, etc.).
-\item User signs in with MetaMask Embedded Wallet infrastructure.
-\item System retrieves the JSON Web Token (JWT) and verifies the public key linked to the user's wallet.
+\item System displays the supported wallet authentication options.
+\item User selects either an embedded wallet or a compatible Web3 wallet extension.
+\item For an embedded wallet, the user authenticates using a supported social account, email, or phone number. For a wallet extension, the user connects the wallet and signs a verification message.
+\item System verifies the authentication response and the public key linked to the user's wallet.
 \item System authenticates the user and displays their profile linked with their wallet.
 
 \end{enumerate}
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item 5a. User cancels the sign-in process: System cancels sign-in and redirects user to the public page.
-\item 5b. User fails to input correct credentials: System displays an error message and prompts the user to try signing in again or choose another account.
-\item 6a. System fails to verify the JWT or public key: System displays an error message and prompts the user to try signing in again.
+\item 5a. User cancels authentication or rejects the wallet connection or signature: System cancels sign-in and redirects the user to the public page.
+\item 5b. User provides incorrect credentials or the wallet connection fails: System displays an error message and prompts the user to try signing in again or choose another authentication option.
+\item 6a. System fails to verify the authentication response or public key: System displays an error message and prompts the user to try signing in again.
 \end{itemize}
 
 \textbf{Postconditions}
@@ -528,7 +528,7 @@ User (requester or provider)
 \item The requester is signed in to the DAIIM web application and can access their profile and other features of the application.
 \end{itemize}
 
-\textbf{Related Requirements:} \rref{FR_WalletAuthentication}, \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_Learnability}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_BrowserSupport}, \nfrref{NFR_NoExtraSoftware}, \ref{SA_WalletSigning}, \ref{SA_TLS}.
+\textbf{Related Requirements:} \rref{FR_WalletAuthentication}, \rref{FR_EmbeddedWalletCreation}, \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_Learnability}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_BrowserSupport}, \nfrref{NFR_NoExtraSoftware}, \ref{SA_WalletSigning}, \ref{SA_TLS}.
 
 
 \refstepcounter{ucnum} \label{UC_SignOut}
@@ -1066,7 +1066,9 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_WalletAuthentication}:] The system shall allow users to authenticate by connecting their Web3 wallet and signing a verification message to prove ownership of the associated wallet address.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_WalletAuthentication}:] The system shall allow users to authenticate using either an embedded wallet or a compatible Web3 wallet extension and verify ownership of the associated wallet address using an authentication response from the selected wallet. The system shall associate each verified wallet address with the same user profile on every successful authentication, including after the user signs out. When a user chooses to create an embedded wallet, the system shall follow \rref{FR_EmbeddedWalletCreation}.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_EmbeddedWalletCreation}:] When a user requests an embedded wallet and provides a supported social account, email address, or phone number and completes the required authentication, the system shall create an embedded wallet associated with the user and provide the wallet's public address and a creation confirmation. If the input is invalid or wallet creation fails, the system shall report the failure and shall not indicate that the wallet was created.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PublicAccess}:] The system shall allow unauthenticated users to browse publicly available marketplace information, including registered providers, available models, and provider reputations.
 
@@ -1077,7 +1079,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 \subsection{Inference Tasks}
 
 \noindent \begin{itemize}
-
+ss
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskCreation}:] The system shall allow authenticated users to create new inference tasks by providing the task definition.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskDefinition}:] Each inference task definition shall specify a name, problem description, inference category or type, input schema, and output schema. Where applicable, it shall also specify the metric(s) used to evaluate predictions. The task creator may optionally provide training data, or a reference to training data, for providers to use when training or adapting models for the task.
@@ -1278,6 +1280,7 @@ parts of the SRS.  The label names should be meaningful mnemonics, not numbers.}
 \subsection{Major Data Entities}
 
 \begin{itemize}
+\item User Profiles: User accounts associated with verified wallet addresses, with information shown to the user on their dashboard.
 \item Model Providers: Network contributors identified by a wallet address, with a list of registered inference tasks and a reputation for each task.
 \item Inference Tasks: A task defined by its description and input and output formats, with a list of registered inference providers.
 \item Inference Requests: A consumer's request for an inference task, including associated inference task, input data, cost, information about the requester, individual provider inferences and the final aggregated inference.
@@ -1293,6 +1296,13 @@ parts of the SRS.  The label names should be meaningful mnemonics, not numbers.}
 \toprule
 Entity & Attribute & Type & Description\\
 \midrule
+User Profile & Wallet addresses & List<Address> & Verified wallet addresses associated with the user profile\\
+ & Join date & Timestamp & Date and time the user profile was created\\
+ & Submitted requests & List<Request IDs> & Inference requests submitted by the user\\
+ & Registered tasks & List<Task IDs> & Inference tasks the user is registered to provide for\\
+ & Task reputation & List<Task ID, Number> & The user's reputation for each registered task\\
+ & Staked tokens & List<Task ID, Number of tokens> & Tokens the user has staked for each registered task\\
+ & Rewards earned & List<Task ID, Number of tokens> & Rewards earned by the user for each registered task\\
 Model Provider & Wallet address & Address & Provider's wallet\\
  & Registered tasks & Task IDs & Tasks the provider joined\\
  & Task reputations & List<Number> & List of this Provider's reputation for registered tasks. Ranging from 0 to 100\\
@@ -1399,7 +1409,7 @@ be covered in the Verification and Validation document.}
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_TransactionConfirmation}:] Confirmation messages written in plain language shall be displayed after every transaction, indicating what has been recorded and if balances have been updated, verified via testing.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_EmbeddedWalletAccess}:] Requesters will access/create embedded wallet such that they can authenticate and add funds using supported social accounts or emails/numbers without needing knowledge of Web3 wallets, verified through user testing.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_EmbeddedWalletAccess}:] Requesters shall be able to access or create an embedded wallet using supported social accounts, email, or phone numbers without needing prior knowledge of Web3 wallets, verified through user testing.
 
 \end{itemize}
 
@@ -1447,7 +1457,7 @@ be covered in the Verification and Validation document.}
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_BrowserSupport}:] The system shall be fully operational on current versions of modern browsers with an internet connection.
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_NoExtraSoftware}:] The web client shall not require installing software other than a browser and having some account that is supported by MetaMask to have an embedded wallet.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_NoExtraSoftware}:] For users who choose embedded-wallet authentication, the web client shall not require software installation beyond a supported browser; users shall be able to access or create an embedded wallet using a supported social account, email, or phone number.
 
 \end{itemize}
 
@@ -1573,6 +1583,7 @@ Functional Requirements} \label{tab:SR2UC2FRtm}
 Functional Req & Nonfunctional Req \\
 \midrule
 \rref{FR_WalletAuthentication} & \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_Learnability}, \nfrref{NFR_NoExtraSoftware}, \ref{SA_WalletSigning} \\
+\rref{FR_EmbeddedWalletCreation} & \nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_NoExtraSoftware} \\
 \rref{FR_TransactionAuthorization} & \ref{SA_WalletSigning} \\
 \rref{FR_PublicAccess} & \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_PublicPagesPrivacy}, \nfrref{NFR_Learnability} \\
 \rref{FR_TaskMaxPredictionTime} & \nfrref{NFR_FinalState} \\

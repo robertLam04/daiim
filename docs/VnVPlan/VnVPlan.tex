@@ -13,6 +13,8 @@
 \usepackage[round]{natbib}
 
 \input{../Comments.text}
+\renewcommand{\authornote}[3]{}
+\renewcommand{\todo}[1]{}
 \input{../Common.text}
 
 \begin{document}
@@ -230,6 +232,18 @@ as a Rev 0 demo for the supervisor.}
 \wss{There should be text between all headings, even if it is just a roadmap of
 the contents of the subsections.}
 
+This section describes the tests that will be performed to verify that the entire integrated
+system meets the functional and non-functional requirements specified in the \href{../SRS/SRS.pdf}{SRS}. The
+system test cases below are be descrbed by the following characteristics:
+\begin{itemize}
+  \item Control: Is this test manual or automatic?
+  \item Initial State: What is the state of the system before the test is performed?
+  \item Input: What is the input to the system for this test?
+  \item Output: What is the expected output of the system for this test?
+  \item Test Case Derivation: What FRs or NFRs does this test case cover?
+  \item How test will be performed: What is the abstract procedure for performing the test?
+\end{itemize}
+
 \subsection{Tests for Functional Requirements}
 
 \wss{Subsets of the tests may be in related, so this section is divided into
@@ -239,52 +253,290 @@ the contents of the subsections.}
 \wss{Include a blurb here to explain why the subsections below
   cover the requirements.  References to the SRS would be good here.}
 
-\subsubsection{Area of Testing1}
+\subsubsection{Accounts and Authentication}
 
-\wss{It would be nice to have a blurb here to explain why the subsections below
-  cover the requirements.  References to the SRS would be good here.  If a section
-  covers tests for input constraints, you should reference the data constraints
-  table in the SRS.}
+These tests verify the account authentication requirements in the
+\href{../SRS/SRS.pdf}{SRS}, including authentication with a compatible Web3
+wallet extension and an embedded wallet.
 		
-\paragraph{Title for Test}
+\paragraph{Authentication Using a Web3 Wallet Extension}
 
 \begin{enumerate}
 
-\item{test-id1\\}
+\item{ST-AUTH-EXT-1\\}
 
-Control: Manual versus Automatic
-					
-Initial State: 
-					
-Input: 
-					
-Output: \wss{The expected result for the given inputs.  Output is not how you
-are going to return the results of the test.  The output is the expected
-result.}
+Control: Manual
 
-Test Case Derivation: \wss{Justify the expected value given in the Output field}
-					
-How test will be performed: 
-					
-\item{test-id2\\}
+Initial State: The application is running in a supported browser on its public
+page. A compatible Web3 wallet extension is installed and active. Test
+profiles \texttt{EXT-USER-01} and \texttt{EXT-USER-02} are associated with
+wallet fixtures \texttt{EXT-WALLET-01} and \texttt{EXT-WALLET-02}; neither
+user is signed in.
 
-Control: Manual versus Automatic
-					
-Initial State: 
-					
-Input: 
-					
-Output: \wss{The expected result for the given inputs}
+Input:
+\begin{itemize}
+\item Connect \texttt{EXT-WALLET-01} and approve the verification-message
+signature requested by the application.
+\item Connect \texttt{EXT-WALLET-02} and approve its verification-message
+signature.
+\item Connect \texttt{EXT-WALLET-01} and reject the signature request.
+\end{itemize}
 
-Test Case Derivation: \wss{Justify the expected value given in the Output field}
+Output:
+\begin{itemize}
+\item For the approved signature from \texttt{EXT-WALLET-01}, the user is
+authenticated as \texttt{EXT-USER-01}, and that user's profile and
+authenticated features are available.
+\item For the approved signature from \texttt{EXT-WALLET-02}, the user is
+authenticated as \texttt{EXT-USER-02}, and that user's profile and
+authenticated features are available.
+\item The user remains unauthenticated, no profile or authenticated features become available.
+\end{itemize}
 
-How test will be performed: 
+Test Case Derivation: \rref{FR_WalletAuthentication} requires the authentication
+response to verify ownership of the connected wallet address.
+
+How test will be performed: For each wallet, start from a signed-out session,
+connect the specified extension account, and approve the verification-message
+signature request. Confirm that \texttt{EXT-WALLET-01} opens
+\texttt{EXT-USER-01}'s profile and \texttt{EXT-WALLET-02} opens
+\texttt{EXT-USER-02}'s profile. Confirm that the user is granted access to the
+authenticated features. Repeat the process and
+reject the signature request; confirm that the user remains signed out and
+cannot access authenticated features.
+
+\item{ST-AUTH-EXT-2\\}
+
+Control: Manual
+
+Initial State: The application is running on its public page in a supported
+browser. \texttt{EXT-WALLET-03} is available in a
+compatible browser extension and is not yet associated with a DAIIM user
+profile. The wallet owner is not signed in.
+
+Input:
+\begin{itemize}
+\item Connect \texttt{EXT-WALLET-03} and approve the verification-message
+signature.
+\item Sign out of the resulting account.
+\item Reconnect \texttt{EXT-WALLET-03} and approve the verification-message
+signature again.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item After the first approved signature, the user is authenticated and a
+profile is associated with \texttt{EXT-WALLET-03}. The system grants the user
+access to authenticated features.
+\item Sign-out ends the authenticated session; the user cannot access the
+profile or authenticated features while signed out.
+\item After the second approved signature, the same profile associated with
+\texttt{EXT-WALLET-03} is displayed. No second profile is created for the
+wallet. The system grants the user access to authenticated features.
+\end{itemize}
+
+Test Case Derivation: \rref{FR_WalletAuthentication} requires the system to
+verify ownership of the wallet address and associate that verified address
+with the same user profile on every successful authentication, including
+after sign-out. The second successful authentication must restore
+the profile created during the first sign-in.
+
+How test will be performed: Record the number of DAIIM profiles associated
+with \texttt{EXT-WALLET-03}. Connect the wallet and approve the
+verification-message signature. Record the displayed profile identifier and
+confirm that the wallet is associated with that profile. Sign out and verify
+that the profile and authenticated features are no longer accessible. Sign in
+again with the same wallet and approve the signature. Verify that the displayed
+profile identifier matches the recorded identifier and that the number of
+profiles associated with the wallet has not increased.
 
 \end{enumerate}
 
-\subsubsection{Area of Testing2}
+\paragraph{Authentication Using an Embedded Wallet}
 
-...
+\begin{enumerate}
+
+\item{ST-AUTH-EMB-1\\}
+
+Control: Automatic
+
+Initial State: The application is running in a test environment with the
+embedded-wallet provider mocked. Identities \texttt{new.email@example.test},
+\texttt{+15555550101}, and social-account subject \texttt{social-new-01} have
+no associated DAIIM account or embedded wallet. Configure the provider mock
+to return successful authentication and wallet creation for these identities,
+with distinct addresses \texttt{EMB-WALLET-NEW-01},
+\texttt{EMB-WALLET-NEW-02}, and \texttt{EMB-WALLET-NEW-03}, respectively.
+The malformed email \texttt{not-an-email} should be rejected by the system
+before the provider is called.
+
+Input:
+\begin{itemize}
+\item Submit \texttt{new.email@example.test} using the email sign-in method.
+\item Submit \texttt{+15555550101} using the phone sign-in method.
+\item Submit social-account subject \texttt{social-new-01} using the supported
+social sign-in method.
+\item Submit malformed email \texttt{not-an-email} using the email sign-in
+method.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item For each of the three supported identities, the system creates
+one embedded wallet associated with the user's account, displays its
+corresponding address and a creation confirmation, authenticates the user, and
+makes the associated profile available.
+\item For \texttt{not-an-email}, the system reports an input error, displays no
+wallet-creation confirmation or address, and does not authenticate the user or
+create a wallet.
+\end{itemize}
+
+Test Case Derivation: \rref{FR_EmbeddedWalletCreation} requires successful creation
+for supported identity input after authentication, with the public address and
+confirmation as outputs. The system must reject malformed identity input
+before wallet creation. \rref{FR_WalletAuthentication} requires the successful
+wallet authentication to identify the user.
+
+How test will be performed: For each valid test identity, call the
+corresponding embedded-wallet sign-in method with the specified email
+address, phone number, or social-account identity. For each successful case,
+compare the displayed address with the configured mock address, verify that
+the corresponding profile is authenticated, and confirm that exactly one
+wallet was created. For the malformed email, enter it using the email sign-in
+method and verify that the system reports an input error, does not call the
+provider, and does not create a wallet or authenticated session.
+
+\item{ST-AUTH-EMB-2\\}
+
+Control: Automatic
+
+Initial State: The application is running in a test environment, and existing
+accounts \texttt{EMB-RETURN-01}, \texttt{EMB-RETURN-02}, and
+\texttt{EMB-RETURN-03} are signed out. Their embedded wallet addresses are
+respectively \texttt{EMB-WALLET-RETURN-01},
+\texttt{EMB-WALLET-RETURN-02}, and \texttt{EMB-WALLET-RETURN-03}. Configure
+the embedded-wallet provider mock to return successful authentication
+responses with those address mappings. Configure it to return an
+authentication failure for \texttt{locked.user@example.test}, which has no
+associated account.
+
+Input:
+\begin{itemize}
+\item Enter \texttt{returning.email@example.test} using the email sign-in
+method.
+\item Enter \texttt{+15555550102} using the phone sign-in method.
+\item Provide social-account subject \texttt{social-return-03} using the
+supported social sign-in method.
+\item Enter \texttt{locked.user@example.test} using the email sign-in method.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item For \texttt{returning.email@example.test}, the system authenticates
+\texttt{EMB-RETURN-01} and displays its existing profile and
+\texttt{EMB-WALLET-RETURN-01}.
+\item For \texttt{+15555550102}, the system authenticates
+\texttt{EMB-RETURN-02} and displays its existing profile and
+\texttt{EMB-WALLET-RETURN-02}.
+\item For social-account subject \texttt{social-return-03}, the system
+authenticates \texttt{EMB-RETURN-03} and displays its existing profile and
+\texttt{EMB-WALLET-RETURN-03}.
+\item For \texttt{locked.user@example.test}, the system reports authentication
+failure and does not create an authenticated session or grant access to a
+profile.
+\end{itemize}
+
+Test Case Derivation: \rref{FR_WalletAuthentication} requires each verified
+wallet address to remain associated with the same user profile after sign-out.
+Each successful response must restore the mapped existing profile rather
+than create another account. The failed authentication response does not verify
+wallet ownership, so it must not grant access.
+
+How test will be performed: Call the application's
+embedded-wallet authentication entry point with the sign-in method and parameters from each returning-user credentials. Configure the provider
+mock to return that fixture's existing wallet authentication response. Assert
+that each call returns an authenticated session for the user profile. Then
+call the same entry point with the sign-in method and identity parameters from
+the authentication-failure credentials. Assert that the call returns no authenticated
+session, grants no profile access and displays the appropriate error message.
+
+\end{enumerate}
+
+\subsubsection{Inference Task Creation}
+
+This test verifies the end-to-end task creation flow, including validation of
+the task definition, user authorization, and confirmation that the task-creation
+program instruction succeeds on the blockchain.
+
+\paragraph{Create and Validate Inference Tasks}
+
+\begin{enumerate}
+
+\item{ST-TASK-CREATE-1\\}
+
+Control: Automatic
+
+Initial State: The system is running on Solana Devnet. The requester
+wallet address fixture is authenticated, and the test harness is configured with its
+wallet signer and sufficient test SOL to pay transaction fees. The unique task
+names \texttt{Regression-Test-Task},
+\texttt{Regression-Test-Min-Providers},
+\texttt{Regression-Test-Invalid-Schema}, and
+\texttt{Rejected-Authorization-Task} are not already in use.
+
+Input:
+\begin{itemize}
+\item A valid numerical regression task definition named
+\texttt{Regression-Test-Task}, including a description, numerical input and
+output schemas, an evaluation metric, a minimum provider count of 2 or more,
+reputation tolerance, acceptance period, and maximum prediction time.
+\item The valid definition named
+\texttt{Regression-Test-Min-Providers}, with its minimum provider count
+changed to 1.
+\item The valid definition named \texttt{Regression-Test-Invalid-Schema},
+with an input or output schema containing non-numerical values incompatible
+with a numerical regression task.
+\item The valid definition named \texttt{Rejected-Authorization-Task}.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item For the valid definition with authorization approved, the task is created
+with the submitted definition, and the corresponding Solana Devnet transaction
+succeeds with the task-creation instruction.
+\item For the definition with fewer than 2 minimum providers, the system
+rejects the definition, and no task is created.
+\item For the definition with a schema incompatible with numerical regression,
+the system rejects the definition, and no task is created.
+\item For the valid definition with authorization rejected, no task is created
+and no successful task-creation transaction occurs.
+\end{itemize}
+
+Test Case Derivation: \rref{FR_InferenceTaskDefinition} requires a task name,
+description, type, input schema, and output schema; the incompatible-schema
+case checks that the definition matches the numerical regression task.
+\rref{FR_MinimumProvidersFloor} requires at least 2 providers, so a value of 1
+must be rejected. \rref{FR_InferenceTaskCreation} permits authenticated users
+to create tasks, while \rref{FR_TransactionAuthorization} requires wallet
+approval before an on-chain state change. Therefore, the valid task should be
+created only after approval, and rejecting authorization should leave it
+uncreated. \rref{FR_TransactionStatus} and \rref{FR_TransactionVerification}
+require a final transaction status and a transaction identifier that can be
+used to verify the successful instruction.
+
+How test will be performed: Submit the valid
+definition to the task-creation flow and assert that the confirmation details
+match the submitted definition. Configure the test wallet signer to approve
+the authorization request. After confirmation, query Solana Devnet using the
+returned transaction identifier and assert that the transaction succeeded and
+contains the task-creation instruction. Query the application to confirm that
+\texttt{Regression-Test-Task} is available with the submitted definition.
+Submit the minimum-provider and invalid-schema definitions; assert that each
+is rejected before authorization and no task is created. Finally, submit the
+valid definition named \texttt{Rejected-Authorization-Task}, configure the
+signer to reject authorization, and assert that no task-creation instruction
+is submitted and no task is created.
+\end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
 
@@ -498,36 +750,41 @@ Their values are defined in this section for easy maintenance.
 
 \section{Appendix --- Generative AI Use Disclosure}
 
-\wss{ChatGPT (version 5) was used to brainstorm ideas for the template for this disclose section.}
-
 \subsection{AI Tools Used}
 
-\wss{Give the name of the AI tool(s) used and the version.}
+An AI assistant using the Copilot SDK in Visual Studio Code was used to assist
+with revisions to this document. The specific model used is GPT-6 Luna.
 
 \subsection{How and Where Used}
 
-\wss{Explain what the tool(s) were used for.  Examples include: brainstorming,
-explaining a technical concept, reviewing the document, generating or modifying
-text, generating or modifying diagrams, identifying errors or omissions or
-inconsistencies.}
+The AI assistant was used to discuss, draft, and revise prose and requirements
+for the verification and validation work. In the VnV Plan, it helped structure
+system tests by functional area and draft and refine test cases for wallet
+authentication, embedded-wallet creation, returning-user authentication, and
+inference-task creation. Revisions focused on making inputs, expected outputs,
+test procedures, and requirement derivations clearer and more specific.
 
-\wss{For each of the uses, identify which parts of the document were affected.}
-
-\wss{You do not need to report every interaction, but you should disclose the 
-uses that materially contributed to your work}
+The assistant also helped revise related SRS content: clarifying support for
+embedded and browser-extension wallets, adding requirements for embedded-wallet
+creation and persistent wallet-to-profile association, and adding a
+conservative User Profile entry to the major data entities and data
+dictionary. The team directed the scope and reviewed or adjusted the proposed
+content.
 
 \subsection{Verification of AI-Generated Content}
 
-\wss{\begin{itemize}
-    \item Describe how the team checked AI-generated or AI-assisted material
-    before including it in the document.
-    \item In particular, verify factual claims, technical assertions,
-    requirements, calculations, references, and other information for which an
-    AI system may produce incorrect or fabricated results.
-    \item \textbf{The team is responsible for the accuracy, completeness,
-consistency, and appropriateness of the submitted document, regardless of
-whether material was generated by a human or an AI system.}
-\end{itemize}}
+AI-assisted content in this document was checked against the SRS to confirm
+that each test case addresses stated requirements and does not introduce
+unapproved system behaviour or design decisions. Requirement references and
+the expected outcomes derived from them were checked against the corresponding
+SRS requirements and use cases. Test cases were reviewed for clear inputs,
+expected results, and procedures, and the LaTeX structure and cross-references
+were inspected after editing. Test fixtures, schema examples, and blockchain
+verification details are proposed examples and must be reconciled with the
+implemented system before execution. The team remains responsible for the
+accuracy, completeness, and consistency of this document, regardless of
+whether material was first drafted by a team member or with the help of an AI
+tool.
 
 \newpage{}
 
