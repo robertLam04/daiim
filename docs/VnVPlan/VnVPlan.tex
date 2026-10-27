@@ -2,6 +2,7 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{amsmath}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks,
@@ -33,7 +34,7 @@
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
 Oct 26 & 1.0 & Added system tests for authentication and task creation\\
-Date 2 & 1.1 & Notes\\
+Oct 27 & 1.1 & Aidan: Added system tests for reputation and rewards, penalties, transparency, data handling, and safety; added non-functional tests, usability survey, test symbolic parameters, and reflection\\
 \bottomrule
 \end{tabularx}
 
@@ -538,64 +539,567 @@ signer to reject authorization, and assert that no task-creation instruction
 is submitted and no task is created.
 \end{enumerate}
 
-\subsection{Tests for Nonfunctional Requirements}
 
-\wss{The nonfunctional requirements for accuracy will likely just reference the
-  appropriate functional tests from above.  The test cases should mention
-  reporting the relative error for these tests.  Not all projects will
-  necessarily have nonfunctional requirements related to accuracy.}
+\subsubsection{Reputation, Rewards, and Penalties}
 
-\wss{For some nonfunctional tests, you won't be setting a target threshold for
-passing the test, but rather describing the experiment you will do to measure
-the quality for different inputs.  For instance, you could measure speed versus
-the problem size.  The output of the test isn't pass/fail, but rather a summary
-table or graph.}
+These tests verify the reputation, reward, and penalty requirements
+(FR35--FR48) and the safety requirements that protect reward and penalty
+transfers (FR.SA.9, FR.SA.10). Each test follows a scenario that a group of
+providers would go through on the real system: completing a request, misbehaving
+during a request, and leaving a task. The tests run on a local Solana validator
+or Solana Devnet, with mock inference providers that submit preset predictions,
+so that the expected results can be worked out by hand before the test is run.
+Boundary cases for each rule (such as a distance exactly equal to $\bar{d}$)
+are covered by the unit tests.
 
-\wss{Tests related to usability could include conducting a usability test and
-  survey.  The survey will be in the Appendix.}
-
-\wss{Static tests, review, inspections, and walkthroughs, will not follow the
-format for the tests given below.}
-
-\wss{If you introduce static tests in your plan, you need to provide details.
-How will they be done?  In cases like code (or document) walkthroughs, who will
-be involved? Be specific.}
-
-\subsubsection{Area of Testing1}
-		
-\paragraph{Title for Test}
+The values of \texttt{SLASH\_FRACTION}, \texttt{MAX\_REPUTATION\_PENALTY},
+\texttt{MINIMUM\_PROVIDER\_STAKE}, \texttt{REPEAT\_OFFENSE\_COUNT}, and
+\texttt{REPEAT\_OFFENSE\_WINDOW} are defined in the SRS. The tests read them
+from the deployed program's configuration, so they do not need to change if the
+values change.
 
 \begin{enumerate}
 
-\item{test-id1\\}
+\item{ST-REP-1: Completed request updates reputations and pays rewards\\}
 
-Type: Functional, Dynamic, Manual, Static etc.
-					
-Initial State: 
-					
-Input/Condition: 
-					
-Output/Result: 
-					
-How test will be performed: 
-					
-\item{test-id2\\}
+Control: Automatic
 
-Type: Functional, Dynamic, Manual, Static etc.
-					
-Initial State: 
-					
-Input: 
-					
-Output: 
-					
-How test will be performed: 
+Initial State: A numerical regression task \texttt{Rep-Test-Task} exists with a
+reputation tolerance $T = 2.0$. Mock providers \texttt{P1} to \texttt{P5} are
+registered with reputation scores of 40, 60, 50, 50, and 50. A requester has
+submitted an inference request with a payment of 1000 tokens held in escrow,
+and all five providers have accepted it.
+
+Input: The providers submit the valid predictions \texttt{P1}: 8.5,
+\texttt{P2}: 11, \texttt{P3}: 12, \texttt{P4}: 13, \texttt{P5}: 20, and the
+request runs to completion.
+
+Output:
+\begin{itemize}
+\item The final aggregated result is 12. The distances from the result are
+$d = (3.5, 1, 0, 1, 8)$, so $\bar{d} = 2.7$ and $\bar{d} + T = 4.7$.
+\item \texttt{P2}, \texttt{P3}, and \texttt{P4} ($d_i \le 2.7$) have their
+reputation increased. \texttt{P1} ($2.7 < 3.5 \le 4.7$) has an unchanged
+reputation. \texttt{P5} ($8 > 4.7$) has its reputation decreased.
+\item \texttt{P5} receives no reward. \texttt{P1} to \texttt{P4} share the 1000
+tokens in proportion to their reputation scores (40, 60, 50, 50): 200, 300,
+250, and 250 tokens.
+\item The total paid out does not exceed 1000 tokens, the request's escrow is
+empty afterwards, and the system logs a status check for each provider before
+its reward is sent.
+\end{itemize}
+
+Test Case Derivation: FR35 requires $d_i$ and $\bar{d}$ to be computed for
+every included provider, and FR37, FR38, and FR39 give the three possible
+outcomes; this fixture places at least one provider in each. FR41 limits
+rewards to providers whose reputation did not decrease, split by reputation, so
+\texttt{P1} still qualifies and \texttt{P5} does not. FR.SA.9 forbids paying out
+more than the reward, and FR.SA.10 requires each provider's status to be
+checked before a reward is sent. The expected reward shares use the reputation
+snapshot taken for aggregation (FR31); if the design uses the scores after the
+update instead, the expected shares will be recomputed from those scores.
+
+How test will be performed: Record each provider's reputation and token
+balance, run the request, and read the result, the reputation scores, and the
+reward transfers from both the application and the on-chain accounts. Assert
+the values above, allowing up to one base unit of difference per reward for
+integer rounding, and check the backend log for the status checks.
+
+\item{ST-PEN-1: Misbehaving providers in a single request\\}
+
+Control: Automatic
+
+Initial State: Task \texttt{Penalty-Test-Task} has a numerical output schema.
+Providers \texttt{P1} to \texttt{P5} are registered with 100 tokens of stake
+each. \texttt{P1} has a reputation score of 100, and the others have 50. A
+request has been submitted and all five providers have accepted it.
+
+Input:
+\begin{itemize}
+\item \texttt{P1} and \texttt{P2} submit accurate predictions (10 and 10.5).
+\item \texttt{P3} submits a valid but very inaccurate prediction (1{,}000{,}000).
+\item \texttt{P4} submits a prediction that does not match the output schema (a
+string instead of a number).
+\item \texttt{P5} submits nothing, and the maximum prediction time is allowed
+to pass.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item \texttt{P1}'s reputation is increased but stays at 100.
+\item \texttt{P3}'s reputation decreases by no more than
+\texttt{MAX\_REPUTATION\_PENALTY}, and its stake stays at 100 tokens.
+\item \texttt{P4}'s prediction is rejected. \texttt{P4} and \texttt{P5} each
+have their stake reduced to $100 \times (1 - \texttt{SLASH\_FRACTION})$ tokens
+and their reputation decreased.
+\item \texttt{P2}'s stake is unchanged, and every reputation score stays
+within $[0, 100]$.
+\end{itemize}
+
+Test Case Derivation: FR43 requires slashing and a reputation decrease for a
+rejected prediction, and FR44 requires the same for a provider that accepted
+but did not submit. FR42 allows slashing only in those two cases, so the
+inaccurate but valid prediction from \texttt{P3} must cost reputation and not
+stake. FR40 caps the reputation decrease from a single request, which the
+extreme prediction from \texttt{P3} checks. FR36 keeps scores within $[0,
+100]$, which \texttt{P1} checks at the top of the range.
+
+How test will be performed: Use a task with a short maximum prediction time.
+Record each provider's stake and reputation, run the request until it
+completes, and read the values again from the on-chain stake and reputation
+accounts. Assert the expected values for each provider.
+
+\item{ST-PEN-2: Providers leaving a task\\}
+
+Control: Automatic
+
+Initial State: Task \texttt{Exit-Test-Task} has an exit reputation threshold
+$R_{\text{exit}} = 50$. The following providers are registered:
+\begin{itemize}
+\item \texttt{P1}: stake just above \texttt{MINIMUM\_PROVIDER\_STAKE}, so that
+one slash drops it below the minimum.
+\item \texttt{P2}: a large stake, so that slashing alone will not drop it below
+the minimum during the test.
+\item \texttt{P3}: a reputation score low enough that one decrease brings it to
+0, and a stake of 100 tokens.
+\item \texttt{P4}, \texttt{P5}, and \texttt{P6}: 100 tokens of stake each and
+reputation scores of 80, 50, and 25.
+\end{itemize}
+
+Input:
+\begin{itemize}
+\item Run \texttt{REPEAT\_OFFENSE\_WINDOW} requests for the task. \texttt{P1}
+fails to submit in the first one. \texttt{P2} fails to submit in
+\texttt{REPEAT\_OFFENSE\_COUNT} of them. \texttt{P3} submits a very inaccurate
+prediction in the first one. The other providers submit accurate predictions.
+\item After the requests finish, \texttt{P4}, \texttt{P5}, and \texttt{P6}
+voluntarily unregister.
+\item While one of the requests is active, \texttt{P4} tries to unregister.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item \texttt{P1} is unregistered automatically after its stake falls below
+\texttt{MINIMUM\_PROVIDER\_STAKE}.
+\item \texttt{P2} is unregistered after its \texttt{REPEAT\_OFFENSE\_COUNT}-th
+slash, and its remaining stake is burned.
+\item \texttt{P3}'s reputation reaches 0. \texttt{P3} is unregistered and its
+remaining stake is burned.
+\item \texttt{P4}'s attempt to unregister during an active request is refused.
+After the requests, \texttt{P4} ($R = 80$) and \texttt{P5} ($R = 50 =
+R_{\text{exit}}$) get all 100 tokens back. \texttt{P6} ($R = 25$) gets
+$\frac{25}{50} \times 100 = 50$ tokens back, and the other 50 are burned.
+\end{itemize}
+
+Test Case Derivation: FR45, FR46, and FR47 give the three cases where a
+provider is removed automatically: stake below the minimum, too many slashes,
+and a reputation of 0. FR46 and FR47 also require the remaining stake to be
+burned. FR48 sets how much stake is returned on voluntary unregistration, and
+\texttt{P5} sits exactly on the threshold. The refused attempt by \texttt{P4}
+also exercises FR15.
+
+How test will be performed: After each request, record each provider's
+registration status, stake, and slash count. Record the total burned token
+supply and each provider's token balance before and after unregistration, and
+assert the expected changes.
 
 \end{enumerate}
 
-\subsubsection{Area of Testing2}
+\subsubsection{Transparency and Data Handling}
 
-...
+These tests verify that users can see and verify the transactions they
+authorize (FR49--FR52) and that a request's input data is protected for its
+whole life (FR53--FR55). They follow a requester who pays for a request and
+checks it, and a request's input data from submission to deletion.
+
+\begin{enumerate}
+
+\item{ST-TRANS-1: Requester pays for a request and verifies it\\}
+
+Control: Automatic
+
+Initial State: An authenticated requester is signed in with a test wallet
+signer that holds 50 tokens. Task \texttt{Rep-Test-Task} and the providers from
+ST-REP-1 are registered.
+
+Input:
+\begin{itemize}
+\item Submit an inference request with a payment of 137 tokens.
+\item Add funds so the wallet holds 1000 tokens, then submit the request again
+and approve the transaction.
+\item Let the request run to completion, then open the transaction history.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item On the first attempt, the system shows an insufficient-funds error and
+does not ask the wallet for a signature.
+\item On the second attempt, before the wallet asks for a signature, the
+application shows the action (``Submit inference request'') and the amount
+(137 tokens).
+\item The transaction status is shown as pending and then confirmed.
+\item The requester's token balance goes down by exactly 137 tokens, and the
+request's escrow holds exactly 137 tokens.
+\item The transaction history shows an identifier for the payment. Looking it
+up on Solana Devnet returns a transaction signed by the requester's wallet
+with the expected instruction and amount.
+\item The blockchain holds records of the payment, the providers' stakes, the
+aggregated result, the reputation updates, and the reward transfers, and each
+matches the value shown in the application.
+\end{itemize}
+
+Test Case Derivation: FR.SA.2 requires a balance check before a signature is
+requested. FR49 requires the action and amount to be shown before signing, and
+FR50 requires the status to be shown until it is final. FR.SA.8 requires the
+amount charged to equal the amount approved; an unusual amount (137) is used so
+that a hard-coded or rounded value would be caught. FR51 requires an identifier
+that can be looked up on the blockchain, and FR52 lists the records that must
+be on the blockchain.
+
+How test will be performed: Run the flow in an automated browser test. Pause
+the test wallet signer when it receives a signing request and check the
+confirmation screen. Record each status shown. Compare balances before and
+after. Query Solana Devnet with the transaction identifier and read the
+request, stake, and reputation accounts directly, without going through the
+application's backend.
+
+\item{ST-DATA-1: Input data from submission to deletion\\}
+
+Control: Automatic
+
+Initial State: Task \texttt{Data-Test-Task} has registered providers
+\texttt{P1}, \texttt{P2}, and \texttt{P3}. Another authenticated user
+\texttt{U1} is not involved.
+
+Input:
+\begin{itemize}
+\item Requester \texttt{R1} submits request \texttt{REQ-A} whose input contains
+the marker value \texttt{271828.1828}. \texttt{P1} and \texttt{P2} accept it;
+\texttt{P3} does not.
+\item During the prediction phase, \texttt{R1}, \texttt{P1}, \texttt{P2},
+\texttt{P3}, \texttt{U1}, and an unauthenticated client each try to get the
+input data.
+\item \texttt{REQ-A} runs to completion.
+\item \texttt{R1} submits request \texttt{REQ-B}, which is cancelled because
+too few providers accept it.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item Only \texttt{R1}, \texttt{P1}, and \texttt{P2} can get \texttt{REQ-A}'s
+input. \texttt{P3}, \texttt{U1}, and the unauthenticated client are refused.
+\item No transaction or account linked to either request contains the marker
+value in readable form.
+\item After each request reaches its final state, its input is no longer in
+any storage the system controls, and every user, including \texttt{R1}, gets
+``not found'' when asking for it.
+\end{itemize}
+
+Test Case Derivation: FR53 limits the input to the requester and the providers
+that accepted; \texttt{P3} checks that being registered is not enough. FR54
+forbids readable input on the blockchain, and the marker value makes it
+possible to search raw on-chain data for it. FR55 requires deletion after both
+completion and cancellation. The test also exercises FR24 (input given to
+accepting providers) and FR23 (cancellation when too few providers accept).
+
+How test will be performed: Call the input-data endpoint as each user. Search
+the raw data of every linked transaction and account for the marker in its
+common encodings (text, 32-bit and 64-bit floating point, and the program's
+fixed-point format). After each request ends, query the database, file
+storage, and caches directly and through the application.
+
+\end{enumerate}
+
+\subsubsection{Safety}
+
+This test verifies the transaction safety requirements that are not already
+covered by the tests above (FR.SA.1 and FR.SA.3--FR.SA.7). FR.SA.2 and FR.SA.8
+are covered by ST-TRANS-1, and FR.SA.9 and FR.SA.10 by ST-REP-1. The test
+injects faults using a test build of the backend and a proxy between the
+system and the Solana RPC.
+
+\begin{enumerate}
+
+\item{ST-SAFE-1: Requester payments under transaction faults\\}
+
+Control: Automatic, with the retry step also checked manually in the web client
+
+Initial State: A requester is signed in with 1000 tokens. The RPC proxy and
+the backend test build can each be set to inject one fault.
+
+Input: The requester submits an inference request payment several times, with
+a different fault each time:
+\begin{enumerate}
+\item The proxy forwards the transaction but drops the response.
+\item The proxy holds the transaction until its blockhash has expired.
+\item The requester's tokens are moved out of the wallet after the balance
+check but before the transaction runs.
+\item The requester rejects the signature, and separately a test script sends
+a payment signed by a different wallet directly to the program.
+\item The backend test build changes the transaction's amount after the amount
+has been shown to the user.
+\item After any of the failures above, the requester presses retry.
+\end{enumerate}
+
+Output:
+\begin{enumerate}
+\item The system checks the status before trying again, finds the payment was
+processed, and does not resubmit. Exactly one payment is made and each status
+is logged.
+\item The system only marks the payment as failed after the validity period
+has ended and it has checked the status.
+\item The on-chain program rejects the payment and no state changes.
+\item The rejected signature is never submitted, and the program rejects the
+payment signed by the wrong wallet.
+\item The simulation does not match the shown amount, so the transaction is not
+sent for signing.
+\item The user sees an error message with an option to retry, and the retry
+succeeds.
+\end{enumerate}
+
+Test Case Derivation: Each fault matches one requirement: FR.SA.1 (no
+resubmission before confirming the first was not processed, with status logs),
+FR.SA.5 (wait for expiry and a status check), FR.SA.3 (the on-chain program
+checks funds at execution), FR.SA.4 (only signed transactions are submitted),
+FR.SA.7 (simulation must match the shown amounts), and FR.SA.6 (show the error
+and allow a retry). After the whole test, the requester should have paid only
+for the requests that succeeded.
+
+How test will be performed: Run each fault in turn. Use the proxy to count
+submitted transactions and the test wallet signer to count signing requests.
+Count payments from the requester's wallet on Devnet and compare the final
+balance with the number of successful requests. A tester also runs step 6 by
+hand in the web client and records the error message shown.
+
+\end{enumerate}
+
+\subsection{Tests for Nonfunctional Requirements}
+
+This section describes the tests for the non-functional requirements in the
+\href{../SRS/SRS.pdf}{SRS} (NFR1--NFR17 and NFR.SA.1--NFR.SA.4). As with the
+functional tests, each test is a larger activity that checks several related
+requirements at once: a large simulation of many requests, a usability study, a
+security and privacy audit, and a set of release checks. Some tests produce
+measurements, tables, or graphs rather than a single pass or fail result.
+Values that have not been decided yet are written as symbolic constants and
+are listed in the Symbolic Parameters appendix.
+
+\subsubsection{Accuracy, Reliability, and Scalability}
+
+\begin{enumerate}
+
+\item{NFR-SIM-1: Large-scale request simulation\\}
+
+Control: Automatic
+
+Initial State: The system runs on a local Solana validator with a simulation
+harness that controls mock providers and can inject faults. A separate
+reference implementation of the Appendix A aggregation algorithm is written
+in TypeScript by a team member who did not write the system's version.
+
+Input/Condition:
+\begin{itemize}
+\item Run \texttt{NUM\_SIMULATED\_REQUESTS} requests with random predictions
+and reputation scores, including values at the edges of their declared ranges
+(reputation 0 and 100, the largest and smallest allowed predictions and token
+amounts) and the worked examples from the SRS.
+\item Mix in failure scenarios: too few providers accept, too few valid
+predictions, providers that do not submit, invalid predictions, dropped or
+delayed RPC responses, and a backend restart during the prediction phase.
+\item Run the requests at 1, 5, 10, 20, and \texttt{MAX\_CONCURRENT\_REQUESTS}
+at the same time. Mock providers reply immediately, so only the system's own
+processing time is measured.
+\item During each prediction phase, try to read submitted predictions as
+another provider, as the requester, and from the raw on-chain data.
+\end{itemize}
+
+Output/Result:
+\begin{itemize}
+\item Every aggregated result equals the reference implementation's result.
+The test reports the number of mismatches (expected: 0).
+\item No calculation overflows. Any input that would overflow causes the
+transaction to fail with no change to on-chain state.
+\item Every request reaches a final state before its final deadline, and its
+escrow is empty afterwards.
+\item No prediction can be read before its prediction phase ends.
+\item A table and graph of the median and 95th-percentile processing time at
+each concurrency level. The test passes if the median at
+\texttt{MAX\_CONCURRENT\_REQUESTS} is no more than
+\texttt{PERFORMANCE\_DEGRADATION\_TOLERANCE} higher than for a single request.
+\end{itemize}
+
+Test Case Derivation: NFR1 requires simulation tests to show that the results
+match the Appendix A algorithm. NFR2 forbids overflow and requires an
+overflowing transaction to leave no change. NFR13 requires every request to
+reach a final state and settle its escrow before the final deadline. NFR11
+requires predictions to stay hidden until the phase ends. NFR15 requires
+concurrent requests without a drop in performance.
+
+How test will be performed: The harness runs the requests and then reads each
+request's status, result, and escrow from the blockchain. It compares each
+result with the reference implementation and logs the inputs of any mismatch
+so they can be added as a unit test. It checks that the tokens escrowed at the
+start equal the tokens paid out, returned, slashed, and burned. Each
+concurrency level is run 3 times, and the timings come from the system's logs.
+
+\end{enumerate}
+
+\subsubsection{Usability}
+
+\begin{enumerate}
+
+\item{NFR-USE-1: Usability study with new users\\}
+
+Control: Manual, with timing checks automated
+
+Initial State: The web application is deployed on a test environment
+connected to Solana Devnet. 5 to 8 participants who use a web browser but have
+never used a blockchain wallet or built a machine learning model are recruited.
+
+Input/Condition: Each participant gets a short description of DAIIM, but no
+instructions on how to use it, and completes these tasks while thinking out
+loud:
+\begin{enumerate}
+\item Sign in by creating an embedded wallet with an email address.
+\item Find the documentation and the list of available tasks.
+\item Submit an inference request for an existing task.
+\item Find the result of the request and the payment for it.
+\item Sign out.
+\end{enumerate}
+During task 3, the test build forces one error (a failed transaction). The
+participant then fills out the survey in the Usability Survey Questions
+appendix.
+
+Output/Result:
+\begin{itemize}
+\item At least \texttt{USABILITY\_COMPLETION\_RATE} of participants complete
+every task without help, including creating a wallet with no Web3 knowledge.
+\item The median time to finish tasks 1 to 3 is 5 minutes or less.
+\item Every feature can be reached within 2 clicks of the home page.
+\item Every error shown has a name, a description, and a suggested fix, and
+appears within 2 seconds of the failure being detected.
+\item A progress indicator is shown during every operation longer than
+\texttt{LONG\_OPERATION\_THRESHOLD}.
+\item A plain-language confirmation is shown after every transaction.
+\item The survey results are summarized in a table and bar chart.
+\end{itemize}
+
+Test Case Derivation: NFR3 requires a new user to learn the system within 5
+minutes, and NFR8 requires them to create an embedded wallet without Web3
+knowledge. NFR4 requires every feature within 2 clicks. NFR5 requires errors to
+have a name, description, and fix, and NFR.SA.1 requires them within 2 seconds.
+NFR6 requires progress to be shown for long operations, and NFR7 requires
+plain-language confirmations.
+
+How test will be performed: A team member observes each session, times each
+task, records clicks, and only helps if the participant is stuck for more than
+3 minutes (which counts as not completing the task). A team member also
+counts the clicks to each feature from the home page. Error timings and
+progress indicators are checked by an automated browser test that repeats the
+same tasks with forced errors and delays. One study is held after the Rev 0
+demo and a second after changes are made in response to it.
+
+\end{enumerate}
+
+\subsubsection{Security, Privacy, and Safety}
+
+\begin{enumerate}
+
+\item{NFR-SEC-1: Security and privacy audit\\}
+
+Control: Manual, with automated scans
+
+Initial State: The system is deployed in its test environment. A request is in
+progress, so its input data is stored. Test providers have consented to
+showing different sets of profile information.
+
+Input/Condition:
+\begin{itemize}
+\item Run a full request with an extension wallet and with an embedded wallet,
+capturing network traffic and backend logs.
+\item Read the raw contents of the database and file storage.
+\item Scan every endpoint's TLS setup, connect over plain HTTP, and point the
+backend at RPC and storage endpoints that use a self-signed certificate.
+\item Visit every public page without signing in.
+\end{itemize}
+
+Output/Result:
+\begin{itemize}
+\item Input data is encrypted in all captured traffic and cannot be read in
+raw storage, using algorithms and key lengths on a recognized recommended list
+(for example, NIST SP 800-175B).
+\item All endpoints use TLS 1.2 or later with valid certificates. Plain HTTP
+is refused or redirected, and the backend refuses endpoints with invalid
+certificates.
+\item No private key or recovery phrase appears in traffic, logs, or storage,
+and no email address or phone number appears on the blockchain.
+\item Public pages show only the information each provider agreed to share.
+\item A completed audit checklist based on the PIPEDA safeguards principle,
+with any gaps recorded as issues.
+\end{itemize}
+
+Test Case Derivation: NFR9 and NFR10 require sensitive data to be encrypted in
+transit and at rest to an industry standard, verified through a security
+audit. NFR.SA.3 requires TLS with certificate checks. NFR.SA.2 requires all
+signing to happen in the user's wallet with no private information on the
+blockchain. NFR12 limits public pages to information providers consented to.
+
+How test will be performed: A team member who did not write the storage code
+leads the audit. Search the captured traffic, logs, storage, and on-chain data
+for marker values in the input and for the test wallets' keys and the test
+users' contact details. Run \texttt{testssl.sh} against each endpoint. Compare
+each public page with the providers' consent settings. The team reviews the
+checklist in a meeting.
+
+\end{enumerate}
+
+\subsubsection{Maintainability, Portability, and Installability}
+
+\begin{enumerate}
+
+\item{NFR-RELEASE-1: Release checks\\}
+
+Control: Automatic, with a manual run on Safari
+
+Initial State: A release candidate is on a pull request to \texttt{main}, and
+the GitHub Actions workflow is set up.
+
+Input/Condition:
+\begin{itemize}
+\item CI runs \texttt{ESLint}, \texttt{Prettier --check}, \texttt{cargo clippy}
+(with warnings treated as errors), \texttt{cargo fmt --check},
+\texttt{npm audit}, and \texttt{cargo audit}.
+\item The main user flow (sign in with an embedded wallet, browse tasks,
+submit a request, view the result and transaction history, sign out) is run on
+the current versions of Chrome, Firefox, Edge, and Safari, each in a new
+browser profile with no extensions installed.
+\end{itemize}
+
+Output/Result:
+\begin{itemize}
+\item The linters and formatters report no errors, and the pull request
+cannot be merged while any check fails.
+\item No dependency vulnerability of high or critical severity is reported
+unless the team has reviewed it and recorded it in an issue.
+\item The flow completes in every browser with no console errors and without
+asking the user to install any software or extension. The result is a table of
+each browser and step.
+\end{itemize}
+
+Test Case Derivation: NFR14 requires the coding standards in the Development
+Plan, enforced by linting; the Development Plan names these tools. NFR.SA.4
+requires dependencies to be scanned for known vulnerabilities. NFR16 requires
+the system to work on current modern browsers, and NFR17 requires
+embedded-wallet users to need nothing beyond a browser.
+
+How test will be performed: The linters and scans run in CI on every pull
+request and once a week, and branch protection on \texttt{main} requires them
+to pass. The browser flow runs as an automated test on Chrome, Firefox, and
+Edge in CI. A team member runs it by hand on Safari, since Safari cannot run
+in CI. Reviewers check the standards that linters cannot (such as
+\texttt{rustdoc} comments) during pull request review.
+
+\end{enumerate}
 
 \subsection{Traceability Between Test Cases and Requirements}
 
@@ -742,9 +1246,50 @@ This is where you can place additional information.
 The definition of the test cases will call for SYMBOLIC\_CONSTANTS.
 Their values are defined in this section for easy maintenance.
 
-\subsection{Usability Survey Questions?}
+The constants used by the system itself (\texttt{MINIMUM\_PROVIDER\_STAKE},
+\texttt{MAX\_REPUTATION\_PENALTY}, \texttt{SLASH\_FRACTION},
+\texttt{REPEAT\_OFFENSE\_COUNT}, \texttt{REPEAT\_OFFENSE\_WINDOW}, and
+\texttt{USABILITY\_COMPLETION\_RATE}) are defined in Appendix C of the
+\href{../SRS/SRS.pdf}{SRS}. The constants below are only used by the tests in
+this document.
 
-\wss{This is a section that would be appropriate for some projects.}
+\begin{itemize}
+\item \texttt{LONG\_OPERATION\_THRESHOLD}: the length of time after which an
+operation counts as ``long'' and must show progress (NFR-USE-1). Proposed
+value: 1 second.
+\item \texttt{NUM\_SIMULATED\_REQUESTS}: the number of requests run in the
+reliability simulation (NFR-SIM-1). Proposed value: 500, spread across the
+listed scenarios.
+\item \texttt{MAX\_CONCURRENT\_REQUESTS}: the largest number of concurrent
+requests in the scalability test (NFR-SIM-1). Proposed value: 50.
+\item \texttt{PERFORMANCE\_DEGRADATION\_TOLERANCE}: the largest allowed
+increase in median processing time at \texttt{MAX\_CONCURRENT\_REQUESTS}
+compared with a single request (NFR-SIM-1). Proposed value: 25\%.
+\end{itemize}
+
+\subsection{Usability Survey Questions}
+
+Participants answer this survey at the end of each usability session described
+in test NFR-USE-1. Questions 1 to 8 use a
+scale from 1 (strongly disagree) to 5 (strongly agree).
+
+\begin{enumerate}
+\item It was easy to sign in and create a wallet.
+\item I understood what a wallet was used for in DAIIM after signing in.
+\item I could find the features I needed without searching for a long time.
+\item I understood what I was paying for before I approved each payment.
+\item When something went wrong, the error message told me what happened and
+what to do next.
+\item While waiting for something to finish, I could tell that the system was
+still working.
+\item After each payment, I understood what had happened and whether my balance
+had changed.
+\item I would be comfortable using DAIIM again without help.
+\item Which task was the hardest to complete, and why?
+\item Were there any words or messages you did not understand? Which ones?
+\item Was there anything you expected to be able to do but could not?
+\item Do you have any other comments about the application?
+\end{enumerate}
 
 \newpage{}
 
@@ -798,18 +1343,101 @@ graduate attribute of Lifelong Learning.
 \input{../Reflection.text}
 
 \begin{enumerate}
-  \item What went well while writing this deliverable? 
+  \item What went well while writing this deliverable?
+
+  \textbf{Aidan:} Splitting the system tests by SRS subsection worked well.
+  Because our functional requirements were already grouped by the phase of an
+  inference request, each of us could take a set of subsections and write the
+  tests for them without waiting on anyone else. Writing tests also made the
+  SRS easier to check. For the reputation and reward tests, I worked out
+  small sets of predictions by hand, so that each provider's distance from the
+  result fell into a known case (increase, no change, or decrease). Doing this showed that the reputation rules in the
+  SRS are precise enough to test, and it gave us expected values we can reuse
+  when we write the automated tests later.
+
   \item What pain points did you experience during this deliverable, and how
-    did you resolve them?
+  did you resolve them?
+
+  \textbf{Aidan:} The main pain point was that some parts of the SRS were not
+  yet specific enough to test. For example, several constants such as
+  \texttt{SLASH\_FRACTION} and \texttt{MAX\_REPUTATION\_PENALTY} are still
+  ``to be determined'', and the reward requirement does not say whether rewards
+  are split using reputation scores from before or after the request's
+  reputation update. To handle this, I wrote the tests in terms of the symbolic
+  constants so they will not need to change once the values are chosen, and I
+  wrote down the assumption made in the reward test so the team can confirm it
+  and update the SRS.
+
+  Another pain point was not knowing how much detail the system tests needed,
+  or whether every requirement needed its own test. My first draft had one
+  small test for almost every requirement, which made my sections very long
+  and repeated the same setup many times. After comparing it with an example
+  VnV plan from another capstone group, I realized that system tests should
+  follow larger, realistic scenarios, like a requester paying for a request and
+  checking it on the blockchain, or a group of providers misbehaving during one
+  request. I rewrote my sections so that each test covers about five to seven
+  related requirements, and left the small edge cases, such as a distance
+  exactly equal to the average, for the unit tests. To make sure nothing was
+  lost in the rewrite, I checked that every requirement in my sections was
+  still named in at least one test. We also added the question of how detailed
+  the system tests should be to our list of questions for our TA.
+
   \item What knowledge and skills will the team collectively need to acquire to
   successfully complete the verification and validation of your project?
-  Examples of possible knowledge and skills include dynamic testing knowledge,
-  static testing knowledge, specific tool usage, Valgrind etc.  You should look to
-  identify at least one item for each team member.
+
+  \begin{itemize}
+    \item \textbf{Testing Solana programs (Robert):} Writing automated tests
+    for our on-chain programs with the Anchor test framework and a local
+    Solana validator, including setting up accounts and checking account state
+    before and after a transaction.
+    \item \textbf{Simulation and fault injection (Aidan):} Building a
+    simulation harness with mock providers that can run many requests and
+    inject failures, such as dropped RPC responses or providers that never
+    submit. This is needed for the reliability, scalability, and safety tests.
+    \item \textbf{Usability testing (Keira):} Planning and running usability
+    sessions, observing participants without leading them, and turning survey
+    answers and observations into changes to the interface.
+    \item \textbf{Security testing (Nathan):} Checking encryption in transit and
+    at rest, scanning TLS configurations, searching network traffic and
+    on-chain data for leaked information, and running dependency scans.
+    \item \textbf{Frontend and end-to-end testing (all):} Writing Vitest tests
+    for the React frontend and automated browser tests that sign transactions
+    with a test wallet.
+  \end{itemize}
+
   \item For each of the knowledge areas and skills identified in the previous
   question, what are at least two approaches to acquiring the knowledge or
-  mastering the skill?  Of the identified approaches, which will each team
+  mastering the skill? Of the identified approaches, which will each team
   member pursue, and why did they make this choice?
+
+  \begin{itemize}
+    \item \textbf{Testing Solana programs:} (1) Work through the testing
+    sections of the Anchor documentation and its example projects, or (2)
+    read the tests of existing open-source Solana programs. Robert will start
+    with the Anchor documentation, since he already has some Solana
+    experience and the documentation matches the version of Anchor we use.
+    \item \textbf{Simulation and fault injection:} (1) Build a small prototype
+    harness during the proof of concept and grow it, or (2) study how existing
+    tools inject network faults, such as proxy-based tools. Aidan will build
+    a prototype during the proof of concept, because the harness depends on
+    our own request flow, and starting small will show early which faults are
+    hard to set up.
+    \item \textbf{Usability testing:} (1) Apply the methods from SFWRENG 4HC3,
+    or (2) run a small pilot session with a classmate before the real
+    sessions. Keira will use the 4HC3 material, since she is taking the
+    course now, and the team will run a pilot session to test the tasks and
+    survey.
+    \item \textbf{Security testing:} (1) Follow guides such as the OWASP
+    Web Security Testing Guide, or (2) learn from the cryptography and network
+    security courses some members have taken. Nathan will follow the OWASP
+    guide because it gives step-by-step tests, and he will ask Robert and Keira
+    for help with the cryptography and network questions their courses cover.
+    \item \textbf{Frontend and end-to-end testing:} (1) Read the Vitest and
+    browser-testing tool documentation, or (2) pair program the first few
+    tests and then review each other's tests in pull requests. The team will
+    pair program the first tests, so everyone learns the same patterns, and
+    then rely on pull request reviews to keep the tests consistent.
+  \end{itemize}
 \end{enumerate}
 
 \end{document}
