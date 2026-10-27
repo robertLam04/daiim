@@ -76,34 +76,12 @@ October 19 & Keira & Added column to FMEA table to map hazards to requirements\\
 A hazard is a condition or event that could cause harm or loss. For
 \progname{}, this could include an inaccurate inference, exposure of sensitive
 input data or wallet keys, or mishandling a transaction involving users' funds.
-
+\\\\
 Hazard analysis is especially important for \progname{} because errors cannot be
 easily corrected after the fact. Blockchain transactions are irreversible, so
 there is no central party that can intervene to reverse a harmful outcome.
 Identifying potential hazards early allows the team to address them while the design
 is still flexible.
-
-Three groups could be harmed:
-\begin{itemize}
-    \item \textbf{Task requesters} could receive inaccurate or manipulated
-    predictions, have their input data exposed, or lose fees paid for requests
-    that are never fulfilled.
-    \item \textbf{Inference providers} could lose payments or deposits through
-    contract flaws, have wallet keys stolen, or be unfairly penalized by an
-    incorrect reputation update.
-    \item \textbf{Downstream beneficiaries}, such as patients affected by a
-    healthcare study or users of a decentralized finance platform that relies on
-    \progname{} predictions, could be harmed by decisions based on a faulty
-    prediction.
-\end{itemize}
-
-The rest of this document is organized as follows. Section~\ref{sec:scope}
-defines the scope and purpose of the analysis. Section~\ref{sec:boundaries}
-describes the system boundaries and components. Section~\ref{sec:assumptions}
-lists the assumptions the analysis relies on. Section~\ref{sec:fmea} presents
-the failure modes and effects analysis (FMEA), which records each failure mode
-with its causes, effects, and recommended actions. Section~\ref{sec:reqs} turns
-those actions into safety and security requirements.
 
 \section{Scope and Purpose of Hazard Analysis}
 
@@ -253,7 +231,7 @@ The following assumptions describe the conditions under which the DAIIM system i
 \end{itemize}
 \item Inference providers have access to the computational resources and model implementations required to execute the inference tasks they accept.
 \begin{itemize}
-    \item This assumption defines the expected capabilities of participating providers. Provider unavailability, insufficient computational resources, and failed inference requests remain potential hazards.
+\item This assumption defines the expected capabilities of participating providers. Provider unavailability, insufficient computational resources, and failed inference requests remain potential hazards.
 \end{itemize}
 
 \item A minimum number of two inference providers is available during the initial operation of the marketplace.
@@ -408,6 +386,21 @@ this potential failure mode.}
 & A coordinated group constitutes a large enough portion of the network to skew aggregation, reputation scores, or rewards, particularly when ground truth is unavailable
 & Simulate colluding groups of different sizes and measure their effect on result accuracy, reputation, and rewards. Document the provider proportions at which collusion can materially influence results.
 & \ref{SA_RandomInvitations} \\[1em]
+
+\multirow[t]{2}{=}{An inference request does not receive enough predictions.}
+& H5.1
+& Too few providers accept the request (fewer than the task's minimum)
+& \multirow[t]{2}{=}{The requester receives no result, or an unreliable one based on too few predictions. The requester's payment is returned and the inference request ends.}
+& Providers are unavailable or unwilling to participate and do not accept the request before the end of the acceptance period
+& Cancel the request and refund the requester in full.
+& FR23 \\[1em]
+
+& H5.2
+& Providers accept the request, but fewer than the minimum number submit a prediction
+&
+& Accepted providers are unavailable, fail, or do not submit before the end of the prediction phase
+& Cancel the request and refund the requester in full. Slash the stake of each provider that accepted but did not submit, and decrease their reputation.
+& FR44, FR30 \\[1em]
 
 \rule{0pt}{2.5em} & & & & & & \\
 \rule{0pt}{2.5em} & & & & & & \\
