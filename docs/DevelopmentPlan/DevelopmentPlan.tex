@@ -2,10 +2,10 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
-\usepackage{tabularx}
 \usepackage{array}
 \usepackage{float}
 \usepackage{hyperref}
+\usepackage{parskip}
 
 \title{Development Plan\\\progname}
 
@@ -22,7 +22,7 @@
 
 \begin{table}[hp]
 \caption{Revision History} \label{TblRevisionHistory}
-\begin{tabularx}{\textwidth}{llX}
+\begin{tabularx}{\textwidth}{ll>{\raggedright\arraybackslash}X}
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
@@ -30,14 +30,14 @@ September 27 & Nathan & Changed project decomposition and scheduling, changed Gi
 September 27 & Aidan & Added sections 5 to 7 of the development plan regarding Team communication plan, roles, and workflow. \\
 September 27 & Keira & Added section 13, the reflection, and part of the team charter to the report. \\
 September 28 & Robert & Added sections 1-4 and 9-10\\
-Spetember 28 & Keira & Revised section 13 \\
+September 28 & Keira & Revised section 13 \\
 September 28 & Nathan & Added section 11 \\
 September 28 & All & Reviewed document and fixed formatting \\
 October 8 & Aidan & Refined section 9 POC success criteria to be less vague by defining concrete accuracy, malicious actor, and reward thresholds \\
+October 27 & Aidan & Expanded the workflow plan with issue types, Kanban board usage, commit types, and pull request steps; fixed formatting and grammar (TA feedback) \\
 \bottomrule
 \end{tabularx}
 \end{table}
-
 
 \newpage{}
 
@@ -57,7 +57,7 @@ This project, including all source code and documentation, will be under the MIT
 
 \begin{table}[hp]
 \caption{Team and Supervisor Meeting Schedule} \label{TblMeetingSchedule}
-\begin{tabularx}{\textwidth}{lXXX}
+\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
 \toprule
 \textbf{Meeting} & \textbf{Location} & \textbf{Frequency} & \textbf{Time}\\
 \midrule
@@ -67,21 +67,19 @@ Supervisor meeting & Microsoft Teams & Biweekly & TBD\\
 \end{tabularx}
 \end{table}
 
-All meetings will be recorded in a Github issue outlining the date, attendance and agenda. Each meeting will have a chair who is responsible for creating the agenda and sharing it with others prior to the meeting. If possible the agenda should be shared 12hrs in advance to give team members a chance to review and propose different topics. For each meeting, the chair will ask for a volunteer from the team to record meeting minutes. If no one volunteers, the note-taking role will rotate among team members. Meeting minutes and decisions made during the meeting will be recorded as a comment on the meeting issue. Ad hoc meetings may also be scheduled as necessary for urgent decisions, issue
-resolution, or preparation for a deliverable.
+All meetings will be recorded in a GitHub issue outlining the date, attendance and agenda. Each meeting will have a chair who is responsible for creating the agenda and sharing it with others prior to the meeting. If possible, the agenda should be shared 12 hours in advance to give team members a chance to review and propose different topics. For each meeting, the chair will ask for a volunteer from the team to record meeting minutes. If no one volunteers, the note-taking role will rotate among team members. Meeting minutes and decisions made during the meeting will be recorded as a comment on the meeting issue. Ad hoc meetings may also be scheduled as necessary for urgent decisions, issue resolution, or preparation for a deliverable.
 
 \section{Team Communication Plan}
 
 The team will use a Microsoft Teams group chat for regular communication. 
-The team also has a shared Word document for collaborative editing of documents and planning during meetings.  Github issues will be used to track each meeting and any associated agendas/minutes. \newline
-\noindent Communication with the supervisor will be done through email and Microsoft Teams. 
+The team also has a shared Word document for collaborative editing of documents and planning during meetings.  GitHub issues will be used to track each meeting and any associated agendas/minutes.
+Communication with the supervisor will be done through email and Microsoft Teams. 
 Every email with the supervisor will be sent to all team members. 
-The team will meet regularly with the supervisor, subject to the supervisor's availability.  \newline
+The team will meet regularly with the supervisor, subject to the supervisor's availability.
 
-\noindent Github issues will be the primary method of communication for development tasks. Each issue will represent a development task and will be assigned to a team member; the team member will be responsible for updating the issue with their progress.  
-The issues will be associated with a milestone representing the deliverable, and will be placed appropriately in the \href{https://github.com/users/robertLam04/projects/5}{Kanban project} according to its status (e.g., To Do, In Progress, In Review, Done).
-Feedback is expected from at least one other team member for each issue, through either a comment on the Github issue or reviewed in a meeting or group chat. \newline
-
+GitHub issues will be the primary method of communication for development tasks. Each issue will represent a development task and will be assigned to a team member; the team member will be responsible for updating the issue with their progress.  
+The issues will be associated with a milestone representing the deliverable, and will be placed appropriately in the \href{https://github.com/users/robertLam04/projects/5}{Kanban project} according to its status (see Section~\ref{sec:kanban}).
+Feedback is expected from at least one other team member for each issue, through either a comment on the GitHub issue or reviewed in a meeting or group chat.
 
 \section{Team Member Roles}
 
@@ -103,35 +101,78 @@ Feedback is expected from at least one other team member for each issue, through
   
 \end{itemize}
 
+\section{Workflow Plan} \label{sec:workflow}
+The following workflow plan can be used as a contributor's guide to the development process. Every piece of work follows the same path: an issue is created and labelled, its card moves across the Kanban board, the work is done on a branch, and it is merged through a reviewed pull request.
 
-\section{Workflow Plan}
-The following workflow plan can be used as a contributor's guide to the development process. 
+\subsection{Issues and Issue Types}
 
-\textbf{Issues and deliverables management}:
-Each deliverable (and sub-deliverable if needed) will have a milestone associated with it. 
-Each milestone will have a set of issues associated with it, representing the development tasks needed to complete the deliverable.
-These issues will be in the project Kanban board, and will be moved through the columns (To Do, In Progress, Done) as they are worked on. \newline
+Each deliverable (and sub-deliverable if needed) will have a GitHub milestone. Every task needed to complete a deliverable will be tracked as a GitHub issue under that milestone. Each issue must have a type label, an assignee, a milestone, and a target date before work on it starts. Issues will be created from the templates in the repository where one exists, so that the information needed for each type of issue is always included. Table~\ref{tab:issue-types} lists the issue types.
 
-\noindent \textbf{Pull requests and code review}:
-All code changes will be made in a new branch, and a pull request will be created once development is done for a particular task. See the branches and commit sections for naming convention. 
-Typically, a branch will be created for each issue, but a branch may close several issues if they are related and can be completed together.
-Pull requests will be reviewed by at least one other team member, and the pull request reviewer role will be responsible for approving or requesting changes to the pull request.
+\begin{table}[H]
+\caption{Issue Types} \label{tab:issue-types}
+\begin{tabularx}{\textwidth}{p{2.4cm}p{2.7cm}>{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Type} & \textbf{Label} & \textbf{Used for and required content}\\
+\midrule
+Feature & \texttt{enhancement} & New functionality in the code. Describes the expected behaviour and the requirements (e.g., SRS functional requirements) it implements. Closed by a merged pull request.\\
+Bug & \texttt{bug} & Defects in existing code or the build pipeline. Includes steps to reproduce, expected behaviour, and actual behaviour. Closed by a merged pull request that fixes the bug and, where possible, adds a test for it.\\
+Documentation & \texttt{documentation} & Writing or revising a section of a deliverable. Names the document and section(s) affected. Closed by a merged pull request.\\
+Feedback & \texttt{review} & Feedback from the TA, supervisor, or a peer review team. Created with the peer review template and titled \texttt{<Source> - <Document> - <summary>} (e.g., ``TA Feedback - Dev Plan - Formatting issues''). Closed by a merged pull request that addresses it, or by a comment explaining why no change was made.\\
+Meeting & \texttt{meeting} & Team, supervisor, TA, and lecture meetings. Created with the matching meeting template, which holds the agenda and attendance. Closed once the minutes have been posted as a comment.\\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\subsection{Branches \& Commits}
-\textbf{Branch naming convention:} Each branch will be named according to the following convention: \texttt{<branch-type>/<branch-name>}.
-Like mentioned, development will be done in a new branch, and a pull request will be created once development is done for a particular task.
-The naming convention for branches will be kebab-case and will be based on the branch content as well as the branch type. 
-For example, a branch for the issue "Implement user login" would be named "feature/implement-user-login".
-The current types of branches are feature, docs, and bugfix, but more types may be added as needed. \newline
-\textbf{Commit naming convention:} Each commit will be named according to the following convention: \texttt{<commit-type>: <commit-message>}.
-The naming convention for commits will be lowercase and will be based on the commit content as well as the commit type.
-For example, a commit for the issue "Implement user login" would be named "feat: implement user login".
-The current types of commits are feat, fix, docs, style, refactor, and test, but more types may be added as needed. \newline
+\subsection{Kanban Board Usage} \label{sec:kanban}
 
-\subsection{Merging strategy}
+Issues are tracked on the team's \href{https://github.com/users/robertLam04/projects/5}{GitHub Kanban board}, which has the columns described in Table~\ref{tab:kanban}. The assignee is responsible for moving their own cards. The board will be reviewed at each weekly team meeting, where backlog issues are assigned and moved to Ready and each member gives an update on their In Progress cards.
+
+\begin{table}[H]
+\caption{Kanban Board Columns} \label{tab:kanban}
+\begin{tabularx}{\textwidth}{p{2.3cm}>{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Column} & \textbf{A card is in this column when}\\
+\midrule
+Backlog & The issue has been created but is not yet planned or assigned.\\
+Ready & The issue has a label, assignee, milestone, and target date, and can be started.\\
+In Progress & The assignee has started work and created a branch for the issue.\\
+In Review & A pull request for the issue is open and a reviewer has been assigned. The reviewer responds within 48 hours, as set out in the team charter.\\
+Done & The pull request has been merged, or the issue has been closed without code changes (e.g., a meeting issue with its minutes posted).\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Branches and Commits}
+
+\textbf{Branch naming convention:} All work will be done on a new branch named \texttt{<branch-type>/<branch-name>}, where the branch name is a short kebab-case description of the work. For example, a branch for the issue ``Implement user login'' would be named \texttt{feat/implement-user-login}. Typically, a branch will be created for each issue, but a branch may close several issues if they are related and can be completed together. The branch types are the same as the first four commit types in Table~\ref{tab:commit-types}: \texttt{feat}, \texttt{fix}, \texttt{docs}, and \texttt{test}.
+
+\textbf{Commit naming convention:} Each commit message will follow the format \texttt{<commit-type>: <commit-message>}, based on the \href{https://www.conventionalcommits.org/en/v1.0.0/}{Conventional Commits} specification. The message is written in lowercase and in the imperative mood, and describes what the commit changes. For example, a commit for the issue ``Implement user login'' would be named \texttt{feat: implement user login}. A commit that completes an issue references it in its body (e.g., \texttt{Closes \#42}). Commits made automatically by the CI pipeline, such as regenerated PDFs, are exempt from this convention.
+
+\begin{table}[H]
+\caption{Commit Types} \label{tab:commit-types}
+\begin{tabularx}{\textwidth}{p{2.3cm}>{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Type} & \textbf{Used for}\\
+\midrule
+\texttt{feat} & A new feature or new behaviour in the code.\\
+\texttt{fix} & A bug fix, or a correction made in response to feedback.\\
+\texttt{docs} & Changes to documentation, including the course deliverables.\\
+\texttt{test} & Adding or updating tests.\\
+\texttt{refactor} & Code changes that neither fix a bug nor add a feature.\\
+\texttt{style} & Formatting-only changes, such as running \texttt{Prettier} or \texttt{rustfmt}.\\
+\texttt{ci} & Changes to the GitHub Actions workflows or build scripts.\\
+\texttt{chore} & Maintenance that does not fit another type, such as dependency updates.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Pull Requests and Code Review}
+A pull request will be created once the work for an issue is done. Its title follows the commit naming convention, and its description summarizes the changes and links the issue(s) it resolves with \texttt{Closes \#<issue-number>}, so that the issue closes when the pull request is merged. The author assigns a primary reviewer and moves the card to In Review. Before requesting review, the author merges the latest \texttt{main} into the branch and resolves any conflicts. The reviewer approves the pull request or requests changes, and gives at least one point of constructive feedback, as described in the team charter.
+
+\subsection{Merging Strategy}
 Developers will merge their changes into the main branch through pull requests.
-A pull request must be approved by at least one other team member before it can be merged into the main branch.
-Individual commits will be preserved in the pull request, and the pull request reviewer will be responsible for approving or requesting changes to the pull request.
+A pull request must be approved by at least one other team member, and the CI checks (including the LaTeX build) must pass, before it can be merged into the main branch.
+Pull requests will be merged with a merge commit, so that individual commits are preserved in the history.
 
 \section{Project Decomposition and Scheduling}
 
@@ -208,9 +249,8 @@ stage of the project. For example, the initial stage contains milestones for
 the Project Statement and Development Plan, with individual tasks associated 
 with each milestone. Each task will be represented as a card on the board and 
 assigned to the appropriate team member. Cards will move through the Kanban columns 
-as work progresses, allowing the team to track the status of individual tasks and overall 
+as work progresses, as described in Section~\ref{sec:kanban}, allowing the team to track the status of individual tasks and overall 
 milestone completion.
-
 
 \section{Proof of Concept Demonstration Plan}
 
@@ -221,18 +261,16 @@ from multiple inference providers into an accurate final result. The algorithm
 must handle disagreements between providers and reduce the influence of
 dishonest or low-quality predictions. This is difficult because, for a given
 task, the network may not have a source of \textit{ground truth} against which
-to compare the predictions. There is also a cold-start problem where intially
+to compare the predictions. There is also a cold-start problem where initially
 there may not be enough trusted providers in the network to correctly evaluate
 one another. 
-\newline
 
 Another risk is designing the incentive system and token economics so that the network
-is sufficiently decentralizated and is resistant to attacks. The system must be fair and accessible for 
+is sufficiently decentralized and is resistant to attacks. The system must be fair and accessible for 
 participants so that they are encouraged to take part in the network.
 The system must also be economically sustainable and ensure that
 the distribution of rewards does not create incentives to exploit the system
 or reduce the quality of the aggregated results.
-\newline
 
 Collusion attacks pose a significant risk to the system. A collusion attack
 occurs when multiple participants, such as inference providers, coordinate
@@ -245,23 +283,20 @@ providers make up a large portion of the network.
 \subsection{POC Demonstration Plan}
 
 The proof of concept plan is to create a simulation of the DAIIM network that
-is completely off chain. The simulation will execute a sequence of rounds in which
-an inference task for a regression problem is executed by the network. Various different types of actors will 
-participate in the network:
-\newline
+is completely off-chain. The simulation will execute a sequence of rounds in which
+an inference task for a regression problem is executed by the network. Several types of actors will participate in the network:
 
 \begin{enumerate}
     \item Honest: attempt to maximize rewards by providing accurate predictions consistently (with some noise);
     \item Learners: gradually improve their predictions over time;
-    \item Malicious: intentiononally provide bad predictions;
-    \item Collusion: A group of providers working together to skew the network.
+    \item Malicious: intentionally provide bad predictions;
+    \item Colluding: a group of providers working together to skew the network.
 \end{enumerate}
 
-The simulation will start with a simple Machine Learning (ML) task (eg. predict y, y = mx + b), and each round some input data will be randomly generated.
+The simulation will start with a simple Machine Learning (ML) task (e.g., predict $y$, where $y = mx + b$), and each round some input data will be randomly generated.
 The different actors will be given some algorithm (good or bad algorithm depending on the actor) to determine their predictions given the input.
-The actors will submit their predictions, and the aggregation algorithm will determine the aggregated result. Actor's reputations will be updated
+The actors will submit their predictions, and the aggregation algorithm will determine the aggregated result. Actors' reputations will be updated
 and rewards will be distributed after each round.
-\newline
 
 Another layer of this simulation is to economically model the system. We will
 assign providers a cost for running their model, transaction fees for submitting
@@ -272,7 +307,6 @@ will ensure that the simulation reflects realistic participation decisions
 rather than relying on arbitrary values. We will also vary these values to
 measure how sensitive participation and network performance are to changes in
 costs, fees, rewards, and penalties.
-\newline
 
 We will test various combinations of actors to evaluate the limits of the
 system. These scenarios will vary the proportions of different actors, as well as the number of providers in the
@@ -283,16 +317,16 @@ significantly influence the network.
 \subsection{Consequences of Failure}
 If the proof of concept fails and one or more of the identified risks are not shown to be sufficiently
 mitigated, this would indicate that the current system is not able to provide accurate
-aggregated predictions, is not economically attractive to participants or is vulnerable to collustion attacks.
-This would require the team to re-evaluate the scope of the project and / or the design of the system.
-If the proof of concept is unsuccesful due to a lack of developer resources and / or technical expertise,
+aggregated predictions, is not economically attractive to participants or is vulnerable to collusion attacks.
+This would require the team to re-evaluate the scope of the project and/or the design of the system.
+If the proof of concept is unsuccessful due to a lack of developer resources and/or technical expertise,
 then the team will meet with the supervisor to discuss shrinking the scope. Otherwise, if the cause of
 failure is due to poor system design then the team will meet with the supervisor to
 discuss alternative approaches to consensus, incentive design, and aggregation algorithms. 
 
 \subsection{Success Criteria and Failure Response}
 
-This proof of concept will be successful and show that the stated risk can be overcome if:
+This proof of concept will be successful and show that the stated risks can be overcome if:
 
 {\begin{itemize}
     \item The system provides accurate aggregated results that improve over time even with some limited number of malicious actors. We define accurate as the aggregated result being within a certain threshold (roughly 90\% of aggregated predictions match the ground truth). For this POC, we assume that the aggregated result will improve even with up to 10\% malicious actors in the network. The exact threshold for these percentages will be determined during the POC implementation and testing.
@@ -319,7 +353,6 @@ a separate network for testing programs and transactions without affecting
 Solana Mainnet. We will request free test SOL from a Devnet faucet to pay for
 transaction fees. Since Devnet tokens have no real-world value, the team can
 develop and test DAIIM without using real money before deploying to Mainnet.
-\newline
 
 Solana programs, or smart contracts, will be written in Rust. The conventional
 off-chain backend will use Node.js with TypeScript and PostgreSQL for data
@@ -333,23 +366,22 @@ The expected external libraries and components are:
 
 \begin{itemize}
   \item \textit{[Anchor]}: A development framework for building, deploying and testing Solana programs in Rust.
-  \item \textit{[Metamask]}: Used for accessing crypto wallets \& signing transactions.
+  \item \textit{[MetaMask]}: Used for accessing crypto wallets \& signing transactions.
   \item \textit{[Metaplex]}: Protocol and SDK for creating NFTs.
-  \item \textit{[@solana/web3.js]}: Javascript library for interacting with the Solana blockchain.
-  \item \textit{[@solana/spl-token]}: JavaScript library for interaction with the SPL token program on Solana.
+  \item \textit{[@solana/web3.js]}: Library for interacting with the Solana blockchain from JavaScript.
+  \item \textit{[@solana/spl-token]}: JavaScript library for working with SPL tokens on Solana.
   \item \textit{[Vitest]}: Testing framework for the React frontend and other TypeScript code.
   \item \textit{[Solana Devnet JSON-RPC]}: Public RPC access for testing blockchain transactions and programs.
 \end{itemize}
 
 \subsection{Version Control and CI/CD}
-Git and Github will be used for version control and the project repository. GitHub Projects will
+Git and GitHub will be used for version control and the project repository. GitHub Projects will
 organize issues and track their progress. LaTeX will be used for the
 project's technical documentation.
-\newline
 
 GitHub Actions will compile the LaTeX documentation automatically when relevant
 changes are pushed or proposed. Later, the CI pipeline will be extended to
-build and run tests for the solana program (using Anchor) and React frontend.
+build and run tests for the Solana programs (using Anchor) and React frontend.
 
 \section{Use of AI and LLMs}
 Our team will use LLMs to assist with development and documentation throughout the project. We may use LLMs for searching for information, learning new technologies, prototyping and writing temporary code, generating tests, and assisting with documentation. Team members may use tools such as OpenAI Codex or Claude depending on their individual preferences and available subscriptions. All LLM-generated code and documentation will be reviewed by team members for correctness and relevance before being used. Code will also be verified through testing, CI/CD pipelines, and code reviews.
@@ -397,8 +429,9 @@ The team will adhere to the coding standards outlined in Table~\ref{tab:coding-s
         \hline
         
         \textbf{Git} &
-        Git will be used for version control, with feature branches
-        used to isolate development work. \\
+        Git will be used for version control, with a separate branch
+        for each task and the naming conventions in
+        Section~\ref{sec:workflow}. \\
         \hline
         
         \textbf{Code Review} &
@@ -440,9 +473,9 @@ AI tools were also used throughout this document to check for grammar and spelli
 
 \subsection{Verification of AI-Generated Content}
 
-The use of AI to explain complicated subject matter was used in conjunction with reading reliable sources, such as the Solana Handbook.
+AI explanations of complicated subject matter were used together with reliable sources, such as the Solana Handbook.
 
-The instances in which AI was used for brainstorming related to the team charter were purely for basic idea generation and was up to the discretion and opinion of the group to deem them valuable to the project. The list of potential libraries that was generated was used as a means to build awareness to existing available tools. The decision to include specific libraries was made based on further research into the official documentation of the libraries, not the AI response.
+The instances in which AI was used for brainstorming related to the team charter were purely for basic idea generation, and it was up to the discretion and opinion of the group to deem them valuable to the project. The list of potential libraries that was generated was used to build awareness of existing tools. The decision to include specific libraries was made based on further research into the official documentation of the libraries, not the AI response.
 
 When AI tools were used to check grammar and spelling, team members still critically reviewed the document in its entirety to ensure the document was still understandable and to double check the grammar and spelling.
 
@@ -496,33 +529,23 @@ This section summarizes the ground rules and expectations regarding team member 
 
 All team members are expected to attend weekly team meetings and meetings with our supervisor. Attendance at every Capstone course lecture is not required, provided that members remain up to date with the course material through either attending the lecture in person or reviewing the material independently.
 
-\vspace{\baselineskip}
-\noindent
 Attendance at all required team and supervisor meetings will be tracked through GitHub Issues. All members are expected to maintain a 95\% attendance rate throughout the project.
-\vspace{\baselineskip}
-\noindent
+
 When a meeting is held in person, team members should make their best effort to attend in person. If a member is unable to attend in person, they should notify the team at least 5 hours in advance and attend virtually instead. If a member is unable to attend the meeting altogether, they must notify the team as soon as possible, preferably when they become aware of the conflict and at least 24 hours before the meeting when reasonably possible. Different expectations may apply depending on the circumstances.
 
 \subsection*{Acceptable Excuse}
 
 Team members are expected to communicate with the rest of the team if they are unable to attend a meeting or meet a project deadline. Each member may miss up to three team meetings per term with prior notice. Acceptable reasons may include illness, family emergencies, religious observances, or previously arranged commitments that cannot reasonably be rescheduled.
-\vspace{\baselineskip}
 
-\noindent
 If a member exceeds three absences in a term, the team will discuss the member's participation, expectations, and responsibilities. If the issue cannot be resolved within the team, the team may involve the course professor or supervisor.
-\vspace{\baselineskip}
 
-\noindent
 Team members are expected to meet all assigned deadlines. Exceptions will generally only be made in the event of an emergency, as outlined in the following section.
 
 \subsection*{In Case of Emergency}
 
 If a team member is unable to meet a deadline or complete their assigned work due to an emergency, they must communicate this to the team as soon as they become aware that the work cannot be completed on time.
-\vspace{\baselineskip}
-\noindent
+
 The team will then discuss appropriate accommodations and, if necessary, redistribute the affected work to ensure that project deadlines can still be met. If another team member must take on the incomplete work, the original team member will be expected to take on additional responsibilities during a subsequent phase, where appropriate, to help maintain a fair distribution of workload.
-
-
 
 \subsection*{Accountability and Teamwork}
 
@@ -533,8 +556,6 @@ To reach our goal of using this capstone experience to build something that we a
 Team members are also expected to come to meetings with their assigned tasks completed and prepared to share their progress. Members are expected to actively contribute to team discussion and provide constructive criticism to help augment the quality of the project.
 
 During code reviews, reviewers are expected to provide at least one point of constructive criticism to encourage consistent improvement.
-
-
 
 \subsubsection*{Attitude}
 
@@ -561,7 +582,6 @@ In the case of the anticipation of a missed deadline, members should raise conce
 Members who are not meeting expectations will be respectfully confronted at the following team meeting. They will have the opportunity to explain their situation and must come up with a detailed plan describing how they will get back on track. This plan will be reviewed and approved by the other team members, and their progress will be reviewed at each subsequent team meeting until the member consistently meets expectations. If at the following meetings it becomes clear that little to no effort is being made to get back on track, the issues will be brought to the attention of the TA in an effort to seek external support in conflict resolution.
 
 Members who consistently meet or exceed expectations will be recognized by the team for their contributions. This may include informal recognition during team meetings, opportunities to take on preferred tasks, or small team rewards after completing major milestones. If the entire team reaches a milestone ahead of schedule while maintaining the expected quality of work, the team may use the additional time for a team social activity or other agreed-upon reward.
-
 
 \subsubsection*{Team Building}
 
