@@ -140,13 +140,34 @@ how they relate to your VnV efforts.}
 \wss{Introduce this section.  You can provide a roadmap of the sections to
   come.}
 
+
+
 \subsection{Verification and Validation Team}
 
 \wss{Your teammates.  Maybe your supervisor.
   You should do more than list names.  You should say what each person's role is
   for the project's verification.  A table is a good way to summarize this information.}
 
+  \begin{table}[h]
+  \centering
+  \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Team Member} & \textbf{Project Role} & \textbf{VnV Responsibilities} \\
+    \hline
+    Robert Lam & Data & Data \\
+    Nathan Hum & Data & Data \\
+    Aidan Lao & Data & Data \\
+    Keira Laskoski & Data & Data \\
+    Dr. Mohamed Hassan & Supervisor & Technical expert  \\
+    \hline
+  \end{tabular}
+  \caption{Verification and Validation Team Roles}
+  \label{tab:mytable}
+\end{table}
+
+
 \subsection{SRS Verification}
+The SRS document will be verified to ensure requirements are unambiguous, verfiable, and complete.
 
 \wss{List any approaches you intend to use for SRS verification.  This may
   include ad hoc feedback from reviewers, like your classmates (like your
@@ -160,6 +181,25 @@ issue tracker?}
 
 \wss{Maybe create an SRS checklist?}
 
+\begin{itemize}
+  \item \textbf{Structured Review with Supervisor: } 
+  A structured meeting with the supervisor will occur. The SRS document will be shared 
+  with the supervisor and requirements will be reviewed. The team will prepare questions 
+  in advance, specifically focusing on the 
+  \item \textbf{Ad Hoc Peer Review and Inspection: } Classmates and primary reviewers will be 
+  recruited to perform an adhoc review of the SRS document. All criticisms will be documented 
+  as issues and addressed by a member of the team. A minimum of 5 issues created based on reviews 
+  from peers will be the objective.
+  \item \textbf{Issue Tracker for Traceability: } As stated above, a Github issue tracker will be 
+  used to trace criticisms and suggestions for the amilioration of the SRS document. All issues 
+  will be reviewed, changes to the document will be implemented if necessary. All issues will 
+  addressed with a comment and closed.
+  \item \textbf{Checklist-Based Inspection: } The team will prepare a checklist for necessary 
+  characteristics for a high quality issue. All requirements will be reviewed by team members 
+  to ensure each possesses these characteristics.
+
+\end{itemize}
+
 \subsection{Design Verification}
 
 \wss{Plans for design verification}
@@ -167,6 +207,19 @@ issue tracker?}
 \wss{The review will include reviews by your classmates}
 
 \wss{Create a checklists?}
+
+\begin{itemize}
+  \item \textbf{Peer Review and Inspection: }
+  Classmates and primary reviewers will be 
+  recruited to perform an adhoc review of the first edition of the design document after the course-imposed deadline. 
+  All criticisms will be documented 
+  as issues and addressed by a member of the team. A minimum of 5 issues created based on reviews 
+  from peers and primary reviewers will be the objective.
+  \item \textbf{Team Member Review: } 
+  All team members will review the design document to ensure the design meets the requirements, is feasible, and is properly decomposed.
+  \item \textbf{Checklist-Based: } 
+
+\end{itemize}
 
 \subsection{Verification and Validation Plan Verification}
 
@@ -176,6 +229,16 @@ verified.  Techniques for this include review and mutation testing.}
 \wss{The review will include reviews by your classmates}
 
 \wss{Create a checklists?}
+
+\begin{itemize}
+  \item \textbf{Structured Review with Supervisor: } 
+  A structured review of the VnV plan will be performed with the supervisor, once completed. Team members will
+  describe key components of the plan and 
+  \item \textbf{Peer Review and Inspection: }
+  \item \textbf{Team Member Review: }
+  \item \textbf{Checklist-Based Inspection: } 
+
+\end{itemize}
 
 \subsection{Implementation Verification}
 
