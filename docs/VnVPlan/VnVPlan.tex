@@ -538,6 +538,80 @@ signer to reject authorization, and assert that no task-creation instruction
 is submitted and no task is created.
 \end{enumerate}
 
+\subsubsection{Provider Registration}
+
+This test verifies the end-to-end provider registration flow, including validation of
+the provider, user authorization, and confirmation that the provider has been 
+registered for the task.
+
+\paragraph{}
+
+\begin{enumerate}
+
+\item{ST-PROVIDER-REGISTER-1\\}
+
+Control: Automatic
+
+Initial State: The system is running on Solana Devnet. The unique provider names are
+\texttt{Approved-Provider}, \texttt{Min-Tokens-Provider},
+\texttt{Rejected-Payment-Confirmation-Provider}, \texttt{Registered-Provider}, and
+\texttt{Unauthorized-Provider}. The unique inference task name
+\texttt{Provider-Registration-Test-Task} is not already in use. The test harness is
+configured with a wallet signer for each provider. The wallets for
+\texttt{Approved-Provider}, \texttt{Rejected-Payment-Confirmation-Provider},
+\texttt{Registered-Provider}, and \texttt{Unauthorized-Provider} each hold at least
+100 SOL plus sufficient test SOL to pay transaction fees. The wallet for
+\texttt{Min-Tokens-Provider} holds 99 SOL.
+
+Input:
+\begin{itemize}
+\item A valid numerical regression task definition named \texttt{Provider-Registration-Test-Task}, 
+including the minimum required data for a valid task definition. The minimum registration stake is set to 100 SOL.
+\item A registration request from \texttt{Approved-Provider} with an authorized wallet for \texttt{Provider-Registration-Test-Task}.
+\item A registration request from \texttt{Min-Tokens-Provider} for \texttt{Provider-Registration-Test-Task}, with an authorized wallet 
+that has less than the minimum SOL stake for the task registration.
+\item A registration request from \texttt{Rejected-Payment-Confirmation-Provider} with an authorized wallet for
+\texttt{Provider-Registration-Test-Task}, where the provider rejects the stake payment confirmation in their wallet.
+\item A registration request from \texttt{Registered-Provider} with an authorized wallet for
+\texttt{Provider-Registration-Test-Task}, after \texttt{Registered-Provider} has already been registered for
+\texttt{Provider-Registration-Test-Task}.
+\item A registration request for the wallet address of \texttt{Unauthorized-Provider} for
+\texttt{Provider-Registration-Test-Task}, signed by a wallet other than that of \texttt{Unauthorized-Provider}.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item The registration for \texttt{Approved-Provider}, which has an authorized wallet and sufficient funds and
+is not already registered for the task, shall be confirmed. Its wallet address shall appear in the list of
+registered providers for \texttt{Provider-Registration-Test-Task}, the task's escrow account balance shall
+increase by 100 SOL, and the provider's wallet balance shall decrease by 100 SOL plus transaction fees.
+\item The registration for \texttt{Min-Tokens-Provider} shall be rejected with an insufficient-funds error.
+The provider shall not appear in the list of registered providers, and no SOL shall be transferred to escrow.
+\item The registration for \texttt{Rejected-Payment-Confirmation-Provider} shall not be submitted to the
+network. The provider shall not appear in the list of registered providers, and its wallet balance shall be
+unchanged.
+\item The second registration for \texttt{Registered-Provider} shall be rejected with an already-registered
+error. The provider shall appear in the list of registered providers exactly once, and the escrow shall hold
+100 SOL for this provider, not 200 SOL.
+\item The registration for \texttt{Unauthorized-Provider} shall be rejected with a missing or invalid
+signature error. The provider shall not appear in the list of registered providers, and its wallet balance
+shall be unchanged.
+\end{itemize}
+
+Test Case Derivation: FR12 requires that an authenticated user who stakes the required minimum amount be
+registered as a provider for the task, so \texttt{Approved-Provider} must be registered. FR13 requires the
+required minimum stake to be locked in escrow on registration, so the escrow balance must increase by exactly
+100 SOL. Because registration depends on staking the minimum, \texttt{Min-Tokens-Provider}, whose balance is
+one SOL below the minimum, must be rejected. Because registration is limited to authenticated users who
+authorize the stake, a rejected wallet confirmation (\texttt{Rejected-Payment-Confirmation-Provider}) or a
+request not signed by the registering wallet (\texttt{Unauthorized-Provider}) must not register the provider
+or move funds. Since a provider is either registered for a task or not, a duplicate registration
+(\texttt{Registered-Provider}) must not create a second entry or lock more stake.
+
+How test will be performed: 
+\end{enumerate}
+
+
 \subsection{Tests for Nonfunctional Requirements}
 
 \wss{The nonfunctional requirements for accuracy will likely just reference the
