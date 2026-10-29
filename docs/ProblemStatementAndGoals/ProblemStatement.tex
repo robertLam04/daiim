@@ -85,87 +85,150 @@ The aggregated inference results include the final prediction for a given infere
 
 This software is compatible with any computer running a modern browser that is connected to the internet. There is no hardware component. 
 
+```latex
 \section{Goals}
 
 This project has five primary goals.
 
 \subsection{Transparency and Decentralization}
-Enable inference consumers and model providers to participate in a transparent inference marketplace
-that does not rely on a single centralized entity. The marketplace’s core logic,
-including payments, ownership, and settlement, will be deployed as smart contracts
-on a public blockchain. This ensures there are publicly verifiable records of requests, 
-provider submissions, aggregated results, provider reputation and rewards payments.
-The system should require participation by multiple independent providers per inference,
-to reduce reliance on a narrow set of machine learning models and make the sources of
-inference more diverse. This goal will be measured by whether end-to-end testing demonstrates
-that a request can proceed through provider submission and settlement without
-a centralized coordinator, that the relevant marketplace state can be
-verified from on-chain records, and that at least two independent providers
-can participate in fulfilling requests.
+
+Enable inference consumers and model providers to participate in a
+transparent inference marketplace that does not rely on a single
+centralized entity to manage its core operations. The marketplace's
+core logic, including payments, ownership, and settlement, will be
+implemented through smart contracts deployed on a public blockchain.
+This provides publicly verifiable records of inference requests,
+provider submissions, aggregated results, provider reputation updates,
+and reward distributions. The system should support participation by
+multiple independent providers for each inference request, reducing
+reliance on a single model and allowing predictions from diverse sources
+to contribute to the aggregated result.
+
+This goal will be evaluated through end-to-end testing. Success will
+require at least one inference request to proceed from submission
+through provider participation, result aggregation, and settlement.
+At least two independent providers must be able to participate in
+fulfilling a request. A tester must also be able to verify the relevant
+request, submission, aggregation, and settlement records using
+on-chain data. The tests must demonstrate that the smart contracts
+execute the required marketplace operations and settlement logic
+without requiring a centralized authority to approve each transaction.
 
 \subsection{Web3 Usability}
 
 Provide a user-friendly Web3 experience that hides unnecessary
-blockchain complexity while maintaining transparency into the actions and
-transactions performed by the system. The application should clearly
-communicate the purpose and consequences of actions requiring user
-authorization, including the transactions and data being signed, while
-providing users with direct visibility into the corresponding on-chain
-transactions, their status, and relevant state changes. This goal will be
-evaluated by instructing users to complete representative Web3 tasks, such
-as authorizing a transaction and checking its status, then using a
-questionnaire to assess their understanding of the actions and ease
-of use.
+blockchain complexity while maintaining transparency into the actions
+and transactions performed by the system. The application should
+clearly communicate the purpose and consequences of actions requiring
+user authorization, including the transactions and data being signed,
+while providing users with direct visibility into the corresponding
+on-chain transactions, their status, and relevant state changes.
+
+This goal will be evaluated through usability testing in which
+participants complete representative Web3 tasks, such as authorizing
+a transaction, checking its status, and locating the corresponding
+on-chain record. Participants will also answer questions about the
+purpose and consequences of the transactions they authorize.
+Success will be measured using task-completion rate, transaction
+understanding, and perceived ease of use. The target is for at least
+80\% of participants to complete the representative tasks without
+assistance, at least 80\% to answer the transaction-understanding
+questions correctly, and the average ease-of-use rating to be at
+least 4 out of 5.
 
 \subsection{Reliable Inferences}
 
 Enable users to receive accurate and reliable results by aggregating
-redundant predictions from multiple model providers rather than relying on
-a single prediction. Provider reputation scores will reflect observed
-performance and inform the aggregation, allowing contributions from
-providers with stronger records to have greater influence. As these scores
-are updated over repeated requests, the network can adapt to provider
-performance and improve the quality of its aggregated results. Having
-multiple registered providers makes the network more reliable by allowing
-requests to be fulfilled by available providers when others are unavailable.
-Reliability will be measured by the request-completion rate: the percentage
-of submitted requests that receive an aggregated result within a predefined
-time limit. Tests will vary the number of participating providers, and compare completion rates to assess
-how provider count affects reliability.
-The accuracy of aggregate network predictions will be evaluated against ground
-truths revealed at a later time. For example, for a weather forecasting task,
-the network’s prediction will be compared with the actual weather conditions
-once the forecast period has elapsed.
+redundant predictions from multiple model providers rather than
+relying on a single prediction. Provider reputation scores will
+reflect observed performance and influence the aggregation process,
+allowing contributions from providers with stronger records to have
+greater influence on the aggregated result. As these scores are
+updated over repeated requests, the network can adapt to provider
+performance and adjust the influence of their predictions.
+Having multiple registered providers should also improve the
+availability of inference services by allowing requests to be
+fulfilled when some providers are unavailable.
+
+Reliability will be evaluated using the request-completion rate,
+defined as the percentage of submitted inference requests that receive
+an aggregated result within a predefined time limit. Tests will vary
+the number of available and participating providers and include
+scenarios in which some providers are unavailable. The completion
+rate will be measured under each scenario to assess how provider
+availability affects the system's ability to return results. Under
+the normal test configuration, the target is for at least 90\% of
+submitted requests to receive an aggregated result within the
+specified time limit.
+
+Prediction accuracy will be evaluated separately by comparing
+aggregated predictions against known ground-truth outcomes using a
+metric appropriate to the inference task. For example, a regression
+task may be evaluated using mean absolute error, while a
+classification task may be evaluated using accuracy or F1 score.
+The aggregated predictions will be compared with at least one
+baseline, such as predictions from an individual provider or an
+unweighted aggregation of provider predictions, to determine whether
+the implemented aggregation mechanism improves prediction quality
+under the tested conditions. The evaluation will also examine how
+provider reputation scores influence the aggregated results.
 
 \subsection{Accessible Inference Experience}
 
-Design an accessible user interface that lets users without
-machine-learning experience submit the inputs required for a task and
-understand the resulting aggregated prediction and accompanying information.
-The interface should use clear signifiers for available actions, mappings between task inputs
-and controls, constraints that help prevent invalid submissions, and
-feedback that communicates request progress and results. This goal will be
-evaluated in usability tests with participants unfamiliar with machine
-learning. Participants will complete representative inference request and result
-interpretation tasks; evaluation measures will include task-completion
-rate, time on task, and user errors.
+Design an accessible user interface that enables users without
+machine-learning experience to submit the inputs required for an
+inference task and understand the resulting aggregated prediction
+and accompanying information. The interface should use clear
+signifiers for available actions, appropriate mappings between task
+inputs and controls, constraints that help prevent invalid
+submissions, and feedback that communicates request progress and
+results.
+
+This goal will be evaluated through usability testing with
+participants unfamiliar with machine learning. Participants will
+complete representative tasks, including submitting an inference
+request, monitoring its progress, and interpreting the resulting
+aggregated prediction. Evaluation measures will include task-completion
+rate, time on task, user errors, and result comprehension. Success
+will require at least 80\% of participants to complete the
+representative tasks without assistance and at least 80\% to answer
+predefined questions about the aggregated results correctly.
+The evaluation will also identify errors that prevent successful
+task completion or lead to an incorrect interpretation of the
+result. The observed completion times and errors will be recorded
+to identify areas for improvement in the interface.
 
 \subsection{Model Provider Innovation}
 
-The network will encourage independent model providers to participate and innovate within
-the marketplace by providing opportunities to make their models available
-to consumers, compete for inference requests, and receive compensation
-for their services. The marketplace should create incentives for
-providers to improve the quality, performance, availability, and
-cost-effectiveness of their models, as models that provide greater value
-to consumers can attract more inference requests and generate greater
-potential revenue. If competition and these incentives encourage providers
-to improve their models, that improvement should be reflected in the
-network's aggregate predictions over time. This goal will be measured by
-tracking the network's aggregated predictions for a real inference task
-over repeated requests. As ground-truth outcomes become available,
-prediction quality will be assessed using a task-appropriate metric to
-determine whether the aggregated results improve over time.
+Encourage independent model providers to participate and improve
+their models within the marketplace by providing opportunities to
+make their models available to consumers, compete for inference
+requests, and receive compensation for their services. The marketplace
+should create incentives for providers to improve the quality,
+performance, availability, and cost-effectiveness of their models,
+as providers that deliver greater value to consumers may be able to
+attract more inference requests and earn greater rewards. Improvements
+in provider performance may also improve the quality of the network's
+aggregated predictions.
+
+This goal will be evaluated through controlled experiments using
+simulated providers with different prediction-quality levels and
+reputation scores. The experiments will assess whether the reward
+and reputation mechanisms respond as intended to differences in
+provider performance. In particular, under controlled conditions,
+the expected rewards of a provider that improves its prediction
+quality will be compared with the rewards it would receive without
+that improvement. The experiments will also track provider
+reputation scores and aggregated prediction quality across repeated
+inference rounds. Aggregated predictions will be evaluated against
+known ground-truth outcomes using a task-appropriate metric and
+compared with a baseline to determine whether improved provider
+predictions lead to improved aggregate prediction quality under
+the tested conditions. These experiments will establish whether
+the implemented incentive mechanisms reward improved provider
+performance and whether such improvements can benefit the network,
+without assuming that simulated improvements demonstrate real-world
+provider innovation.
 
 \section{Stretch Goals}
 
