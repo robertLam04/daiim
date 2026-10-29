@@ -919,15 +919,20 @@ System
 \textbf{Alternative Flows}
 \begin{itemize}
 \item 2a. Calculated reward distribution results in a provider receiving a negative or zero reward: System sets the provider's reward to zero and informs them of the outcome.
-\item 3a. Provider wallet is no longer valid or accessible: System attempts to contact the provider to resolve the issue. If unsuccessful, the system holds the reward in escrow until the provider can be reached or a resolution is found.
+\item 3a. Provider wallet is no longer valid or accessible: System keeps that provider's reward in escrow, records the transfer as unresolved, sets the request status to ``Pending Transfer'', and notifies the provider of the held reward and the pending transfer deadline. Transfers to the other providers continue as normal.
+  \begin{itemize}
+  \item 3a1. The provider retries the transfer before the pending transfer deadline, once their wallet can receive it: System transfers the held reward and records the transfer as resolved. Use case resumes at step 4.
+  \item 3a2. The transfer is still unresolved at the pending transfer deadline: System burns the held reward and records the transfer as forfeited.
+  \end{itemize}
 \end{itemize}
 
 \textbf{Postconditions}
 \begin{itemize}
-\item All eligible providers have received their rewards or had their tokens slashed, and their balances have been updated accordingly.
+\item All eligible providers have received their rewards or had their tokens slashed, and their balances have been updated accordingly. Any reward that could not be transferred by the pending transfer deadline has been burned.
+\item No tokens for the request remain in escrow, and the request status is ``Completed''.
 \end{itemize}
 
-\textbf{Related Requirements:} \rref{FR_DistributeRewards}, \rref{FR_ProviderDashboard}, \rref{FR_OnChainRecords}, \ref{SA_NoDuplicateSubmission}, \ref{SA_RewardValidation}, \ref{SA_ProviderStatusCheck}, \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_FinalState}, \nfrref{NFR_TransactionConfirmation}.
+\textbf{Related Requirements:} \rref{FR_DistributeRewards}, \rref{FR_RewardTransferFailure}--\rref{FR_RequestCompletion}, \rref{FR_ProviderDashboard}, \rref{FR_OnChainRecords}, \ref{SA_NoDuplicateSubmission}, \ref{SA_RewardValidation}, \ref{SA_ProviderStatusCheck}, \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_FinalState}, \nfrref{NFR_TransactionConfirmation}.
 
 \refstepcounter{ucnum} \label{UC_CancelRequest}
 \subsection{\ucref{UC_CancelRequest}: Cancel an inference request with too few participating providers}
@@ -1182,6 +1187,16 @@ The functional requirements are grouped by the area of DAIIM they describe.
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationPenaltyCap}:] The system shall limit the reputation decrease a provider receives for a single inference request to at most MAX\_REPUTATION\_PENALTY, regardless of how far the provider's prediction is from the final aggregated result.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_DistributeRewards}:] The system shall distribute the inference request's reward among all providers whose predictions contributed to the final aggregated result and whose reputation did not decrease as a result of the request, in proportion to each provider's reputation score. 
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RewardTransferFailure}:] If a reward transfer to a provider fails because the provider's wallet is invalid or cannot receive tokens, the system shall keep that provider's reward in escrow, record the transfer as unresolved, and set the request's status to Pending Transfer. Transfers to other providers and the requester's access to the final aggregated result shall not be affected.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PendingTransferNotice}:] When a reward transfer is recorded as unresolved, the system shall notify the provider and show the held reward amount and the request's pending transfer deadline on the provider's dashboard.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PendingTransferRetry}:] While a request is in Pending Transfer, the system shall allow a provider with an unresolved transfer to retry it. If the retried transfer succeeds, the system shall record the transfer as resolved.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PendingTransferDeadline}:] Each inference request shall have a pending transfer deadline equal to the end of its prediction phase plus PENDING\_TRANSFER\_PERIOD. If a reward transfer is still unresolved at this deadline, the system shall burn the held reward and record the transfer as forfeited.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestCompletion}:] The system shall set an inference request's status to Completed only after every reward transfer for the request has either succeeded or been forfeited under \rref{FR_PendingTransferDeadline}.
 \end{itemize}
 
 \subsection{Penalties}
@@ -1318,7 +1333,8 @@ Inference Request & Request ID & Identifier & Unique request identifier\\
  & Requester wallet & Address & Wallet of the requester\\
  & Input data & JSON & Data submitted for inference\\
  & Cost & Number & Offered payment\\
- & Status & Status & Current request state\\
+ & Status & Status & Current request state. Final states are Completed, Failed, and Cancelled. Pending Transfer means at least one reward transfer is unresolved\\
+ & Unresolved transfers & List & Provider wallets and reward amounts held in escrow until transferred or burned\\
  & Provider predictions & List<Provider Prediction> & Provider predictions submitted for the request\\
  & Aggregated result & Output Type & Final inference result\\
  & Submission time & Timestamp & Request creation time\\
@@ -1425,7 +1441,7 @@ be covered in the Verification and Validation document.}
 
 \noindent \begin{itemize}
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_FinalState}:] An inference request shall reach a final state (completed, failed, cancelled) and all escrowed tokens shall be deposited, slashed, or burned before the final deadline for the request has elapsed, verified through simulation.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_FinalState}:] An inference request shall reach a final state (completed, failed, cancelled) and all escrowed tokens shall be deposited, slashed, or burned before the final deadline for the request has elapsed, verified through simulation. The final deadline is the request's pending transfer deadline (\rref{FR_PendingTransferDeadline}). Pending Transfer is not a final state.
 
 \end{itemize}
 
@@ -1549,13 +1565,13 @@ Stakeholder Req & Use Case & Functional Req \\
   & \rref{FR_TaskBrowsing}, \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_ProviderWillingUnregistration}, \rref{FR_AcceptancePeriodStart}, \rref{FR_RequestInputDistribution}, \rref{FR_PredictionPhaseStart}, \rref{FR_PredictionSubmission} \\[0.5em]
 
 \srref{SR_ProviderProfit} & \ucref{UC_DistributeRewards}
-  & \rref{FR_DistributeRewards}, \rref{FR_ProviderDashboard} \\[0.5em]
+  & \rref{FR_DistributeRewards}, \rref{FR_RewardTransferFailure}--\rref{FR_PendingTransferRetry}, \rref{FR_ProviderDashboard} \\[0.5em]
 
 \srref{SR_RewardAccuracy} & \ucref{UC_UpdateReputation}, \ucref{UC_DistributeRewards}
   & \rref{FR_UpdateProviderReputations}--\rref{FR_DistributeRewards}, \rref{FR_InferenceProviderSlashing}--\rref{FR_ProviderForcedUnregistration}, \ref{SA_RewardValidation}, \ref{SA_ProviderStatusCheck} \\[0.5em]
 
 \srref{SR_AutomaticPayment} & \ucref{UC_DistributeRewards}
-  & \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_DistributeRewards}, \rref{FR_OnChainRecords}, \ref{SA_RewardValidation} \\[0.5em]
+  & \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_DistributeRewards}, \rref{FR_RewardTransferFailure}--\rref{FR_RequestCompletion}, \rref{FR_OnChainRecords}, \ref{SA_RewardValidation} \\[0.5em]
 
 \srref{SR_DataPrivacy} & \ucref{UC_SubmitRequest}, \ucref{UC_AcceptRequest}
   & \rref{FR_RequestInputDistribution}, \rref{FR_InputAccessRestriction}, \rref{FR_InputNotOnChain} \\[0.5em]
@@ -1597,6 +1613,7 @@ Functional Req & Nonfunctional Req \\
 \rref{FR_RequestHistory} & \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TwoClickAccess} \\
 \rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors} \\
 \rref{FR_DistributeRewards} & \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_FinalState} \\
+\rref{FR_RewardTransferFailure}--\rref{FR_RequestCompletion} & \nfrref{NFR_FinalState} \\
 \rref{FR_InferenceProviderSlashing}--\rref{FR_ProviderForcedUnregistration} & \nfrref{NFR_FinalState}, \nfrref{NFR_AggregationArithmeticErrors} \\
 \rref{FR_TransactionStatus} & \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_ErrorVisibility}, \ref{SA_ErrorMessageTime} \\
 \rref{FR_TransactionVerification} & \nfrref{NFR_TransactionConfirmation} \\
@@ -1720,6 +1737,25 @@ aggregated result exceeds the average distance by more than $T$
 providers would lose reputation on every request, even when all predictions are
 close together. $T$ is set per task because an acceptable margin depends on the
 units and scale of the task's output.
+
+\subsection{Unresolved Reward Transfers}
+
+A reward transfer can fail if a provider's wallet can no longer receive tokens.
+Holding the reward indefinitely would keep tokens in escrow forever and break
+\nfrref{NFR_FinalState}. Instead, the request moves to Pending Transfer, the
+provider can retry until the pending transfer deadline, and any reward still
+unclaimed is then burned (\rref{FR_RewardTransferFailure}--\rref{FR_RequestCompletion}).
+This gives every request a fixed final deadline that is known when the request
+is submitted: the acceptance-period expiry, plus the task's maximum prediction
+time, plus PENDING\_TRANSFER\_PERIOD.
+
+The requester still receives the final result during Pending Transfer, since a
+provider's wallet problem has nothing to do with the result. The request is not
+marked Completed until every transfer is settled, so its status always shows
+whether tokens remain in escrow. The unclaimed reward is burned rather than
+refunded, because the requester has already received the service they paid for,
+and rather than redistributed, because that would change other providers'
+rewards after they were paid.
 
 \subsection{Request Broadcast and Collusion} \label{sec_RationaleBroadcast}
 
@@ -1849,6 +1885,7 @@ Their values are defined in this section for easy maintenance.}
 \item MAX\_REPUTATION\_PENALTY: the maximum reputation decrease a provider can receive for a single inference request (\rref{FR_ReputationPenaltyCap}). To be determined.
 \item SLASH\_FRACTION: the fraction of a provider's stake slashed for an invalid prediction or for not submitting a prediction (\rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}). To be determined.
 \item REPEAT\_OFFENSE\_COUNT: the number of slashing offences that causes a provider to be unregistered (\rref{FR_SlashRepeatedOffenses}). To be determined.
+\item PENDING\_TRANSFER\_PERIOD: the time after the end of a request's prediction phase during which unresolved reward transfers can be retried before the held reward is burned (\rref{FR_PendingTransferDeadline}). To be determined.
 \item REPEAT\_OFFENSE\_WINDOW: the number of most recent accepted inference requests over which slashing offences are counted (\rref{FR_SlashRepeatedOffenses}). To be determined.
 \end{itemize}
 
