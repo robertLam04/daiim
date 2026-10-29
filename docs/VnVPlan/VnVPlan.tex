@@ -539,6 +539,433 @@ signer to reject authorization, and assert that no task-creation instruction
 is submitted and no task is created.
 \end{enumerate}
 
+\subsubsection{Provider Registration and Staking}
+
+These tests verify the provider registration and staking requirements in the
+\href{../SRS/SRS.pdf}{SRS}. They cover registering as an inference provider
+for a task, locking the required minimum stake in escrow, unregistering when
+eligible, and viewing provider information through the dashboard.
+
+\paragraph{Registering as an Inference Provider}
+
+\begin{enumerate}
+
+\item{ST-PROV-1\\}
+
+Control: Manual
+
+Initial State: The application is running in a supported browser. A provider
+account is authenticated and connected to a compatible wallet. The provider
+is not registered for inference task \texttt{TASK-01}. The task requires a
+minimum stake of tokens, and the provider's wallet contains sufficient
+tokens and SOL to complete the transaction.
+
+Input:
+\begin{itemize}
+\item Navigate to \texttt{TASK-01} and select the option to register as an
+inference provider.
+\item Review the required minimum stake of tokens and the associated
+registration details.
+\item Confirm the registration and approve the wallet transaction.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item The provider is successfully registered for \texttt{TASK-01}.
+\item Exactly the minimum amount of tokens are locked in escrow as the provider's stake.
+\item The provider is added to the task's list of registered providers and
+receives the base reputation score for the task.
+\item The system displays the transaction status and, once confirmed, the
+transaction identifier.
+\end{itemize}
+
+Test Case Derivation: FR\_InferenceTaskRegistration requires authenticated
+users to be able to register as inference providers by staking the required
+minimum amount of tokens. FR\_InferenceTaskRegistrationStaking requires the
+minimum stake to be locked in escrow. The transaction authorization and
+confirmation behaviour is also covered by the related transaction
+requirements.
+
+How test will be performed: Authenticate a provider account and navigate to
+\texttt{TASK-01}. Select the registration option and verify that the system
+displays the required minimum stake. Confirm the registration and approve
+the transaction through the connected wallet. After the transaction is
+confirmed, inspect the task's registered-provider list and the provider's
+account information. Verify that the provider is registered, has received
+the base reputation score, and that exactly the minimum amount of tokens have been transferred
+into escrow.
+
+\item{ST-PROV-2\\}
+
+Control: Manual
+
+Initial State: The application is running in a supported browser. A provider
+account is authenticated and connected to a compatible wallet. The provider
+is not registered for \texttt{TASK-02}. The task requires a minimum stake of
+tokens, but the provider's wallet contains fewer than 100 tokens.
+
+Input:
+\begin{itemize}
+\item Navigate to \texttt{TASK-02} and select the option to register as an
+inference provider.
+\item Attempt to proceed with registration despite having an insufficient
+token balance.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item The system prevents the provider from completing registration.
+\item An error message indicates that the provider's token balance is
+insufficient and identifies the required shortfall.
+\item No stake is transferred into escrow, and the provider is not added to
+the task's list of registered providers.
+\end{itemize}
+
+Test Case Derivation: FR\_InferenceTaskRegistration and
+FR\_InferenceTaskRegistrationStaking require the provider to stake the
+required minimum amount of tokens to register. The related balance-check
+assumptions require the system to verify that sufficient funds are available
+before processing the transaction.
+
+How test will be performed: Authenticate a provider account with fewer than
+100 tokens and navigate to \texttt{TASK-02}. Attempt to register for the task.
+Verify that the system displays an insufficient-balance error, that no
+transaction transfers tokens into escrow, and that the provider does not
+appear in the task's registered-provider list.
+
+\end{enumerate}
+
+\paragraph{Unregistering from an Inference Task}
+
+\begin{enumerate}
+
+\item{ST-PROV-3\\}
+
+Control: Manual
+
+Initial State: The application is running in a supported browser. A provider
+account is authenticated and registered for \texttt{TASK-03}. The provider
+has no active accepted inference requests for this task. The provider's
+current reputation score is at or above the task's reduced-stake-return
+threshold, and the provider has a remaining stake of tokens.
+
+Input:
+\begin{itemize}
+\item Navigate to the provider's registration details for
+\texttt{TASK-03}.
+\item Select the option to unregister from the task.
+\item Review and confirm the unregistration.
+\item Approve the wallet transaction, if prompted.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item The provider is successfully unregistered from \texttt{TASK-03}.
+\item The provider is removed from the task's list of registered providers.
+\item The provider's entire remaining stake of tokens is returned to
+their token account.
+\item The system displays the transaction status and, once confirmed, the
+transaction identifier.
+\end{itemize}
+
+Test Case Derivation: FR\_ProviderWillingUnregistration requires the system
+to allow providers to unregister when they have no active accepted inference
+requests. FR\_ProviderUnregistrationStakeReturn requires the entire
+remaining stake to be returned when the provider's reputation is at or above
+the task's reduced-stake-return threshold.
+
+How test will be performed: Authenticate the registered provider and verify
+that they have no active accepted inference requests for
+\texttt{TASK-03}. Select the unregistration option and confirm the action.
+After the transaction is confirmed, inspect the provider's registration
+status, the task's registered-provider list, and the provider's token
+balance. Verify that the provider has been removed from the list and that
+the entire remaining stake has been returned.
+
+\item{ST-PROV-4\\}
+
+Control: Manual
+
+Initial State: The application is running in a supported browser. A provider
+account is authenticated and registered for \texttt{TASK-04}. The provider
+has accepted an inference request that is still active for this task.
+
+Input:
+\begin{itemize}
+\item Navigate to the provider's registration details for
+\texttt{TASK-04}.
+\item Select the option to unregister from the task.
+\item Attempt to confirm the unregistration.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item The system rejects the unregistration attempt because the provider has
+an active accepted inference request.
+\item An error message explains why the provider cannot unregister.
+\item The provider remains registered for \texttt{TASK-04}, and their
+remaining stake is unchanged.
+\end{itemize}
+
+Test Case Derivation: FR\_ProviderWillingUnregistration requires that a
+provider must not have accepted any active inference requests for the task
+before they can unregister.
+
+How test will be performed: Authenticate a provider account that is
+registered for \texttt{TASK-04} and has an active accepted inference request.
+Attempt to unregister from the task. Verify that the system rejects the
+attempt, displays an appropriate error message, maintains the provider's
+registration, and does not modify the provider's remaining stake.
+
+\end{enumerate}
+
+\paragraph{Viewing the Provider Dashboard}
+
+\begin{enumerate}
+
+\item{ST-PROV-5\\}
+
+Control: Manual
+
+Initial State: The application is running in a supported browser. A provider
+account is authenticated and registered for two inference tasks,
+\texttt{TASK-05} and \texttt{TASK-06}. The provider has an existing reputation
+score, staked token balance, and earned rewards recorded for each task.
+
+Input:
+\begin{itemize}
+\item Navigate to the provider dashboard.
+\item View the provider's information for \texttt{TASK-05} and
+\texttt{TASK-06}.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item The dashboard displays the provider's reputation score, staked tokens,
+and earned rewards for \texttt{TASK-05}.
+\item The dashboard displays the provider's reputation score, staked tokens,
+and earned rewards for \texttt{TASK-06}.
+\item The displayed values correspond to the provider's recorded information
+for each task.
+\end{itemize}
+
+Test Case Derivation: FR\_ProviderDashboard requires inference providers to
+be able to view their reputation score, staked tokens, and rewards earned
+for each inference task they are registered for.
+
+How test will be performed: Authenticate the provider account and navigate
+to the provider dashboard. Retrieve the provider's recorded reputation,
+stake, and reward values for both tasks from the system's records. Compare
+these values with the information displayed on the dashboard and verify
+that the correct information is displayed for each task.
+
+\end{enumerate}
+
+\subsubsection{Inference Requests}
+
+These tests verify the inference request requirements in the
+\href{../SRS/SRS.pdf}{SRS}. They cover submitting requests for existing
+inference tasks, validating request input data against the task's input
+schema, authorizing payments into escrow, and broadcasting submitted
+requests to registered providers.
+
+\paragraph{Submitting an Inference Request}
+
+\begin{enumerate}
+
+\item{ST-REQ-1\\}
+
+Control: Manual
+
+Initial State: The application is running in a supported browser. A requester
+account is authenticated and connected to a compatible wallet. An existing
+inference task, \texttt{TASK-01}, is available and has at least two registered
+providers. The task's input schema requires a numerical input field named
+\texttt{input\_value}. The requester's wallet contains sufficient tokens and
+SOL to submit the request.
+
+Input:
+\begin{itemize}
+\item Navigate to \texttt{TASK-01} and select the option to submit an
+inference request.
+\item Provide valid input data containing \texttt{input\_value} with a
+numerical value
+\item Review the request details and confirm the submission.
+\item Authorize the payment through the connected wallet.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item The system accepts the input data and successfully submits the
+inference request for \texttt{TASK-01}.
+\item The request is assigned a unique identifier and its submission status
+is displayed to the requester.
+\item The input data is stored securely for processing and is not recorded
+directly on-chain.
+\item The requester is informed that the request has been submitted and is
+awaiting provider participation.
+\end{itemize}
+
+Test Case Derivation: FR\_RequestSubmission requires authenticated users to
+be able to submit inference requests for existing tasks, with input data
+conforming to the task's input schema. The related input-data requirements
+specify that input data must be stored securely and not placed directly
+on-chain.
+
+How test will be performed: Authenticate a requester account and navigate
+to \texttt{TASK-01}. Enter the valid input data and submit the request.
+Authorize the transaction through the connected wallet. Verify that the
+system creates a request with a unique identifier, displays the appropriate
+submission status, and securely stores the input data. Inspect the on-chain
+request record to confirm that the input data itself has not been recorded
+on-chain.
+
+\item{ST-REQ-2\\}
+
+Control: Manual
+
+Initial State: The application is running in a supported browser. A requester
+account is authenticated and connected to a compatible wallet. An existing
+inference task, \texttt{TASK-02}, is available and has at least two registered
+providers. The task's input schema requires a numerical field named
+\texttt{input\_value}.
+
+Input:
+\begin{itemize}
+\item Navigate to \texttt{TASK-02} and select the option to submit an
+inference request.
+\item Provide input data with the required \texttt{input\_value} field
+missing.
+\item Repeat the submission attempt with \texttt{input\_value} provided as
+a non-numerical value.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item The system rejects both invalid input submissions.
+\item The system displays an error message identifying the missing or
+invalid input field.
+\item No inference request is submitted, no request identifier is created,
+and no payment is transferred into escrow.
+\end{itemize}
+
+Test Case Derivation: FR\_RequestValidation requires the system to reject
+inference requests whose input data does not conform to the task's input
+schema. FR\_RequestSubmission requires submitted requests to include input
+data that conforms to that schema.
+
+How test will be performed: Authenticate a requester account and navigate
+to \texttt{TASK-02}. Attempt to submit a request with the required input
+field missing. Verify that the system rejects the request and identifies
+the missing field. Repeat the test using a non-numerical value for
+\texttt{input\_value}. Verify that the request is rejected again and that
+neither attempt creates a request or transfers funds into escrow.
+
+\end{enumerate}
+
+\paragraph{Request Payment and Authorization}
+
+\begin{enumerate}
+
+\item{ST-REQ-3\\}
+
+Control: Manual
+
+Initial State: The application is running in a supported browser. A requester
+account is authenticated and connected to a compatible wallet. An existing
+inference task, \texttt{TASK-03}, is available and has at least two registered
+providers. The task has a minimum payment requirement. The
+requester's wallet contains sufficient tokens and SOL to authorize a
+payment 
+
+Input:
+\begin{itemize}
+\item Navigate to \texttt{TASK-03} and provide valid input data.
+\item Select a payment amount of tokens.
+\item Review the transaction details and confirm the request submission.
+\item Approve the transaction through the connected wallet.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item The system accepts the payment amount because it exceeds the task's
+minimum payment requirement.
+\item The wallet prompts the requester to authorize a transaction
+transferring the tokens into escrow.
+\item After authorization and transaction confirmation, exactly those amount of tokens
+are transferred into escrow.
+\item The system displays the transaction status and, once confirmed, the
+transaction identifier.
+\item The amount transferred into escrow matches the amount authorized by
+the requester.
+\end{itemize}
+
+Test Case Derivation: FR\_RequestPayment requires the requester to choose
+a token payment greater than the minimum and authorize a wallet transaction
+transferring that amount into escrow. The related transaction authorization
+and preview requirements ensure that the requester can review and authorize
+the transaction. SA\_ChargeEqualsAuthorized requires the amount charged to
+match the amount authorized.
+
+How test will be performed: Authenticate a requester account and navigate
+to \texttt{TASK-03}. Enter valid request input and select a payment amount
+for a set amount of tokens. Review the transaction preview and approve the transaction
+through the connected wallet. After confirmation, inspect the requester's
+token balance and the escrow account's balance. Verify that exactly the set amount of
+tokens have been transferred into escrow and that the amount matches the
+requester's authorization.
+
+\end{enumerate}
+
+\paragraph{Broadcasting Submitted Inference Requests}
+
+\begin{enumerate}
+
+\item{ST-REQ-4\\}
+
+Control: Automatic
+
+Initial State: The system is running in a test environment. An existing
+inference task, \texttt{TASK-04}, has three registered providers:
+\texttt{PROV-01}, \texttt{PROV-02}, and \texttt{PROV-03}. All three providers
+are available to receive inference requests. The task has a configured
+acceptance period and maximum prediction time.
+
+Input:
+\begin{itemize}
+\item Submit a valid inference request for \texttt{TASK-04}.
+\item Set the proposed payment amount to a number of tokens.
+\item Configure the acceptance-period expiry time to 10 minutes after
+submission.
+\item Configure the maximum prediction time to 30 minutes.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item The system successfully submits the inference request.
+\item The system broadcasts the request to all three registered providers.
+\item Each provider receives the task definition, proposed payment amount,
+acceptance-period expiry time, and maximum prediction time.
+\item The broadcast information is consistent across all three providers
+and matches the submitted request.
+\end{itemize}
+
+Test Case Derivation: FR\_RequestBroadcast requires the system to broadcast
+the task definition, proposed payment amount, acceptance-period expiry time,
+and maximum prediction time to all providers registered for the task after
+an inference request is submitted.
+
+How test will be performed: Configure \texttt{TASK-04} with the three
+specified registered providers and submit a valid inference request with
+the specified payment amount and timing values. Monitor the messages or
+notifications received by each provider. Verify that all three providers
+receive the broadcast and that the task definition, proposed payment,
+acceptance-period expiry time, and maximum prediction time match the
+submitted request.
+
+\end{enumerate}
+
+
 
 \subsubsection{Reputation, Rewards, and Penalties}
 
