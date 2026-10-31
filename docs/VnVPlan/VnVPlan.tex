@@ -522,7 +522,7 @@ must be rejected. FR5 permits authenticated users
 to create tasks, while FR4 requires wallet
 approval before an on-chain state change. Therefore, the valid task should be
 created only after approval, and rejecting authorization should leave it
-uncreated. FR50 and FR51
+uncreated. FR58 and FR59
 require a final transaction status and a transaction identifier that can be
 used to verify the successful instruction.
 
@@ -967,6 +967,234 @@ submitted request.
 \end{enumerate}
 
 
+
+\subsubsection{Provider Acceptance and Predictions}
+
+These tests verify the provider acceptance and prediction requirements in the SRS. They cover accepting or
+declining inference requests during the acceptance period, reserving stake for accepted requests, submitting
+predictions, and cancelling requests that receive too few valid predictions.
+
+\paragraph{Accepting an Inference Request}
+
+\begin{enumerate}
+
+\item{ST-ACC-1\\}
+
+Control: Automatic
+
+Initial State: The system is running on Solana Devnet. TASK-07 requires at least 2 accepting providers, allows
+at most 3, and has an acceptance period of 2 minutes. PROV-11, PROV-12, and PROV-13 are registered for TASK-07.
+A requester has submitted inference request REQ-01 for TASK-07.
+
+Input:
+\begin{itemize}
+\item[1.] PROV-11 and PROV-12 accept REQ-01 and sign the acceptance in their wallets.
+\item[2.] PROV-13 declines REQ-01.
+\item[3.] The acceptance period of REQ-01 elapses.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item[1.] PROV-11 and PROV-12 are recorded as accepting providers, and part of each one's stake is reserved for
+REQ-01 without any tokens being transferred.
+\item[2.] The decline from PROV-13 is recorded, and no stake is reserved for it.
+\item[3.] The acceptance period, which started when REQ-01 was broadcast, ends 2 minutes later, and REQ-01 moves
+to its prediction phase with PROV-11 and PROV-12.
+\end{itemize}
+
+Test Case Derivation: FR21 starts the acceptance period at broadcast and lets registered providers accept or
+decline, and FR10 sets its length. FR4 requires each acceptance to be signed, and FR31 requires part of the
+provider's stake to be reserved for the request.
+
+How test will be performed: Send the two acceptances and the decline. Query REQ-01 and the provider accounts on
+Solana Devnet, and verify the acceptance period times, the recorded acceptances and decline, and the
+reservations. After the period ends, verify that REQ-01 is in its prediction phase.
+
+\item{ST-ACC-2\\}
+
+Control: Automatic
+
+Initial State: The system is running on Solana Devnet. PROV-11 to PROV-15 are registered for TASK-07, and
+PROV-16 is not. A requester has submitted inference requests REQ-02 and REQ-03 for TASK-07.
+
+Input:
+\begin{itemize}
+\item[1.] PROV-16 tries to accept REQ-02.
+\item[2.] After the acceptance period of REQ-02 ends, PROV-14 tries to accept it.
+\item[3.] PROV-11, PROV-12, and PROV-13 accept REQ-03, then PROV-15 tries to accept it.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item[1.] The acceptance from PROV-16 is rejected with a not-registered error.
+\item[2.] The acceptance from PROV-14 is rejected because the acceptance period has ended.
+\item[3.] The acceptance from PROV-15 is rejected because REQ-03 already has 3 accepting providers.
+\end{itemize}
+
+Test Case Derivation: FR21 only lets registered providers accept a request. FR22 ignores acceptances after the
+acceptance period ends, and FR7 sets the task's maximum number of accepting providers for each request.
+
+How test will be performed: Send each acceptance at the stated time, using the on-chain clock to wait for the
+end of the acceptance period of REQ-02. Verify that each is rejected with the expected error and that none of
+these providers is recorded as accepting.
+
+\item{ST-ACC-3\\}
+
+Control: Automatic
+
+Initial State: The system is running on Solana Devnet. PROV-11 is registered for TASK-07, which requires at
+least 2 accepting providers. A requester has submitted inference request REQ-04 for TASK-07 with a payment of
+30 SOL.
+
+Input:
+\begin{itemize}
+\item[1.] Only PROV-11 accepts REQ-04 before the acceptance period ends.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item[1.] REQ-04 is cancelled when the acceptance period ends, and does not enter a prediction phase. The 30 SOL
+payment is returned to the requester, and the stake reserved by PROV-11 is released.
+\end{itemize}
+
+Test Case Derivation: FR23 cancels a request that fewer than the task's minimum number of providers have
+accepted, and returns the requester's payment. FR32 releases the reservations of a cancelled request.
+
+How test will be performed: Have PROV-11 accept REQ-04, and wait until the on-chain clock passes the end of the
+acceptance period. Verify that REQ-04 is cancelled, that the requester's wallet balance went back up by 30 SOL,
+and that PROV-11 has no reservation left for it.
+
+\item{ST-ACC-4\\}
+
+Control: Automatic
+
+Initial State: The system is running on Solana Devnet. PROV-17 is registered for TASK-08 with a stake of
+\texttt{MINIMUM\_PROVIDER\_STAKE} plus 50 SOL. Each request for TASK-08 reserves 20 SOL of an accepting
+provider's stake. A requester has submitted inference requests REQ-05, REQ-06, REQ-07, and REQ-08.
+
+Input:
+\begin{itemize}
+\item[1.] PROV-17 accepts REQ-05, REQ-06, and REQ-07 while all three are open.
+\item[2.] After REQ-05 completes, PROV-17 accepts REQ-08.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item[1.] The acceptances of REQ-05 and REQ-06 are recorded. The acceptance of REQ-07 is rejected, because a
+third reservation would take the stake of PROV-17 below \texttt{MINIMUM\_PROVIDER\_STAKE}.
+\item[2.] After REQ-05 completes, its reservation is released and the acceptance of REQ-08 is recorded.
+\end{itemize}
+
+Test Case Derivation: FR31 rejects an acceptance if the stake left after all reservations would be below
+\texttt{MINIMUM\_PROVIDER\_STAKE}. With 50 SOL above the minimum, two 20 SOL reservations fit and a third does
+not. FR32 releases a reservation when its request ends.
+
+How test will be performed: Have PROV-17 accept the requests in order, and read its reservations from the
+on-chain program accounts after each acceptance. Run REQ-05 to completion before the last acceptance, and verify
+that each acceptance is recorded or rejected as expected.
+
+\end{enumerate}
+
+\paragraph{Submitting Predictions}
+
+\begin{enumerate}
+
+\item{ST-PRED-1\\}
+
+Control: Automatic
+
+Initial State: The system is running on Solana Devnet. TASK-09 has a numerical output schema and a maximum
+prediction time of 5 minutes. PROV-18 and PROV-19 have accepted inference request REQ-09 for TASK-09, and its
+acceptance period has ended.
+
+Input:
+\begin{itemize}
+\item[1.] PROV-18 and PROV-19 each submit a valid numerical prediction within the first minute of the prediction
+phase.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item[1.] Both predictions are accepted. The prediction phase ends as soon as both predictions are received and
+validated, before the maximum prediction time.
+\end{itemize}
+
+Test Case Derivation: FR26 allows each accepting provider to submit a prediction during the prediction phase.
+FR29 ends the prediction phase once a prediction from every accepting provider has been received and validated.
+
+How test will be performed: Submit both predictions. Verify that each is accepted, and that the end time of the
+prediction phase recorded on-chain is earlier than the maximum prediction time.
+
+\item{ST-PRED-2\\}
+
+Control: Automatic
+
+Initial State: The system is running on Solana Devnet. PROV-18 to PROV-21 have accepted inference request REQ-10
+for TASK-09, and PROV-22 is registered for TASK-09 but did not accept REQ-10.
+
+Input:
+\begin{itemize}
+\item[1.] During the acceptance period, PROV-18 submits a prediction.
+\item[2.] During the prediction phase, PROV-18 submits 10.0 and then 50.0.
+\item[3.] During the prediction phase, PROV-19 submits a string instead of a number and then a valid number.
+\item[4.] During the prediction phase, PROV-22 submits a valid number.
+\item[5.] After the maximum prediction time, PROV-20 submits a prediction.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item[1.] The prediction from PROV-18 during the acceptance period is rejected.
+\item[2.] The prediction of 10.0 from PROV-18 is accepted, and its second prediction is rejected.
+\item[3.] The string from PROV-19 is rejected for not matching the output schema, and its second prediction is
+rejected.
+\item[4.] The prediction from PROV-22 is rejected because it did not accept REQ-10.
+\item[5.] The late prediction from PROV-20 is rejected.
+\end{itemize}
+
+Test Case Derivation: FR25 rejects predictions sent before the acceptance period ends and predictions from
+providers that did not accept. FR27 allows one prediction per provider, including one rejected
+under FR28 for not matching the output schema. FR29 rejects predictions after the prediction phase ends.
+
+How test will be performed: Send each prediction at the stated time, using the on-chain clock to wait for the
+end of each period. Verify that each is accepted or rejected as expected, and that the recorded prediction of
+PROV-18 is 10.0.
+
+\item{ST-PRED-3\\}
+
+Control: Automatic
+
+Initial State: The system is running on Solana Devnet. TASK-10 requires 3 valid predictions and allows at most 4
+accepting providers. PROV-23 to PROV-26 have accepted inference request REQ-11 for TASK-10, which has a payment
+of 40 SOL, so the per-provider compensation is 10 SOL.
+
+Input:
+\begin{itemize}
+\item[1.] PROV-23 and PROV-24 submit valid predictions.
+\item[2.] PROV-25 submits a prediction that does not match the output schema.
+\item[3.] PROV-26 does not submit a prediction.
+\item[4.] The maximum prediction time elapses.
+\end{itemize}
+
+Output:
+\begin{itemize}
+\item[1.] Both predictions are accepted, and once REQ-11 is cancelled, PROV-23 and PROV-24 each receive 10 SOL
+of compensation.
+\item[2.] The prediction from PROV-25 is rejected and does not count toward the 3 valid predictions. Half of
+the 20 SOL compensation is taken from its reserved stake.
+\item[3.] The other half of the 20 SOL compensation is taken from the reserved stake of PROV-26.
+\item[4.] REQ-11 is cancelled with no aggregated result, the requester gets the 40 SOL back, and all remaining
+reservations for REQ-11 are released.
+\end{itemize}
+
+Test Case Derivation: FR30 cancels a request with fewer valid predictions than the task requires and returns the
+payment, and under FR28 the rejected prediction does not count. FR33 pays each provider with a valid prediction
+the per-provider compensation from the providers without one, and FR32 releases the remaining reservations.
+
+How test will be performed: Send the predictions and wait until the on-chain clock passes the maximum prediction
+time. Verify that REQ-11 is cancelled, and compare the wallet balances and reservations on Solana Devnet with the
+expected outputs.
+
+\end{enumerate}
 
 \subsubsection{Reputation, Rewards, and Penalties}
 

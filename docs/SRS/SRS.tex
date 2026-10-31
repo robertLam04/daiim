@@ -1089,7 +1089,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskDefinition}:] Each inference task definition shall specify a name, problem description, inference category or type, input schema, and output schema. Where applicable, it shall also specify the metric(s) used to evaluate predictions. The task creator may optionally provide training data, or a reference to training data, for providers to use when training or adapting models for the task.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskMinimumProviders}:] Each inference task definition shall specify the minimum number of participating providers required to fulfill an inference request for the task.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskMinimumProviders}:] Each inference task definition shall specify the minimum and maximum number of participating providers required to fulfill an inference request for the task.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumProvidersFloor}:] The system shall reject inference task definitions that specify a minimum number of participating providers less than 2.
 
@@ -1141,19 +1141,25 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumAcceptance}:] If fewer than the task's minimum number of participating providers have accepted an inference request when the acceptance period ends, the system shall cancel the request and return the requester's escrowed payment.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestInputDistribution}:] The system shall make the request's input data, or information needed to access it, available to all providers that accepted the request during the acceptance period.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestInputDistribution}:] Once the acceptance period has ended, the system shall make the request's input data, or information needed to access it, available to all providers that accepted the request during the acceptance period.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionPhaseStart}:] Upon expiration of the acceptance period, the system shall begin collecting inferences from the set of providers that accepted the request. Predictions returned from inference providers that are not participating will be rejected.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionPhaseStart}:] Upon expiration of the acceptance period, the system shall begin collecting inferences from the set of providers that accepted the request. Predictions returned from inference providers that are not participating will be rejected. Predictions returned before the acceptance period elapses will be rejected.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionSubmission}:] The system shall allow each provider that accepted an inference request to submit a prediction for that request during the prediction phase.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_OnePredictionPerProvider}:] The system shall accept at most one prediction from each provider for a given inference request.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_OnePredictionPerProvider}:] The system shall allow at most one prediction to be submitted from each provider for a given inference request. If a submitted prediction is rejected, the provider of the rejected submission may not resubmit.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionValidation}:] The system shall reject predictions that do not conform to the task’s output schema. Rejected predictions shall not count toward the minimum number of participating providers required to submit predictions for an inference request.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionPhaseEnd}:] The system shall end the prediction phase when it has received a prediction from every provider that accepted the request or when the maximum prediction time has elapsed, whichever occurs first. The system shall not accept predictions after the phase has ended.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumPredictions}:] When the prediction phase ends, if fewer than the task’s minimum required number of valid predictions have been received, the system shall cancel the inference request and return the requester’s escrowed payment.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_StakeReservation}:] When a provider accepts an inference request, the system shall reserve $(\text{MINIMUM\_TASK\_PROVIDERS} - 1) \times \text{PROPOSED\_PAYMENT\_AMOUNT}$ of the provider's stake for the task for that request, where MINIMUM\_TASK\_PROVIDERS is the task's minimum number of participating providers (\rref{FR_TaskMinimumProviders}) and PROPOSED\_PAYMENT\_AMOUNT is the request's per-provider compensation. Reserving stake shall not transfer any tokens. The system shall reject the acceptance if the provider's stake for the task, minus all of the provider's existing reservations for the task, minus the new reservation, would be less than MINIMUM\_PROVIDER\_STAKE.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_StakeReservationRelease}:] When an inference request is completed or cancelled, the system shall release every reservation made for it under \rref{FR_StakeReservation}, except for any amount paid out under \rref{FR_CancellationCompensation}.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_CancellationCompensation}:] When an inference request is cancelled under \rref{FR_MinimumPredictions}, the system shall pay PROPOSED\_PAYMENT\_AMOUNT to each provider that submitted a valid prediction for the request. The total shall be taken in equal parts from the reservations of the accepting providers whose prediction was rejected under \rref{FR_PredictionValidation} or who submitted no prediction.
 
 \end{itemize}
 
@@ -1881,7 +1887,7 @@ Their values are defined in this section for easy maintenance.}
 
 \begin{itemize}
 \item USABILITY\_COMPLETION\_RATE: the minimum fraction of usability test participants who must complete each task without assistance (\nfrref{NFR_Usability}). To be determined.
-\item MINIMUM\_PROVIDER\_STAKE: the minimum stake a provider must maintain for an inference task to remain registered for that task (\rref{FR_ProviderMinimumStakeUnregistration}). To be determined.
+\item MINIMUM\_PROVIDER\_STAKE: the minimum stake a provider must maintain for an inference task to remain registered for that task (\rref{FR_ProviderMinimumStakeUnregistration}, \rref{FR_StakeReservation}). To be determined.
 \item MAX\_REPUTATION\_PENALTY: the maximum reputation decrease a provider can receive for a single inference request (\rref{FR_ReputationPenaltyCap}). To be determined.
 \item SLASH\_FRACTION: the fraction of a provider's stake slashed for an invalid prediction or for not submitting a prediction (\rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}). To be determined.
 \item REPEAT\_OFFENSE\_COUNT: the number of slashing offences that causes a provider to be unregistered (\rref{FR_SlashRepeatedOffenses}). To be determined.
