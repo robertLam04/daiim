@@ -91,45 +91,46 @@ This document ... \wss{provide an introductory blurb and roadmap of the
 
 \subsection{Summary}
 
-\wss{Say what software is being tested.  Give its name and a brief overview of
-  its general functions.}
+The software being tested is DAIIM (Decentralized Artificial Intelligence Inference Marketplace), a decentralized platform that allows users to submit artificial intelligence (AI) inference requests and receive aggregated predictions from multiple independent inference providers.
+The system enables task requesters to submit inference requests for supported machine learning tasks, while inference providers can register for tasks, contribute predictions, and receive compensation for their participation. The platform uses smart contracts deployed on a public blockchain to manage core marketplace operations, including provider registration, staking, request payments, result aggregation, reputation updates, and reward distribution.
+The system also includes a web-based user interface for interacting with the marketplace, an off-chain backend for coordinating inference requests and communicating with providers, and a database for storing relevant off-chain information. By combining on-chain and off-chain components, DAIIM aims to provide a transparent and decentralized marketplace that reduces reliance on centralized AI inference providers.
+
 
 \subsection{Objectives}
 
-\wss{State what is intended to be accomplished.  The objective will be around
-  the qualities that are most important for your project.  You might have
-  something like: ``build confidence in the software correctness,''
-  ``demonstrate adequate usability.'' etc.  You won't list all of the qualities,
-  just those that are most important.}
+The objective of this Verification and Validation (V\&V) plan is to build confidence in the correctness, reliability, and usability of the DAIIM platform by verifying that its implemented components satisfy the requirements defined in the Software Requirements Specification (SRS).
 
-\wss{You should also list the objectives that are out of scope.  You don't have 
-the resources to do everything, so what will you be leaving out.  For instance, 
-if you are not going to verify the quality of usability, state this.  It is also 
-worthwhile to justify why the objectives are left out.}
+Verification will focus on ensuring that the marketplace correctly handles the submission and validation of inference requests, provider registration and participation, prediction collection, result aggregation, and financial settlement. Particular attention will be given to the interactions between the on-chain smart contracts and off-chain components, ensuring that transactions and marketplace state changes are handled consistently and correctly.
 
-\wss{The objectives are important because they highlight that you are aware of 
-limitations in your resources for verification and validation.  You can't do everything, 
-so what are you going to prioritize?  As an example, if your system depends on an 
-external library, you can explicitly state that you will assume that external library 
-has already been verified by its implementation team.}
+
+Reliability will also be an important focus of the V\&V activities. Testing will examine whether the system can produce aggregated results when multiple providers participate, including scenarios where some providers are unavailable or submit inaccurate predictions. This will help evaluate whether the aggregation and reputation mechanisms behave as intended under different provider conditions.
+
+Usability validation will focus on whether users can interact with the marketplace without requiring extensive knowledge of blockchain technology or machine learning. This includes evaluating whether users can submit inference requests, authorize transactions, monitor request progress, and understand the resulting predictions and associated information.
+
+The V\&V plan will primarily be derived from the Software Requirements Specification (SRS), which defines the functional and non-functional requirements used to construct system-level test cases. The Hazard Analysis will also guide testing priorities by identifying potential failures involving inference reliability, transaction integrity, security, availability, and incentive mechanisms. System architecture and design documentation will further support test development by identifying component interactions, data flows, and interfaces that require verification.
+
+Due to project time and resource constraints, certain verification activities will be outside the scope of this plan. The internal correctness of external dependencies, such as the blockchain network, wallet software, and third-party infrastructure, will not be independently verified. Instead, testing will focus on ensuring that DAIIM integrates with and uses these dependencies correctly. Similarly, the internal implementation and predictive capabilities of individual providers' machine learning models will not be independently validated. Testing will instead focus on the collection and aggregation of provider predictions and the resulting marketplace behaviour.
+
 
 \subsection{Custom Documents}
 
-\wss{Summarize the CDs (Custom Documents) that were tackled by this project.  CDs 
-can include usability testing, code walkthroughs, user documentation, formal
-proof, GenderMag personas, Design Thinking, etc.  CDs should have already
-been approved by the course instructor as included in your problem statement.
-You can use a pull request to update your CDs (in TeamComposition.csv or
-Repos.csv) if your plan changes as a result of the VnV planning exercise.}
+The project includes two approved Custom Documents (CDs):
+
+\begin{itemize}
+    \item \textbf{Cognitive Walkthrough:} A cognitive walkthrough will be conducted using a wireframe prototype of the planned application interface, from the perspective of inference requesters. This activity will help identify usability issues and areas of ambiguity in the user workflow. The findings will support validation of whether the interface is understandable and learnable, particularly for users with limited experience in blockchain technology or machine learning.
+
+    \item \textbf{Business Plan:} A business plan will be developed following the completion of a successful proof of concept. It will describe the proposed business model and market strategy for DAIIM, including the potential market need, cost breakdown, competition, tokenomics, and execution plan. Although this document does not directly contribute to software verification, it provides additional context regarding the intended operation and long-term objectives of the marketplace.
+\end{itemize}
 
 \subsection{Relevant Documentation}
 
-\wss{Reference relevant documentation.  This will definitely include your SRS
-  and your other project documents (design documents, like MG, MIS, etc).  You
-  can include these even before they are written, since by the time the project
-  is done, they will be written.  You can create BibTeX entries for your
-  documents and within those entries include a hyperlink to the documents.}
+The following documents provide essential background and guidance for the V\&V activities:
 
+\begin{enumerate}
+    \item \textbf{Software Requirements Specification (SRS):} The SRS defines the functional and non-functional requirements of DAIIM. It serves as the primary reference for developing system-level test cases and determining the expected behaviour of the implemented software.
+
+    \item \textbf{Hazard Analysis (HA):} The Hazard Analysis identifies potential system-level hazards, their causes, and their consequences. It helps prioritize verification activities toward areas where failures could have significant effects, including inference accuracy and reliability, transaction integrity, provider security, and financial settlement.
+\end{enumerate}
 \citet{SRS}
 
 \wss{Don't just list the other documents.  You should explain why they are relevant and 
