@@ -154,16 +154,18 @@ how they relate to your VnV efforts.}
     \hline
     \textbf{Team Member} & \textbf{Project Role} & \textbf{VnV Responsibilities} \\
     \hline
-    Robert Lam & Data & Data \\
-    Nathan Hum & Data & Data \\
-    Aidan Lao & Data & Data \\
-    Keira Laskoski & Data & Data \\
-    Dr. Mohamed Hassan & Supervisor & Technical expert  \\
+    Robert Lam & Team Lead & Schedules reviews, demos and the usability sessions. Runs the structured reviews with Dr. Hassan. Decides when a deliverable’s testing is done. \\
+    Nathan Hum & DevOps and Test Tooling Lead & Maintains GitHub Actions, the linters, coverage reports and branch protection. Maintains the local validator, the funded Devnet test wallets, and shared test fixtures. \\
+    Aidan Lao & QA and Inspection Lead & Keeps the review checklists and runs the checklist inspections. Assigns cross-reviews so nobody verifies their own work, for example the reference implementation and the security audit. Makes sure every pull request gets its reviewers and every issue gets closed. \\
+    Keira Laskoski & Traceability and Documentation Manager & Records the defects and decisions from reviews. Keeps the traceability tables up to date. Checks that FR numbers match between the SRS and VnV after every revision. Create and run the Cognitive Walkthrough. \\
+    Dr. Mohamed Hassan & Supervisor and Stakeholder Representative & Technical expert and advisor. Reviews team documents and offer technical insight and expertise. Make suggestions from the point of view of the stakeholder. \\
     \hline
   \end{tabular}
   \caption{Verification and Validation Team Roles}
   \label{tab:mytable}
 \end{table}
+
+All members, aside from the supervisor, will share the responsibilities of designing the system, writing tests, and developing the system.
 
 
 \subsection{SRS Verification}
@@ -197,7 +199,11 @@ issue tracker?}
   \item \textbf{Checklist-Based Inspection: } The team will prepare a checklist for necessary 
   characteristics for a high quality issue. All requirements will be reviewed by team members 
   to ensure each possesses these characteristics.
-
+  \item \textbf{Consistency and Traceability Check: } The team will check that the use cases agree with the
+  functional requirements, and that every functional requirement appears in the traceability tables. For
+  example, the use case for accepting an inference request must describe the same staking behaviour as the
+  staking and penalty requirements. The team will also check that requirement numbers in the SRS match the
+  numbers used in this plan after each revision of the SRS.
 \end{itemize}
 
 \subsection{Design Verification}
@@ -212,13 +218,15 @@ issue tracker?}
   \item \textbf{Peer Review and Inspection: }
   Classmates and primary reviewers will be 
   recruited to perform an adhoc review of the first edition of the design document after the course-imposed deadline. 
-  All criticisms will be documented 
-  as issues and addressed by a member of the team. A minimum of 5 issues created based on reviews 
+  All criticisms will be documented as issues and addressed by a member of the team. A minimum of 5 issues created based on reviews 
   from peers and primary reviewers will be the objective.
   \item \textbf{Team Member Review: } 
   All team members will review the design document to ensure the design meets the requirements, is feasible, and is properly decomposed.
   \item \textbf{Checklist-Based: } 
-
+  The team will check the design documents against a checklist. The checklist will confirm that each
+  functional and non-functional requirement is assigned to at least one module, that each module's interface
+  provides the access programs needed to satisfy its requirements, and that each on-chain instruction checks
+  the signatures and balances required by the safety requirements (FR.SA.1 to FR.SA.10).
 \end{itemize}
 
 \subsection{Verification and Validation Plan Verification}
@@ -233,11 +241,20 @@ verified.  Techniques for this include review and mutation testing.}
 \begin{itemize}
   \item \textbf{Structured Review with Supervisor: } 
   A structured review of the VnV plan will be performed with the supervisor, once completed. Team members will
-  describe key components of the plan and 
+  describe key components of the plan and the test environments they rely on, such as Solana Devnet and the
+  simulation harness, and ask the supervisor whether the tests check the behaviour that matters most to
+  requesters and providers. Feedback will be recorded as GitHub issues.
   \item \textbf{Peer Review and Inspection: }
+  Classmates and primary reviewers will be recruited to perform an ad hoc review of the VnV plan. All
+  criticisms will be documented as issues and addressed by a member of the team.
   \item \textbf{Team Member Review: }
+  Each team member will review the tests in a section they did not write, checking that the expected outputs
+  follow from the requirements and that each test can be run as described. Tests that rely on Solana Devnet
+  will be reviewed for timing assumptions, such as acceptance periods and prediction times.
   \item \textbf{Checklist-Based Inspection: } 
-
+  The team will check that every functional and non-functional requirement in the SRS is named in the test
+  case derivation of at least one test, and record the result in the traceability tables. Requirements that
+  are only partly tested will be listed so that the missing cases can be added.
 \end{itemize}
 
 \subsection{Implementation Verification}
@@ -252,6 +269,16 @@ verified.  Techniques for this include review and mutation testing.}
 \wss{The final class presentation in CAS 741 could be used as a code
 walkthrough.  There is also a possibility of using the final presentation (in
 CAS741) for a partial usability survey.}
+
+
+\begin{itemize}
+  \item \textbf{Unit and System Tests: } All functional and non-functional requirements will be 
+  tested according to the described system tests (Section 4) and unit tests (Section 5) of this document. 
+  \item \textbf{Static Analysis and Linters: } The team will enforce code standards using linters and static analysers.
+  \item \textbf{Code Review: } Every change will be merged into \texttt{main} through a pull request reviewed
+  and approved by at least one other team member, implemented through CI/CD pipeline on Github. Reviewers will check the coding standards that linters cannot, 
+  such as documentation comments, and that the change includes tests.
+\end{itemize}
 
 \subsection{Automated Testing and Verification Tools}
 
@@ -269,6 +296,24 @@ that document.}
 
 \wss{The details of this section will likely evolve as you get closer to the
   implementation.}
+
+The team will use the following tools. The coding standards and the tools that enforce them are set out in the
+Development Plan.
+
+\begin{itemize}
+  \item \textbf{Anchor and Solana: } Used to test the on-chain programs. The
+  tests set up accounts, run each instruction, and check account state before and after the transaction.
+  \item \textbf{Solana Devnet: } Used for the system tests that need a real network, with test wallets funded
+  with Devnet SOL.
+  \item \textbf{Vitest: } Used for the unit tests of the React frontend and other TypeScript code.
+  \item \textbf{Automated Browser Tests: } Used to run the main user flows in Chrome, Firefox, and Edge,
+  signing transactions with a test wallet signer. Safari is tested by hand.
+  \item \textbf{Linters and Formatters: } ESLint for TypeScript, and \texttt{cargo clippy} for Rust.
+  \item \textbf{Continuous Integration (CI): } Github actions are implemented to run automated tests, linters, and builds on every pull request. Branch protection
+  on \texttt{main} prevents merging while any check fails.
+  \item \textbf{Code Coverage: } Vitest's coverage report for TypeScript and \texttt{cargo llvm-cov} for Rust.
+  The team aims for at least 80\% line coverage of the main logic modules.
+\end{itemize}
 
 \subsection{Software Validation}
 
@@ -289,6 +334,26 @@ The feedback from your supervisor will be very useful for improving your project
 as a Rev 0 demo for the supervisor.}
 
 \wss{This section might reference back to the SRS verification section.}
+
+Validation checks that DAIIM meets the needs of its requesters and providers, not only that it matches the
+SRS. There is no external data set for validating DAIIM, so validation relies on the supervisor, on users, and
+on an independent reference implementation of the aggregation algorithm.
+
+\begin{itemize}
+  \item \textbf{Supervisor Demonstration: } The team will demonstrate the system to Dr. Hassan shortly after
+  the scheduled Rev 0 demo. The demonstration will follow a requester and a group of providers through a
+  complete inference request on Solana Devnet, including at least one failure case, such as a request
+  cancelled for too few providers. The supervisor's feedback will be recorded as GitHub issues, and any change
+  to the requirements will be made in the SRS.
+  \item \textbf{Result Validation: } The simulation in test NFR-SIM-1 will compare every aggregated result
+  with a reference implementation of the aggregation algorithm written by a team member who did not write the
+  system's version. The worked examples in the SRS will be included, so that the results can also be checked
+  by hand.
+  \item \textbf{Requirements Review after Validation: } After the Rev-0 demonstration, the
+  team will review the SRS with the supervisor, as in the SRS verification above, to confirm that the
+  requirements still describe what requesters and providers need, and update the SRS and this plan if they do
+  not.
+\end{itemize}
 
 \section{System Tests}
 
