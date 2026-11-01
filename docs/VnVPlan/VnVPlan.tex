@@ -125,7 +125,7 @@ The remainder of this document is organized as follows. The
 General Information section summarizes the system, defines the
 objectives of the V\&V activities, and identifies the related project
 documents. The Plan section describes the V\&V team and the planned
-approaches for verifying the SRS, the system design, this V\&V plan, the implmentation
+approaches for verifying the SRS, the system design, this V\&V plan, the implementation
 and the tools used in the validation process. 
 The System Tests section specifies the tests of the
 integrated system, including tests for functional and non-functional
@@ -220,7 +220,7 @@ All members, aside from the supervisor, will share the responsibilities of desig
 
 
 \subsection{SRS Verification}
-The SRS document will be verified to ensure requirements are unambiguous, verfiable, and complete.
+The SRS document will be verified to ensure requirements are unambiguous, verifiable, and complete.
 
 \wss{List any approaches you intend to use for SRS verification.  This may
   include ad hoc feedback from reviewers, like your classmates (like your
@@ -240,11 +240,11 @@ issue tracker?}
   with the supervisor and requirements will be reviewed. The team will prepare questions 
   in advance, specifically focusing on the 
   \item \textbf{Ad Hoc Peer Review and Inspection: } Classmates and primary reviewers will be 
-  recruited to perform an adhoc review of the SRS document. All criticisms will be documented 
+  recruited to perform an ad hoc review of the SRS document. All criticisms will be documented 
   as issues and addressed by a member of the team. A minimum of 5 issues created based on reviews 
   from peers will be the objective.
-  \item \textbf{Issue Tracker for Traceability: } As stated above, a Github issue tracker will be 
-  used to trace criticisms and suggestions for the amilioration of the SRS document. All issues 
+  \item \textbf{Issue Tracker for Traceability: } As stated above, a GitHub issue tracker will be 
+  used to trace criticisms and suggestions for the amelioration of the SRS document. All issues 
   will be reviewed, changes to the document will be implemented if necessary. All issues will 
   addressed with a comment and closed.
   \item \textbf{Checklist-Based Inspection: } The team will prepare a checklist for necessary 
@@ -268,7 +268,7 @@ issue tracker?}
 \begin{itemize}
   \item \textbf{Peer Review and Inspection: }
   Classmates and primary reviewers will be 
-  recruited to perform an adhoc review of the first edition of the design document after the course-imposed deadline. 
+  recruited to perform an ad hoc review of the first edition of the design document after the course-imposed deadline. 
   All criticisms will be documented as issues and addressed by a member of the team. A minimum of 5 issues created based on reviews 
   from peers and primary reviewers will be the objective.
   \item \textbf{Team Member Review: } 
@@ -327,7 +327,7 @@ CAS741) for a partial usability survey.}
   tested according to the described system tests (Section 4) and unit tests (Section 5) of this document. 
   \item \textbf{Static Analysis and Linters: } The team will enforce code standards using linters and static analysers.
   \item \textbf{Code Review: } Every change will be merged into \texttt{main} through a pull request reviewed
-  and approved by at least one other team member, implemented through CI/CD pipeline on Github. Reviewers will check the coding standards that linters cannot, 
+  and approved by at least one other team member, implemented through CI/CD pipeline on GitHub. Reviewers will check the coding standards that linters cannot, 
   such as documentation comments, and that the change includes tests.
 \end{itemize}
 
@@ -360,7 +360,7 @@ Development Plan.
   \item \textbf{Automated Browser Tests: } Used to run the main user flows in Chrome, Firefox, and Edge,
   signing transactions with a test wallet signer. Safari is tested by hand.
   \item \textbf{Linters and Formatters: } ESLint for TypeScript, and \texttt{cargo clippy} for Rust.
-  \item \textbf{Continuous Integration (CI): } Github actions are implemented to run automated tests, linters, and builds on every pull request. Branch protection
+  \item \textbf{Continuous Integration (CI): } GitHub Actions are implemented to run automated tests, linters, and builds on every pull request. Branch protection
   on \texttt{main} prevents merging while any check fails.
   \item \textbf{Code Coverage: } Vitest's coverage report for TypeScript and \texttt{cargo llvm-cov} for Rust.
   The team aims for at least 80\% line coverage of the main logic modules.
@@ -413,7 +413,7 @@ the contents of the subsections.}
 
 This section describes the tests that will be performed to verify that the entire integrated
 system meets the functional and non-functional requirements specified in the \href{../SRS/SRS.pdf}{SRS}. The
-system test cases below are be descrbed by the following characteristics:
+system test cases below are described by the following characteristics:
 \begin{itemize}
   \item Control: Is this test manual or automatic?
   \item Initial State: What is the state of the system before the test is performed?
@@ -463,13 +463,12 @@ signature.
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] For the approved signature from \texttt{EXT-WALLET-01}, the user is
-authenticated as \texttt{EXT-USER-01}, and that user's profile and
-authenticated features are available.
-\item[2.] For the approved signature from \texttt{EXT-WALLET-02}, the user is
-authenticated as \texttt{EXT-USER-02}, and that user's profile and
-authenticated features are available.
-\item[3.] The user remains unauthenticated, no profile or authenticated features become available.
+\item[1.] \texttt{EXT-WALLET-01} authenticates as \texttt{EXT-USER-01}, whose
+profile and authenticated features are accessible.
+\item[2.] \texttt{EXT-WALLET-02} authenticates as \texttt{EXT-USER-02}, whose
+profile and authenticated features are accessible.
+\item[3.] Rejecting the signature leaves the user unauthenticated, with no
+profile or authenticated features accessible.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_WalletAuthentication} requires the authentication
@@ -504,14 +503,12 @@ signature again.
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] After the first approved signature, the user is authenticated and a
-profile is associated with \texttt{EXT-WALLET-03}. The system grants the user
-access to authenticated features.
-\item[2.] Sign-out ends the authenticated session; the user cannot access the
-profile or authenticated features while signed out.
-\item[3.] After the second approved signature, the same profile associated with
-\texttt{EXT-WALLET-03} is displayed. No second profile is created for the
-wallet. The system grants the user access to authenticated features.
+\item[1.] The first approved signature authenticates the user and associates a
+profile with \texttt{EXT-WALLET-03}; the authenticated features are accessible.
+\item[2.] Signing out ends the authenticated session; the profile and
+authenticated features are inaccessible.
+\item[3.] The second approved signature authenticates the user with the same
+profile associated with \texttt{EXT-WALLET-03}; no second profile exists.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_WalletAuthentication} requires the system to
@@ -561,13 +558,14 @@ method.
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] For each of the three supported identities, the system creates
-one embedded wallet associated with the user's account, displays its
-corresponding address and a creation confirmation, authenticates the user, and
-makes the associated profile available.
-\item[2.] For \texttt{not-an-email}, the system reports an input error, displays no
-wallet-creation confirmation or address, and does not authenticate the user or
-create a wallet.
+\item[1.] \texttt{new.email@example.test} creates one embedded wallet
+\texttt{EMB-WALLET-NEW-01} and authenticates the associated user profile.
+\item[2.] \texttt{+15555550101} creates one embedded wallet
+\texttt{EMB-WALLET-NEW-02} and authenticates the associated user profile.
+\item[3.] \texttt{social-new-01} creates one embedded wallet
+\texttt{EMB-WALLET-NEW-03} and authenticates the associated user profile.
+\item[4.] \texttt{not-an-email} is rejected; no wallet or authenticated session
+is created.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_EmbeddedWalletCreation} requires successful creation
@@ -611,18 +609,15 @@ supported social sign-in method.
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] For \texttt{returning.email@example.test}, the system authenticates
-\texttt{EMB-RETURN-01} and displays its existing profile and
+\item[1.] \texttt{returning.email@example.test} authenticates
+\texttt{EMB-RETURN-01} with its existing profile and
 \texttt{EMB-WALLET-RETURN-01}.
-\item[2.] For \texttt{+15555550102}, the system authenticates
-\texttt{EMB-RETURN-02} and displays its existing profile and
-\texttt{EMB-WALLET-RETURN-02}.
-\item[3.] For social-account subject \texttt{social-return-03}, the system
-authenticates \texttt{EMB-RETURN-03} and displays its existing profile and
-\texttt{EMB-WALLET-RETURN-03}.
-\item[4.] For \texttt{locked.user@example.test}, the system reports authentication
-failure and does not create an authenticated session or grant access to a
-profile.
+\item[2.] \texttt{+15555550102} authenticates \texttt{EMB-RETURN-02} with its
+existing profile and \texttt{EMB-WALLET-RETURN-02}.
+\item[3.] \texttt{social-return-03} authenticates \texttt{EMB-RETURN-03} with
+its existing profile and \texttt{EMB-WALLET-RETURN-03}.
+\item[4.] \texttt{locked.user@example.test} remains unauthenticated, with no
+profile access or new account.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_WalletAuthentication} requires each verified
@@ -680,15 +675,14 @@ with a numerical regression task.
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] For the valid definition with authorization approved, the task is created
-with the submitted definition, and the corresponding Solana Devnet transaction
-succeeds with the task-creation instruction.
-\item[2.] For the definition with fewer than 2 minimum providers, the system
-rejects the definition, and no task is created.
-\item[3.] For the definition with a schema incompatible with numerical regression,
-the system rejects the definition, and no task is created.
-\item[4.] For the valid definition with authorization rejected, no task is created
-and no successful task-creation transaction occurs.
+\item[1.] The valid definition is created with the submitted values, and its
+authorized transaction succeeds.
+\item[2.] The definition with fewer than 2 minimum providers is rejected, and
+no task is created.
+\item[3.] The definition with an incompatible schema is rejected, and no task
+is created.
+\item[4.] The authorization-rejected definition is not created, and no
+successful task-creation transaction occurs.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_InferenceTaskDefinition} requires a task name,
