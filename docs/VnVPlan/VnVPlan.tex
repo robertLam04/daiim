@@ -50,8 +50,9 @@
 \midrule
 Oct 26 & 1.0 & Robert: Added system tests for authentication and task creation\\
 Oct 27 & 1.1 & Aidan: Added system tests for reputation and rewards, penalties, transparency, data handling, and safety; added non-functional tests, usability survey, test symbolic parameters, and reflection\\
-Nov 1 & 1.2 & Robert: Fixed formatting and typos. Added acronyms table. Added intro blurb.\\
-\bottomrule
+Oct 28 & 1.2 & Nathan: Added system tests for procder registraton and staking as well as inference requests and section 3, general information\\
+Nov 1 & 1.3 & Robert: Fixed formatting and typos. Added acronyms table. Added intro blurb.\\
+Nov 1 & 1.4 & Nathan: Edited some system tests for provider registration and staking.\\
 \end{tabularx}
 \caption{Revision History}
 \end{table}
@@ -775,7 +776,7 @@ into escrow.
 \textbf{Initial State:} The application is running in a supported browser. A provider
 account is authenticated and connected to a compatible wallet. The provider
 is not registered for \texttt{TASK-02}. The task requires a minimum stake of
-tokens, but the provider's wallet contains fewer than 100 tokens.
+tokens, but the provider's wallet contains fewer than the minimum amount of tokens.
 
 \textbf{Input:}
 \begin{itemize}
@@ -801,7 +802,7 @@ assumptions require the system to verify that sufficient funds are available
 before processing the transaction.
 
 \textbf{How test will be performed:} Authenticate a provider account with fewer than
-100 tokens and navigate to \texttt{TASK-02}. Attempt to register for the task.
+the required minimum amount of tokens and navigate to \texttt{TASK-02}. Attempt to register for the task.
 Verify that the system displays an insufficient-balance error, that no
 transaction transfers tokens into escrow, and that the provider does not
 appear in the task's registered-provider list.
