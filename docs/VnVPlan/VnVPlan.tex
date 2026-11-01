@@ -1,9 +1,13 @@
-\documentclass[12pt, titlepage]{article}
+\documentclass[12pt]{article}
 
 \usepackage{booktabs}
+\usepackage{longtable}
 \usepackage{tabularx}
 \usepackage{amsmath}
+\usepackage{comment}
+\usepackage{xr}
 \usepackage{hyperref}
+\usepackage{fullpage}
 \hypersetup{
     colorlinks,
     citecolor=blue,
@@ -18,6 +22,15 @@
 \renewcommand{\todo}[1]{}
 \input{../Common.text}
 
+% Import the SRS labels so references remain correct when requirements are
+% inserted or reordered. The labels themselves are the stable requirement IDs.
+\externaldocument{../SRS/SRS}
+\newcommand{\srref}[1]{SR\ref{#1}}
+\newcommand{\ucref}[1]{UC\ref{#1}}
+\newcommand{\rref}[1]{FR\ref{#1}}
+\newcommand{\nfrref}[1]{NFR\ref{#1}}
+\newcommand{\saref}[1]{\ref{#1}}
+
 \begin{document}
 
 \title{System Verification and Validation Plan for \progname{}} 
@@ -30,13 +43,18 @@
 
 \section*{Revision History}
 
+\begin{table}[htbp]
+\centering
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Oct 26 & 1.0 & Added system tests for authentication and task creation\\
+Oct 26 & 1.0 & Robert: Added system tests for authentication and task creation\\
 Oct 27 & 1.1 & Aidan: Added system tests for reputation and rewards, penalties, transparency, data handling, and safety; added non-functional tests, usability survey, test symbolic parameters, and reflection\\
+Nov 1 & 1.2 & Robert: Fixed formatting and typos. Added acronyms table. Added intro blurb.\\
 \bottomrule
 \end{tabularx}
+\caption{Revision History}
+\end{table}
 
 ~\\
 \wss{The intention of the VnV plan is to increase confidence in the software.
@@ -60,33 +78,64 @@ in.}
 \listoftables
 \wss{Remove this section if it isn't needed}
 
-\listoffigures
-\wss{Remove this section if it isn't needed}
-
 \newpage
 
 \section{Symbols, Abbreviations, and Acronyms}
 
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{l l} 
-  \toprule		
-  \textbf{symbol} & \textbf{description}\\
-  \midrule 
-  T & Test\\
-  \bottomrule
-\end{tabular}\\
-
-\wss{symbols, abbreviations, or acronyms --- you can simply reference the SRS
-  \citep{SRS} tables, if appropriate}
-
-\wss{Remove this section if it isn't needed}
+\begin{longtable}{p{0.25\textwidth} p{0.65\textwidth}}
+\caption{Symbols, Abbreviations, and Acronyms}\\
+\toprule
+Term & Definition\\
+\midrule
+\endfirsthead
+\toprule
+Term & Definition\\
+\midrule
+\endhead
+CI/CD & Continuous Integration and Continuous Delivery, the automated process used to build, test, and prepare software changes for delivery.\\
+FR & Functional Requirement, a requirement describing a behaviour the system must provide.\\
+HA & Hazard Analysis, the analysis of potential system hazards, their causes, and their consequences.\\
+HTTP & Hypertext Transfer Protocol, a protocol for transferring data between clients and servers.\\
+NFR & Non-Functional Requirement, a requirement describing a quality, constraint, or operational property of the system.\\
+NIST & National Institute of Standards and Technology, a United States government organization that publishes cybersecurity and technology guidance.\\
+OWASP & Open Worldwide Application Security Project, an organization that publishes application-security guidance and testing resources.\\
+PIPEDA & Personal Information Protection and Electronic Documents Act, a Canadian federal act governing the collection, use, and disclosure of personal information.\\
+QA & Quality Assurance, the planned activities used to assess and improve software quality.\\
+RPC & Remote Procedure Call, a mechanism used to invoke an operation on a remote service, such as a blockchain node.\\
+SDK & Software Development Kit, a collection of tools and libraries used to develop software for a platform or service.\\
+ST & System Test, an integrated test case that verifies system behaviour against one or more requirements.\\
+TLS & Transport Layer Security, a cryptographic protocol for protecting data in transit and supporting authentication and integrity.\\
+Web3 & Applications built on blockchain networks, where users interact with the system through their own blockchain accounts and authorize actions by signing transactions.\\
+\bottomrule
+\end{longtable}
 
 \newpage
 
 \pagenumbering{arabic}
 
-This document ... \wss{provide an introductory blurb and roadmap of the
-  Verification and Validation plan}
+\section{Introduction}
+
+This document presents the Verification and Validation (V\&V) Plan for DAIIM.
+It describes the activities that will be used to increase confidence that the
+implemented system satisfies its functional and non-functional requirements. The plan
+identifies the documents, people, tools, environments, and testing methods that
+will support verification and validation throughout development.
+
+The remainder of this document is organized as follows. The
+General Information section summarizes the system, defines the
+objectives of the V\&V activities, and identifies the related project
+documents. The Plan section describes the V\&V team and the planned
+approaches for verifying the SRS, the system design, this V\&V plan, the implementation
+and the tools used in the validation process. 
+The System Tests section specifies the tests of the
+integrated system, including tests for functional and non-functional
+requirements and the traceability between requirements and test cases. The
+Unit Test Description section outlines the scope and planned
+organization of unit-level testing and its relationship to the system
+modules. The appendices provide symbolic test parameters, usability
+survey questions, the Generative AI Use Disclosure, and a reflection on the
+V\&V deliverable.
 
 \section{General Information}
 
@@ -150,9 +199,10 @@ how they relate to your VnV efforts.}
   You should do more than list names.  You should say what each person's role is
   for the project's verification.  A table is a good way to summarize this information.}
 
-  \begin{table}[h]
+  \begin{table}[htbp]
   \centering
-  \begin{tabular}{|l|l|l|}
+  \small
+  \begin{tabularx}{\textwidth}{|p{2.6cm}|p{3.1cm}|>{\raggedright\arraybackslash}X|}
     \hline
     \textbf{Team Member} & \textbf{Project Role} & \textbf{VnV Responsibilities} \\
     \hline
@@ -162,7 +212,7 @@ how they relate to your VnV efforts.}
     Keira Laskoski & Traceability and Documentation Manager & Records the defects and decisions from reviews. Keeps the traceability tables up to date. Checks that FR numbers match between the SRS and VnV after every revision. Create and run the Cognitive Walkthrough. \\
     Dr. Mohamed Hassan & Supervisor and Stakeholder Representative & Technical expert and advisor. Reviews team documents and offer technical insight and expertise. Make suggestions from the point of view of the stakeholder. \\
     \hline
-  \end{tabular}
+  \end{tabularx}
   \caption{Verification and Validation Team Roles}
   \label{tab:mytable}
 \end{table}
@@ -171,7 +221,7 @@ All members, aside from the supervisor, will share the responsibilities of desig
 
 
 \subsection{SRS Verification}
-The SRS document will be verified to ensure requirements are unambiguous, verfiable, and complete.
+The SRS document will be verified to ensure requirements are unambiguous, verifiable, and complete.
 
 \wss{List any approaches you intend to use for SRS verification.  This may
   include ad hoc feedback from reviewers, like your classmates (like your
@@ -191,11 +241,11 @@ issue tracker?}
   with the supervisor and requirements will be reviewed. The team will prepare questions 
   in advance, specifically focusing on the 
   \item \textbf{Ad Hoc Peer Review and Inspection: } Classmates and primary reviewers will be 
-  recruited to perform an adhoc review of the SRS document. All criticisms will be documented 
+  recruited to perform an ad hoc review of the SRS document. All criticisms will be documented 
   as issues and addressed by a member of the team. A minimum of 5 issues created based on reviews 
   from peers will be the objective.
-  \item \textbf{Issue Tracker for Traceability: } As stated above, a Github issue tracker will be 
-  used to trace criticisms and suggestions for the amilioration of the SRS document. All issues 
+  \item \textbf{Issue Tracker for Traceability: } As stated above, a GitHub issue tracker will be 
+  used to trace criticisms and suggestions for the amelioration of the SRS document. All issues 
   will be reviewed, changes to the document will be implemented if necessary. All issues will 
   addressed with a comment and closed.
   \item \textbf{Checklist-Based Inspection: } The team will prepare a checklist for necessary 
@@ -219,7 +269,7 @@ issue tracker?}
 \begin{itemize}
   \item \textbf{Peer Review and Inspection: }
   Classmates and primary reviewers will be 
-  recruited to perform an adhoc review of the first edition of the design document after the course-imposed deadline. 
+  recruited to perform an ad hoc review of the first edition of the design document after the course-imposed deadline. 
   All criticisms will be documented as issues and addressed by a member of the team. A minimum of 5 issues created based on reviews 
   from peers and primary reviewers will be the objective.
   \item \textbf{Team Member Review: } 
@@ -228,7 +278,7 @@ issue tracker?}
   The team will check the design documents against a checklist. The checklist will confirm that each
   functional and non-functional requirement is assigned to at least one module, that each module's interface
   provides the access programs needed to satisfy its requirements, and that each on-chain instruction checks
-  the signatures and balances required by the safety requirements (FR.SA.1 to FR.SA.10).
+  the signatures and balances required by the safety requirements (\saref{SA_NoDuplicateSubmission} to \saref{SA_ProviderStatusCheck}).
 \end{itemize}
 
 \subsection{Verification and Validation Plan Verification}
@@ -278,7 +328,7 @@ CAS741) for a partial usability survey.}
   tested according to the described system tests (Section 4) and unit tests (Section 5) of this document. 
   \item \textbf{Static Analysis and Linters: } The team will enforce code standards using linters and static analysers.
   \item \textbf{Code Review: } Every change will be merged into \texttt{main} through a pull request reviewed
-  and approved by at least one other team member, implemented through CI/CD pipeline on Github. Reviewers will check the coding standards that linters cannot, 
+  and approved by at least one other team member, implemented through CI/CD pipeline on GitHub. Reviewers will check the coding standards that linters cannot, 
   such as documentation comments, and that the change includes tests.
 \end{itemize}
 
@@ -311,7 +361,7 @@ Development Plan.
   \item \textbf{Automated Browser Tests: } Used to run the main user flows in Chrome, Firefox, and Edge,
   signing transactions with a test wallet signer. Safari is tested by hand.
   \item \textbf{Linters and Formatters: } ESLint for TypeScript, and \texttt{cargo clippy} for Rust.
-  \item \textbf{Continuous Integration (CI): } Github actions are implemented to run automated tests, linters, and builds on every pull request. Branch protection
+  \item \textbf{Continuous Integration (CI): } GitHub Actions are implemented to run automated tests, linters, and builds on every pull request. Branch protection
   on \texttt{main} prevents merging while any check fails.
   \item \textbf{Code Coverage: } Vitest's coverage report for TypeScript and \texttt{cargo llvm-cov} for Rust.
   The team aims for at least 80\% line coverage of the main logic modules.
@@ -364,7 +414,7 @@ the contents of the subsections.}
 
 This section describes the tests that will be performed to verify that the entire integrated
 system meets the functional and non-functional requirements specified in the \href{../SRS/SRS.pdf}{SRS}. The
-system test cases below are be descrbed by the following characteristics:
+system test cases below are described by the following characteristics:
 \begin{itemize}
   \item Control: Is this test manual or automatic?
   \item Initial State: What is the state of the system before the test is performed?
@@ -395,38 +445,37 @@ wallet extension and an embedded wallet.
 
 \item{ST-AUTH-EXT-1\\}
 
-Control: Manual
+\textbf{Control:} Manual
 
-Initial State: The application is running in a supported browser on its public
+\textbf{Initial State:} The application is running in a supported browser on its public
 page. A compatible Web3 wallet extension is installed and active. Test
 profiles \texttt{EXT-USER-01} and \texttt{EXT-USER-02} are associated with
 wallet fixtures \texttt{EXT-WALLET-01} and \texttt{EXT-WALLET-02}; neither
 user is signed in.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Connect \texttt{EXT-WALLET-01} and approve the verification-message
+\item[1.] Connect \texttt{EXT-WALLET-01} and approve the verification-message
 signature requested by the application.
-\item Connect \texttt{EXT-WALLET-02} and approve its verification-message
+\item[2.] Connect \texttt{EXT-WALLET-02} and approve its verification-message
 signature.
-\item Connect \texttt{EXT-WALLET-01} and reject the signature request.
+\item[3.] Connect \texttt{EXT-WALLET-01} and reject the signature request.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item For the approved signature from \texttt{EXT-WALLET-01}, the user is
-authenticated as \texttt{EXT-USER-01}, and that user's profile and
-authenticated features are available.
-\item For the approved signature from \texttt{EXT-WALLET-02}, the user is
-authenticated as \texttt{EXT-USER-02}, and that user's profile and
-authenticated features are available.
-\item The user remains unauthenticated, no profile or authenticated features become available.
+\item[1.] \texttt{EXT-WALLET-01} authenticates as \texttt{EXT-USER-01}, whose
+profile and authenticated features are accessible.
+\item[2.] \texttt{EXT-WALLET-02} authenticates as \texttt{EXT-USER-02}, whose
+profile and authenticated features are accessible.
+\item[3.] Rejecting the signature leaves the user unauthenticated, with no
+profile or authenticated features accessible.
 \end{itemize}
 
-Test Case Derivation: FR1 requires the authentication
+\textbf{Test Case Derivation:} \rref{FR_WalletAuthentication} requires the authentication
 response to verify ownership of the connected wallet address.
 
-How test will be performed: For each wallet, start from a signed-out session,
+\textbf{How test will be performed:} For each wallet, start from a signed-out session,
 connect the specified extension account, and approve the verification-message
 signature request. Confirm that \texttt{EXT-WALLET-01} opens
 \texttt{EXT-USER-01}'s profile and \texttt{EXT-WALLET-02} opens
@@ -437,41 +486,39 @@ cannot access authenticated features.
 
 \item{ST-AUTH-EXT-2\\}
 
-Control: Manual
+\textbf{Control:} Manual
 
-Initial State: The application is running on its public page in a supported
+\textbf{Initial State:} The application is running on its public page in a supported
 browser. \texttt{EXT-WALLET-03} is available in a
 compatible browser extension and is not yet associated with a DAIIM user
 profile. The wallet owner is not signed in.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Connect \texttt{EXT-WALLET-03} and approve the verification-message
+\item[1.] Connect \texttt{EXT-WALLET-03} and approve the verification-message
 signature.
-\item Sign out of the resulting account.
-\item Reconnect \texttt{EXT-WALLET-03} and approve the verification-message
+\item[2.] Sign out of the resulting account.
+\item[3.] Reconnect \texttt{EXT-WALLET-03} and approve the verification-message
 signature again.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item After the first approved signature, the user is authenticated and a
-profile is associated with \texttt{EXT-WALLET-03}. The system grants the user
-access to authenticated features.
-\item Sign-out ends the authenticated session; the user cannot access the
-profile or authenticated features while signed out.
-\item After the second approved signature, the same profile associated with
-\texttt{EXT-WALLET-03} is displayed. No second profile is created for the
-wallet. The system grants the user access to authenticated features.
+\item[1.] The first approved signature authenticates the user and associates a
+profile with \texttt{EXT-WALLET-03}; the authenticated features are accessible.
+\item[2.] Signing out ends the authenticated session; the profile and
+authenticated features are inaccessible.
+\item[3.] The second approved signature authenticates the user with the same
+profile associated with \texttt{EXT-WALLET-03}; no second profile exists.
 \end{itemize}
 
-Test Case Derivation: FR1 requires the system to
+\textbf{Test Case Derivation:} \rref{FR_WalletAuthentication} requires the system to
 verify ownership of the wallet address and associate that verified address
 with the same user profile on every successful authentication, including
 after sign-out. The second successful authentication must restore
 the profile created during the first sign-in.
 
-How test will be performed: Record the number of DAIIM profiles associated
+\textbf{How test will be performed:} Record the number of DAIIM profiles associated
 with \texttt{EXT-WALLET-03}. Connect the wallet and approve the
 verification-message signature. Record the displayed profile identifier and
 confirm that the wallet is associated with that profile. Sign out and verify
@@ -488,9 +535,9 @@ profiles associated with the wallet has not increased.
 
 \item{ST-AUTH-EMB-1\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The application is running in a test environment with the
+\textbf{Initial State:} The application is running in a test environment with the
 embedded-wallet provider mocked. Identities \texttt{new.email@example.test},
 \texttt{+15555550101}, and social-account subject \texttt{social-new-01} have
 no associated DAIIM account or embedded wallet. Configure the provider mock
@@ -500,34 +547,35 @@ with distinct addresses \texttt{EMB-WALLET-NEW-01},
 The malformed email \texttt{not-an-email} should be rejected by the system
 before the provider is called.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Submit \texttt{new.email@example.test} using the email sign-in method.
-\item Submit \texttt{+15555550101} using the phone sign-in method.
-\item Submit social-account subject \texttt{social-new-01} using the supported
+\item[1.] Submit \texttt{new.email@example.test} using the email sign-in method.
+\item[2.] Submit \texttt{+15555550101} using the phone sign-in method.
+\item[3.] Submit social-account subject \texttt{social-new-01} using the supported
 social sign-in method.
-\item Submit malformed email \texttt{not-an-email} using the email sign-in
+\item[4.] Submit malformed email \texttt{not-an-email} using the email sign-in
 method.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item For each of the three supported identities, the system creates
-one embedded wallet associated with the user's account, displays its
-corresponding address and a creation confirmation, authenticates the user, and
-makes the associated profile available.
-\item For \texttt{not-an-email}, the system reports an input error, displays no
-wallet-creation confirmation or address, and does not authenticate the user or
-create a wallet.
+\item[1.] \texttt{new.email@example.test} creates one embedded wallet
+\texttt{EMB-WALLET-NEW-01} and authenticates the associated user profile.
+\item[2.] \texttt{+15555550101} creates one embedded wallet
+\texttt{EMB-WALLET-NEW-02} and authenticates the associated user profile.
+\item[3.] \texttt{social-new-01} creates one embedded wallet
+\texttt{EMB-WALLET-NEW-03} and authenticates the associated user profile.
+\item[4.] \texttt{not-an-email} is rejected; no wallet or authenticated session
+is created.
 \end{itemize}
 
-Test Case Derivation: FR2 requires successful creation
+\textbf{Test Case Derivation:} \rref{FR_EmbeddedWalletCreation} requires successful creation
 for supported identity input after authentication, with the public address and
 confirmation as outputs. The system must reject malformed identity input
-before wallet creation. FR1 requires the successful
+before wallet creation. \rref{FR_WalletAuthentication} requires the successful
 wallet authentication to identify the user.
 
-How test will be performed: For each valid test identity, call the
+\textbf{How test will be performed:} For each valid test identity, call the
 corresponding embedded-wallet sign-in method with the specified email
 address, phone number, or social-account identity. For each successful case,
 compare the displayed address with the configured mock address, verify that
@@ -538,9 +586,9 @@ provider, and does not create a wallet or authenticated session.
 
 \item{ST-AUTH-EMB-2\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The application is running in a test environment, and existing
+\textbf{Initial State:} The application is running in a test environment, and existing
 accounts \texttt{EMB-RETURN-01}, \texttt{EMB-RETURN-02}, and
 \texttt{EMB-RETURN-03} are signed out. Their embedded wallet addresses are
 respectively \texttt{EMB-WALLET-RETURN-01},
@@ -550,39 +598,36 @@ responses with those address mappings. Configure it to return an
 authentication failure for \texttt{locked.user@example.test}, which has no
 associated account.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Enter \texttt{returning.email@example.test} using the email sign-in
+\item[1.] Enter \texttt{returning.email@example.test} using the email sign-in
 method.
-\item Enter \texttt{+15555550102} using the phone sign-in method.
-\item Provide social-account subject \texttt{social-return-03} using the
+\item[2.] Enter \texttt{+15555550102} using the phone sign-in method.
+\item[3.] Provide social-account subject \texttt{social-return-03} using the
 supported social sign-in method.
-\item Enter \texttt{locked.user@example.test} using the email sign-in method.
+\item[4.] Enter \texttt{locked.user@example.test} using the email sign-in method.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item For \texttt{returning.email@example.test}, the system authenticates
-\texttt{EMB-RETURN-01} and displays its existing profile and
+\item[1.] \texttt{returning.email@example.test} authenticates
+\texttt{EMB-RETURN-01} with its existing profile and
 \texttt{EMB-WALLET-RETURN-01}.
-\item For \texttt{+15555550102}, the system authenticates
-\texttt{EMB-RETURN-02} and displays its existing profile and
-\texttt{EMB-WALLET-RETURN-02}.
-\item For social-account subject \texttt{social-return-03}, the system
-authenticates \texttt{EMB-RETURN-03} and displays its existing profile and
-\texttt{EMB-WALLET-RETURN-03}.
-\item For \texttt{locked.user@example.test}, the system reports authentication
-failure and does not create an authenticated session or grant access to a
-profile.
+\item[2.] \texttt{+15555550102} authenticates \texttt{EMB-RETURN-02} with its
+existing profile and \texttt{EMB-WALLET-RETURN-02}.
+\item[3.] \texttt{social-return-03} authenticates \texttt{EMB-RETURN-03} with
+its existing profile and \texttt{EMB-WALLET-RETURN-03}.
+\item[4.] \texttt{locked.user@example.test} remains unauthenticated, with no
+profile access or new account.
 \end{itemize}
 
-Test Case Derivation: FR1 requires each verified
+\textbf{Test Case Derivation:} \rref{FR_WalletAuthentication} requires each verified
 wallet address to remain associated with the same user profile after sign-out.
 Each successful response must restore the mapped existing profile rather
 than create another account. The failed authentication response does not verify
 wallet ownership, so it must not grant access.
 
-How test will be performed: Call the application's
+\textbf{How test will be performed:} Call the application's
 embedded-wallet authentication entry point with the sign-in method and parameters from each returning-user credentials. Configure the provider
 mock to return that fixture's existing wallet authentication response. Assert
 that each call returns an authenticated session for the user profile. Then
@@ -604,9 +649,9 @@ program instruction succeeds on the blockchain.
 
 \item{ST-TASK-CREATE-1\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The system is running on Solana Devnet. The requester
+\textbf{Initial State:} The system is running on Solana Devnet. The requester
 wallet address fixture is authenticated, and the test harness is configured with its
 wallet signer and sufficient test SOL to pay transaction fees. The unique task
 names \texttt{Regression-Test-Task},
@@ -614,47 +659,46 @@ names \texttt{Regression-Test-Task},
 \texttt{Regression-Test-Invalid-Schema}, and
 \texttt{Rejected-Authorization-Task} are not already in use.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item A valid numerical regression task definition named
+\item[1.] A valid numerical regression task definition named
 \texttt{Regression-Test-Task}, including a description, numerical input and
 output schemas, an evaluation metric, a minimum provider count of 2 or more,
 reputation tolerance, acceptance period, and maximum prediction time.
-\item The valid definition named
+\item[2.] The valid definition named
 \texttt{Regression-Test-Min-Providers}, with its minimum provider count
 changed to 1.
-\item The valid definition named \texttt{Regression-Test-Invalid-Schema},
+\item[3.] The valid definition named \texttt{Regression-Test-Invalid-Schema},
 with an input or output schema containing non-numerical values incompatible
 with a numerical regression task.
-\item The valid definition named \texttt{Rejected-Authorization-Task}.
+\item[4.] The valid definition named \texttt{Rejected-Authorization-Task}.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item For the valid definition with authorization approved, the task is created
-with the submitted definition, and the corresponding Solana Devnet transaction
-succeeds with the task-creation instruction.
-\item For the definition with fewer than 2 minimum providers, the system
-rejects the definition, and no task is created.
-\item For the definition with a schema incompatible with numerical regression,
-the system rejects the definition, and no task is created.
-\item For the valid definition with authorization rejected, no task is created
-and no successful task-creation transaction occurs.
+\item[1.] The valid definition is created with the submitted values, and its
+authorized transaction succeeds.
+\item[2.] The definition with fewer than 2 minimum providers is rejected, and
+no task is created.
+\item[3.] The definition with an incompatible schema is rejected, and no task
+is created.
+\item[4.] The authorization-rejected definition is not created, and no
+successful task-creation transaction occurs.
 \end{itemize}
 
-Test Case Derivation: FR6 requires a task name,
+\textbf{Test Case Derivation:} \rref{FR_InferenceTaskDefinition} requires a task name,
 description, type, input schema, and output schema; the incompatible-schema
 case checks that the definition matches the numerical regression task.
-FR8 requires at least 2 providers, so a value of 1
-must be rejected. FR5 permits authenticated users
-to create tasks, while FR4 requires wallet
+\rref{FR_MinimumProvidersFloor} requires at least 2 providers, so a value of 1
+must be rejected. \rref{FR_InferenceTaskCreation} permits authenticated users
+to create tasks, while \rref{FR_TransactionAuthorization} requires wallet
 approval before an on-chain state change. Therefore, the valid task should be
 created only after approval, and rejecting authorization should leave it
-uncreated. FR58 and FR59
+uncreated. \rref{FR_TransactionStatus} and \rref{FR_TransactionVerification}
 require a final transaction status and a transaction identifier that can be
 used to verify the successful instruction.
 
-How test will be performed: Submit the valid
+\textbf{How test will be performed:} Submit the valid
 definition to the task-creation flow and assert that the confirmation details
 match the submitted definition. Configure the test wallet signer to approve
 the authorization request. After confirmation, query Solana Devnet using the
@@ -681,41 +725,41 @@ eligible, and viewing provider information through the dashboard.
 
 \item{ST-PROV-1\\}
 
-Control: Manual
+\textbf{Control:} Manual
 
-Initial State: The application is running in a supported browser. A provider
+\textbf{Initial State:} The application is running in a supported browser. A provider
 account is authenticated and connected to a compatible wallet. The provider
 is not registered for inference task \texttt{TASK-01}. The task requires a
 minimum stake of tokens, and the provider's wallet contains sufficient
 tokens and SOL to complete the transaction.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Navigate to \texttt{TASK-01} and select the option to register as an
+\item[1.] Navigate to \texttt{TASK-01} and select the option to register as an
 inference provider.
-\item Review the required minimum stake of tokens and the associated
+\item[2.] Review the required minimum stake of tokens and the associated
 registration details.
-\item Confirm the registration and approve the wallet transaction.
+\item[3.] Confirm the registration and approve the wallet transaction.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item The provider is successfully registered for \texttt{TASK-01}.
-\item Exactly the minimum amount of tokens are locked in escrow as the provider's stake.
-\item The provider is added to the task's list of registered providers and
+\item[1.] The provider is successfully registered for \texttt{TASK-01}.
+\item[2.] Exactly the minimum amount of tokens are locked in escrow as the provider's stake.
+\item[3.] The provider is added to the task's list of registered providers and
 receives the base reputation score for the task.
-\item The system displays the transaction status and, once confirmed, the
+\item[4.] The system displays the transaction status and, once confirmed, the
 transaction identifier.
 \end{itemize}
 
-Test Case Derivation: FR\_InferenceTaskRegistration requires authenticated
+\textbf{Test Case Derivation:} \rref{FR_InferenceTaskRegistration} requires authenticated
 users to be able to register as inference providers by staking the required
-minimum amount of tokens. FR\_InferenceTaskRegistrationStaking requires the
+minimum amount of tokens. \rref{FR_InferenceTaskRegistrationStaking} requires the
 minimum stake to be locked in escrow. The transaction authorization and
 confirmation behaviour is also covered by the related transaction
 requirements.
 
-How test will be performed: Authenticate a provider account and navigate to
+\textbf{How test will be performed:} Authenticate a provider account and navigate to
 \texttt{TASK-01}. Select the registration option and verify that the system
 displays the required minimum stake. Confirm the registration and approve
 the transaction through the connected wallet. After the transaction is
@@ -726,37 +770,37 @@ into escrow.
 
 \item{ST-PROV-2\\}
 
-Control: Manual
+\textbf{Control:} Manual
 
-Initial State: The application is running in a supported browser. A provider
+\textbf{Initial State:} The application is running in a supported browser. A provider
 account is authenticated and connected to a compatible wallet. The provider
 is not registered for \texttt{TASK-02}. The task requires a minimum stake of
 tokens, but the provider's wallet contains fewer than 100 tokens.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Navigate to \texttt{TASK-02} and select the option to register as an
+\item[1.] Navigate to \texttt{TASK-02} and select the option to register as an
 inference provider.
-\item Attempt to proceed with registration despite having an insufficient
+\item[2.] Attempt to proceed with registration despite having an insufficient
 token balance.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item The system prevents the provider from completing registration.
-\item An error message indicates that the provider's token balance is
+\item[1.] The system prevents the provider from completing registration.
+\item[2.] An error message indicates that the provider's token balance is
 insufficient and identifies the required shortfall.
-\item No stake is transferred into escrow, and the provider is not added to
+\item[3.] No stake is transferred into escrow, and the provider is not added to
 the task's list of registered providers.
 \end{itemize}
 
-Test Case Derivation: FR\_InferenceTaskRegistration and
-FR\_InferenceTaskRegistrationStaking require the provider to stake the
+\textbf{Test Case Derivation:} \rref{FR_InferenceTaskRegistration} and
+\rref{FR_InferenceTaskRegistrationStaking} require the provider to stake the
 required minimum amount of tokens to register. The related balance-check
 assumptions require the system to verify that sufficient funds are available
 before processing the transaction.
 
-How test will be performed: Authenticate a provider account with fewer than
+\textbf{How test will be performed:} Authenticate a provider account with fewer than
 100 tokens and navigate to \texttt{TASK-02}. Attempt to register for the task.
 Verify that the system displays an insufficient-balance error, that no
 transaction transfers tokens into escrow, and that the provider does not
@@ -770,40 +814,40 @@ appear in the task's registered-provider list.
 
 \item{ST-PROV-3\\}
 
-Control: Manual
+\textbf{Control:} Manual
 
-Initial State: The application is running in a supported browser. A provider
+\textbf{Initial State:} The application is running in a supported browser. A provider
 account is authenticated and registered for \texttt{TASK-03}. The provider
 has no active accepted inference requests for this task. The provider's
 current reputation score is at or above the task's reduced-stake-return
 threshold, and the provider has a remaining stake of tokens.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Navigate to the provider's registration details for
+\item[1.] Navigate to the provider's registration details for
 \texttt{TASK-03}.
-\item Select the option to unregister from the task.
-\item Review and confirm the unregistration.
-\item Approve the wallet transaction, if prompted.
+\item[2.] Select the option to unregister from the task.
+\item[3.] Review and confirm the unregistration.
+\item[4.] Approve the wallet transaction, if prompted.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item The provider is successfully unregistered from \texttt{TASK-03}.
-\item The provider is removed from the task's list of registered providers.
-\item The provider's entire remaining stake of tokens is returned to
+\item[1.] The provider is successfully unregistered from \texttt{TASK-03}.
+\item[2.] The provider is removed from the task's list of registered providers.
+\item[3.] The provider's entire remaining stake of tokens is returned to
 their token account.
-\item The system displays the transaction status and, once confirmed, the
+\item[4.] The system displays the transaction status and, once confirmed, the
 transaction identifier.
 \end{itemize}
 
-Test Case Derivation: FR\_ProviderWillingUnregistration requires the system
+\textbf{Test Case Derivation:} \rref{FR_ProviderWillingUnregistration} requires the system
 to allow providers to unregister when they have no active accepted inference
-requests. FR\_ProviderUnregistrationStakeReturn requires the entire
+requests. \rref{FR_ProviderUnregistrationStakeReturn} requires the entire
 remaining stake to be returned when the provider's reputation is at or above
 the task's reduced-stake-return threshold.
 
-How test will be performed: Authenticate the registered provider and verify
+\textbf{How test will be performed:} Authenticate the registered provider and verify
 that they have no active accepted inference requests for
 \texttt{TASK-03}. Select the unregistration option and confirm the action.
 After the transaction is confirmed, inspect the provider's registration
@@ -813,34 +857,34 @@ the entire remaining stake has been returned.
 
 \item{ST-PROV-4\\}
 
-Control: Manual
+\textbf{Control:} Manual
 
-Initial State: The application is running in a supported browser. A provider
+\textbf{Initial State:} The application is running in a supported browser. A provider
 account is authenticated and registered for \texttt{TASK-04}. The provider
 has accepted an inference request that is still active for this task.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Navigate to the provider's registration details for
+\item[1.] Navigate to the provider's registration details for
 \texttt{TASK-04}.
-\item Select the option to unregister from the task.
-\item Attempt to confirm the unregistration.
+\item[2.] Select the option to unregister from the task.
+\item[3.] Attempt to confirm the unregistration.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item The system rejects the unregistration attempt because the provider has
+\item[1.] The system rejects the unregistration attempt because the provider has
 an active accepted inference request.
-\item An error message explains why the provider cannot unregister.
-\item The provider remains registered for \texttt{TASK-04}, and their
+\item[2.] An error message explains why the provider cannot unregister.
+\item[3.] The provider remains registered for \texttt{TASK-04}, and their
 remaining stake is unchanged.
 \end{itemize}
 
-Test Case Derivation: FR\_ProviderWillingUnregistration requires that a
+\textbf{Test Case Derivation:} \rref{FR_ProviderWillingUnregistration} requires that a
 provider must not have accepted any active inference requests for the task
 before they can unregister.
 
-How test will be performed: Authenticate a provider account that is
+\textbf{How test will be performed:} Authenticate a provider account that is
 registered for \texttt{TASK-04} and has an active accepted inference request.
 Attempt to unregister from the task. Verify that the system rejects the
 attempt, displays an appropriate error message, maintains the provider's
@@ -854,35 +898,35 @@ registration, and does not modify the provider's remaining stake.
 
 \item{ST-PROV-5\\}
 
-Control: Manual
+\textbf{Control:} Manual
 
-Initial State: The application is running in a supported browser. A provider
+\textbf{Initial State:} The application is running in a supported browser. A provider
 account is authenticated and registered for two inference tasks,
 \texttt{TASK-05} and \texttt{TASK-06}. The provider has an existing reputation
 score, staked token balance, and earned rewards recorded for each task.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Navigate to the provider dashboard.
-\item View the provider's information for \texttt{TASK-05} and
+\item[1.] Navigate to the provider dashboard.
+\item[2.] View the provider's information for \texttt{TASK-05} and
 \texttt{TASK-06}.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item The dashboard displays the provider's reputation score, staked tokens,
+\item[1.] The dashboard displays the provider's reputation score, staked tokens,
 and earned rewards for \texttt{TASK-05}.
-\item The dashboard displays the provider's reputation score, staked tokens,
+\item[2.] The dashboard displays the provider's reputation score, staked tokens,
 and earned rewards for \texttt{TASK-06}.
-\item The displayed values correspond to the provider's recorded information
+\item[3.] The displayed values correspond to the provider's recorded information
 for each task.
 \end{itemize}
 
-Test Case Derivation: FR\_ProviderDashboard requires inference providers to
+\textbf{Test Case Derivation:} \rref{FR_ProviderDashboard} requires inference providers to
 be able to view their reputation score, staked tokens, and rewards earned
 for each inference task they are registered for.
 
-How test will be performed: Authenticate the provider account and navigate
+\textbf{How test will be performed:} Authenticate the provider account and navigate
 to the provider dashboard. Retrieve the provider's recorded reputation,
 stake, and reward values for both tasks from the system's records. Compare
 these values with the information displayed on the dashboard and verify
@@ -904,44 +948,44 @@ requests to registered providers.
 
 \item{ST-REQ-1\\}
 
-Control: Manual
+\textbf{Control:} Manual
 
-Initial State: The application is running in a supported browser. A requester
+\textbf{Initial State:} The application is running in a supported browser. A requester
 account is authenticated and connected to a compatible wallet. An existing
 inference task, \texttt{TASK-01}, is available and has at least two registered
 providers. The task's input schema requires a numerical input field named
 \texttt{input\_value}. The requester's wallet contains sufficient tokens and
 SOL to submit the request.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Navigate to \texttt{TASK-01} and select the option to submit an
+\item[1.] Navigate to \texttt{TASK-01} and select the option to submit an
 inference request.
-\item Provide valid input data containing \texttt{input\_value} with a
+\item[2.] Provide valid input data containing \texttt{input\_value} with a
 numerical value
-\item Review the request details and confirm the submission.
-\item Authorize the payment through the connected wallet.
+\item[3.] Review the request details and confirm the submission.
+\item[4.] Authorize the payment through the connected wallet.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item The system accepts the input data and successfully submits the
+\item[1.] The system accepts the input data and successfully submits the
 inference request for \texttt{TASK-01}.
-\item The request is assigned a unique identifier and its submission status
+\item[2.] The request is assigned a unique identifier and its submission status
 is displayed to the requester.
-\item The input data is stored securely for processing and is not recorded
+\item[3.] The input data is stored securely for processing and is not recorded
 directly on-chain.
-\item The requester is informed that the request has been submitted and is
+\item[4.] The requester is informed that the request has been submitted and is
 awaiting provider participation.
 \end{itemize}
 
-Test Case Derivation: FR\_RequestSubmission requires authenticated users to
+\textbf{Test Case Derivation:} \rref{FR_RequestSubmission} requires authenticated users to
 be able to submit inference requests for existing tasks, with input data
 conforming to the task's input schema. The related input-data requirements
 specify that input data must be stored securely and not placed directly
 on-chain.
 
-How test will be performed: Authenticate a requester account and navigate
+\textbf{How test will be performed:} Authenticate a requester account and navigate
 to \texttt{TASK-01}. Enter the valid input data and submit the request.
 Authorize the transaction through the connected wallet. Verify that the
 system creates a request with a unique identifier, displays the appropriate
@@ -951,39 +995,39 @@ on-chain.
 
 \item{ST-REQ-2\\}
 
-Control: Manual
+\textbf{Control:} Manual
 
-Initial State: The application is running in a supported browser. A requester
+\textbf{Initial State:} The application is running in a supported browser. A requester
 account is authenticated and connected to a compatible wallet. An existing
 inference task, \texttt{TASK-02}, is available and has at least two registered
 providers. The task's input schema requires a numerical field named
 \texttt{input\_value}.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Navigate to \texttt{TASK-02} and select the option to submit an
+\item[1.] Navigate to \texttt{TASK-02} and select the option to submit an
 inference request.
-\item Provide input data with the required \texttt{input\_value} field
+\item[2.] Provide input data with the required \texttt{input\_value} field
 missing.
-\item Repeat the submission attempt with \texttt{input\_value} provided as
+\item[3.] Repeat the submission attempt with \texttt{input\_value} provided as
 a non-numerical value.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item The system rejects both invalid input submissions.
-\item The system displays an error message identifying the missing or
+\item[1.] The system rejects both invalid input submissions.
+\item[2.] The system displays an error message identifying the missing or
 invalid input field.
-\item No inference request is submitted, no request identifier is created,
+\item[3.] No inference request is submitted, no request identifier is created,
 and no payment is transferred into escrow.
 \end{itemize}
 
-Test Case Derivation: FR\_RequestValidation requires the system to reject
+\textbf{Test Case Derivation:} \rref{FR_RequestValidation} requires the system to reject
 inference requests whose input data does not conform to the task's input
-schema. FR\_RequestSubmission requires submitted requests to include input
+schema. \rref{FR_RequestSubmission} requires submitted requests to include input
 data that conforms to that schema.
 
-How test will be performed: Authenticate a requester account and navigate
+\textbf{How test will be performed:} Authenticate a requester account and navigate
 to \texttt{TASK-02}. Attempt to submit a request with the required input
 field missing. Verify that the system rejects the request and identifies
 the missing field. Repeat the test using a non-numerical value for
@@ -998,45 +1042,45 @@ neither attempt creates a request or transfers funds into escrow.
 
 \item{ST-REQ-3\\}
 
-Control: Manual
+\textbf{Control:} Manual
 
-Initial State: The application is running in a supported browser. A requester
+\textbf{Initial State:} The application is running in a supported browser. A requester
 account is authenticated and connected to a compatible wallet. An existing
 inference task, \texttt{TASK-03}, is available and has at least two registered
 providers. The task has a minimum payment requirement. The
 requester's wallet contains sufficient tokens and SOL to authorize a
 payment 
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Navigate to \texttt{TASK-03} and provide valid input data.
-\item Select a payment amount of tokens.
-\item Review the transaction details and confirm the request submission.
-\item Approve the transaction through the connected wallet.
+\item[1.] Navigate to \texttt{TASK-03} and provide valid input data.
+\item[2.] Select a payment amount of tokens.
+\item[3.] Review the transaction details and confirm the request submission.
+\item[4.] Approve the transaction through the connected wallet.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item The system accepts the payment amount because it exceeds the task's
+\item[1.] The system accepts the payment amount because it exceeds the task's
 minimum payment requirement.
-\item The wallet prompts the requester to authorize a transaction
+\item[2.] The wallet prompts the requester to authorize a transaction
 transferring the tokens into escrow.
-\item After authorization and transaction confirmation, exactly those amount of tokens
+\item[3.] After authorization and transaction confirmation, exactly those amount of tokens
 are transferred into escrow.
-\item The system displays the transaction status and, once confirmed, the
+\item[4.] The system displays the transaction status and, once confirmed, the
 transaction identifier.
-\item The amount transferred into escrow matches the amount authorized by
+\item[5.] The amount transferred into escrow matches the amount authorized by
 the requester.
 \end{itemize}
 
-Test Case Derivation: FR\_RequestPayment requires the requester to choose
+\textbf{Test Case Derivation:} \rref{FR_RequestPayment} requires the requester to choose
 a token payment greater than the minimum and authorize a wallet transaction
 transferring that amount into escrow. The related transaction authorization
 and preview requirements ensure that the requester can review and authorize
-the transaction. SA\_ChargeEqualsAuthorized requires the amount charged to
+the transaction. \saref{SA_ChargeEqualsAuthorized} requires the amount charged to
 match the amount authorized.
 
-How test will be performed: Authenticate a requester account and navigate
+\textbf{How test will be performed:} Authenticate a requester account and navigate
 to \texttt{TASK-03}. Enter valid request input and select a payment amount
 for a set amount of tokens. Review the transaction preview and approve the transaction
 through the connected wallet. After confirmation, inspect the requester's
@@ -1052,39 +1096,39 @@ requester's authorization.
 
 \item{ST-REQ-4\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The system is running in a test environment. An existing
+\textbf{Initial State:} The system is running in a test environment. An existing
 inference task, \texttt{TASK-04}, has three registered providers:
 \texttt{PROV-01}, \texttt{PROV-02}, and \texttt{PROV-03}. All three providers
 are available to receive inference requests. The task has a configured
 acceptance period and maximum prediction time.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Submit a valid inference request for \texttt{TASK-04}.
-\item Set the proposed payment amount to a number of tokens.
-\item Configure the acceptance-period expiry time to 10 minutes after
+\item[1.] Submit a valid inference request for \texttt{TASK-04}.
+\item[2.] Set the proposed payment amount to a number of tokens.
+\item[3.] Configure the acceptance-period expiry time to 10 minutes after
 submission.
-\item Configure the maximum prediction time to 30 minutes.
+\item[4.] Configure the maximum prediction time to 30 minutes.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item The system successfully submits the inference request.
-\item The system broadcasts the request to all three registered providers.
-\item Each provider receives the task definition, proposed payment amount,
+\item[1.] The system successfully submits the inference request.
+\item[2.] The system broadcasts the request to all three registered providers.
+\item[3.] Each provider receives the task definition, proposed payment amount,
 acceptance-period expiry time, and maximum prediction time.
-\item The broadcast information is consistent across all three providers
+\item[4.] The broadcast information is consistent across all three providers
 and matches the submitted request.
 \end{itemize}
 
-Test Case Derivation: FR\_RequestBroadcast requires the system to broadcast
+\textbf{Test Case Derivation:} \rref{FR_RequestBroadcast} requires the system to broadcast
 the task definition, proposed payment amount, acceptance-period expiry time,
 and maximum prediction time to all providers registered for the task after
 an inference request is submitted.
 
-How test will be performed: Configure \texttt{TASK-04} with the three
+\textbf{How test will be performed:} Configure \texttt{TASK-04} with the three
 specified registered providers and submit a valid inference request with
 the specified payment amount and timing values. Monitor the messages or
 notifications received by each provider. Verify that all three providers
@@ -1108,20 +1152,20 @@ predictions, and cancelling requests that receive too few valid predictions.
 
 \item{ST-ACC-1\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The system is running on Solana Devnet. TASK-07 requires at least 2 accepting providers, allows
+\textbf{Initial State:} The system is running on Solana Devnet. TASK-07 requires at least 2 accepting providers, allows
 at most 3, and has an acceptance period of 2 minutes. PROV-11, PROV-12, and PROV-13 are registered for TASK-07.
 A requester has submitted inference request REQ-01 for TASK-07.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
 \item[1.] PROV-11 and PROV-12 accept REQ-01 and sign the acceptance in their wallets.
 \item[2.] PROV-13 declines REQ-01.
 \item[3.] The acceptance period of REQ-01 elapses.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
 \item[1.] PROV-11 and PROV-12 are recorded as accepting providers, and part of each one's stake is reserved for
 REQ-01 without any tokens being transferred.
@@ -1130,94 +1174,94 @@ REQ-01 without any tokens being transferred.
 to its prediction phase with PROV-11 and PROV-12.
 \end{itemize}
 
-Test Case Derivation: FR21 starts the acceptance period at broadcast and lets registered providers accept or
-decline, and FR10 sets its length. FR4 requires each acceptance to be signed, and FR31 requires part of the
+\textbf{Test Case Derivation:} \rref{FR_AcceptancePeriodStart} starts the acceptance period at broadcast and lets registered providers accept or
+decline, and \rref{FR_TaskAcceptancePeriod} sets its length. \rref{FR_TransactionAuthorization} requires each acceptance to be signed, and \rref{FR_StakeReservation} requires part of the
 provider's stake to be reserved for the request.
 
-How test will be performed: Send the two acceptances and the decline. Query REQ-01 and the provider accounts on
+\textbf{How test will be performed:} Send the two acceptances and the decline. Query REQ-01 and the provider accounts on
 Solana Devnet, and verify the acceptance period times, the recorded acceptances and decline, and the
 reservations. After the period ends, verify that REQ-01 is in its prediction phase.
 
 \item{ST-ACC-2\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The system is running on Solana Devnet. PROV-11 to PROV-15 are registered for TASK-07, and
+\textbf{Initial State:} The system is running on Solana Devnet. PROV-11 to PROV-15 are registered for TASK-07, and
 PROV-16 is not. A requester has submitted inference requests REQ-02 and REQ-03 for TASK-07.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
 \item[1.] PROV-16 tries to accept REQ-02.
 \item[2.] After the acceptance period of REQ-02 ends, PROV-14 tries to accept it.
 \item[3.] PROV-11, PROV-12, and PROV-13 accept REQ-03, then PROV-15 tries to accept it.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
 \item[1.] The acceptance from PROV-16 is rejected with a not-registered error.
 \item[2.] The acceptance from PROV-14 is rejected because the acceptance period has ended.
 \item[3.] The acceptance from PROV-15 is rejected because REQ-03 already has 3 accepting providers.
 \end{itemize}
 
-Test Case Derivation: FR21 only lets registered providers accept a request. FR22 ignores acceptances after the
-acceptance period ends, and FR7 sets the task's maximum number of accepting providers for each request.
+\textbf{Test Case Derivation:} \rref{FR_AcceptancePeriodStart} only lets registered providers accept a request. \rref{FR_AcceptancePeriodEnd} ignores acceptances after the
+acceptance period ends, and \rref{FR_TaskMinimumProviders} sets the task's maximum number of accepting providers for each request.
 
-How test will be performed: Send each acceptance at the stated time, using the on-chain clock to wait for the
+\textbf{How test will be performed:} Send each acceptance at the stated time, using the on-chain clock to wait for the
 end of the acceptance period of REQ-02. Verify that each is rejected with the expected error and that none of
 these providers is recorded as accepting.
 
 \item{ST-ACC-3\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The system is running on Solana Devnet. PROV-11 is registered for TASK-07, which requires at
+\textbf{Initial State:} The system is running on Solana Devnet. PROV-11 is registered for TASK-07, which requires at
 least 2 accepting providers. A requester has submitted inference request REQ-04 for TASK-07 with a payment of
 30 SOL.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
 \item[1.] Only PROV-11 accepts REQ-04 before the acceptance period ends.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
 \item[1.] REQ-04 is cancelled when the acceptance period ends, and does not enter a prediction phase. The 30 SOL
 payment is returned to the requester, and the stake reserved by PROV-11 is released.
 \end{itemize}
 
-Test Case Derivation: FR23 cancels a request that fewer than the task's minimum number of providers have
-accepted, and returns the requester's payment. FR32 releases the reservations of a cancelled request.
+\textbf{Test Case Derivation:} \rref{FR_MinimumAcceptance} cancels a request that fewer than the task's minimum number of providers have
+accepted, and returns the requester's payment. \rref{FR_StakeReservationRelease} releases the reservations of a cancelled request.
 
-How test will be performed: Have PROV-11 accept REQ-04, and wait until the on-chain clock passes the end of the
+\textbf{How test will be performed:} Have PROV-11 accept REQ-04, and wait until the on-chain clock passes the end of the
 acceptance period. Verify that REQ-04 is cancelled, that the requester's wallet balance went back up by 30 SOL,
 and that PROV-11 has no reservation left for it.
 
 \item{ST-ACC-4\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The system is running on Solana Devnet. PROV-17 is registered for TASK-08 with a stake of
+\textbf{Initial State:} The system is running on Solana Devnet. PROV-17 is registered for TASK-08 with a stake of
 \texttt{MINIMUM\_PROVIDER\_STAKE} plus 50 SOL. Each request for TASK-08 reserves 20 SOL of an accepting
 provider's stake. A requester has submitted inference requests REQ-05, REQ-06, REQ-07, and REQ-08.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
 \item[1.] PROV-17 accepts REQ-05, REQ-06, and REQ-07 while all three are open.
 \item[2.] After REQ-05 completes, PROV-17 accepts REQ-08.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
 \item[1.] The acceptances of REQ-05 and REQ-06 are recorded. The acceptance of REQ-07 is rejected, because a
 third reservation would take the stake of PROV-17 below \texttt{MINIMUM\_PROVIDER\_STAKE}.
 \item[2.] After REQ-05 completes, its reservation is released and the acceptance of REQ-08 is recorded.
 \end{itemize}
 
-Test Case Derivation: FR31 rejects an acceptance if the stake left after all reservations would be below
+\textbf{Test Case Derivation:} \rref{FR_StakeReservation} rejects an acceptance if the stake left after all reservations would be below
 \texttt{MINIMUM\_PROVIDER\_STAKE}. With 50 SOL above the minimum, two 20 SOL reservations fit and a third does
-not. FR32 releases a reservation when its request ends.
+not. \rref{FR_StakeReservationRelease} releases a reservation when its request ends.
 
-How test will be performed: Have PROV-17 accept the requests in order, and read its reservations from the
+\textbf{How test will be performed:} Have PROV-17 accept the requests in order, and read its reservations from the
 on-chain program accounts after each acceptance. Run REQ-05 to completion before the last acceptance, and verify
 that each acceptance is recorded or rejected as expected.
 
@@ -1229,38 +1273,38 @@ that each acceptance is recorded or rejected as expected.
 
 \item{ST-PRED-1\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The system is running on Solana Devnet. TASK-09 has a numerical output schema and a maximum
+\textbf{Initial State:} The system is running on Solana Devnet. TASK-09 has a numerical output schema and a maximum
 prediction time of 5 minutes. PROV-18 and PROV-19 have accepted inference request REQ-09 for TASK-09, and its
 acceptance period has ended.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
 \item[1.] PROV-18 and PROV-19 each submit a valid numerical prediction within the first minute of the prediction
 phase.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
 \item[1.] Both predictions are accepted. The prediction phase ends as soon as both predictions are received and
 validated, before the maximum prediction time.
 \end{itemize}
 
-Test Case Derivation: FR26 allows each accepting provider to submit a prediction during the prediction phase.
-FR29 ends the prediction phase once a prediction from every accepting provider has been received and validated.
+\textbf{Test Case Derivation:} \rref{FR_PredictionSubmission} allows each accepting provider to submit a prediction during the prediction phase.
+\rref{FR_PredictionPhaseEnd} ends the prediction phase once a prediction from every accepting provider has been received and validated.
 
-How test will be performed: Submit both predictions. Verify that each is accepted, and that the end time of the
+\textbf{How test will be performed:} Submit both predictions. Verify that each is accepted, and that the end time of the
 prediction phase recorded on-chain is earlier than the maximum prediction time.
 
 \item{ST-PRED-2\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The system is running on Solana Devnet. PROV-18 to PROV-21 have accepted inference request REQ-10
+\textbf{Initial State:} The system is running on Solana Devnet. PROV-18 to PROV-21 have accepted inference request REQ-10
 for TASK-09, and PROV-22 is registered for TASK-09 but did not accept REQ-10.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
 \item[1.] During the acceptance period, PROV-18 submits a prediction.
 \item[2.] During the prediction phase, PROV-18 submits 10.0 and then 50.0.
@@ -1269,7 +1313,7 @@ Input:
 \item[5.] After the maximum prediction time, PROV-20 submits a prediction.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
 \item[1.] The prediction from PROV-18 during the acceptance period is rejected.
 \item[2.] The prediction of 10.0 from PROV-18 is accepted, and its second prediction is rejected.
@@ -1279,23 +1323,23 @@ rejected.
 \item[5.] The late prediction from PROV-20 is rejected.
 \end{itemize}
 
-Test Case Derivation: FR25 rejects predictions sent before the acceptance period ends and predictions from
-providers that did not accept. FR27 allows one prediction per provider, including one rejected
-under FR28 for not matching the output schema. FR29 rejects predictions after the prediction phase ends.
+\textbf{Test Case Derivation:} \rref{FR_PredictionPhaseStart} rejects predictions sent before the acceptance period ends and predictions from
+providers that did not accept. \rref{FR_OnePredictionPerProvider} allows one prediction per provider, including one rejected
+under \rref{FR_PredictionValidation} for not matching the output schema. \rref{FR_PredictionPhaseEnd} rejects predictions after the prediction phase ends.
 
-How test will be performed: Send each prediction at the stated time, using the on-chain clock to wait for the
+\textbf{How test will be performed:} Send each prediction at the stated time, using the on-chain clock to wait for the
 end of each period. Verify that each is accepted or rejected as expected, and that the recorded prediction of
 PROV-18 is 10.0.
 
 \item{ST-PRED-3\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The system is running on Solana Devnet. TASK-10 requires 3 valid predictions and allows at most 4
+\textbf{Initial State:} The system is running on Solana Devnet. TASK-10 requires 3 valid predictions and allows at most 4
 accepting providers. PROV-23 to PROV-26 have accepted inference request REQ-11 for TASK-10, which has a payment
 of 40 SOL, so the per-provider compensation is 10 SOL.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
 \item[1.] PROV-23 and PROV-24 submit valid predictions.
 \item[2.] PROV-25 submits a prediction that does not match the output schema.
@@ -1303,7 +1347,7 @@ Input:
 \item[4.] The maximum prediction time elapses.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
 \item[1.] Both predictions are accepted, and once REQ-11 is cancelled, PROV-23 and PROV-24 each receive 10 SOL
 of compensation.
@@ -1314,11 +1358,11 @@ the 20 SOL compensation is taken from its reserved stake.
 reservations for REQ-11 are released.
 \end{itemize}
 
-Test Case Derivation: FR30 cancels a request with fewer valid predictions than the task requires and returns the
-payment, and under FR28 the rejected prediction does not count. FR33 pays each provider with a valid prediction
-the per-provider compensation from the providers without one, and FR32 releases the remaining reservations.
+\textbf{Test Case Derivation:} \rref{FR_MinimumPredictions} cancels a request with fewer valid predictions than the task requires and returns the
+payment, and under \rref{FR_PredictionValidation} the rejected prediction does not count. \rref{FR_CancellationCompensation} pays each provider with a valid prediction
+the per-provider compensation from the providers without one, and \rref{FR_StakeReservationRelease} releases the remaining reservations.
 
-How test will be performed: Send the predictions and wait until the on-chain clock passes the maximum prediction
+\textbf{How test will be performed:} Send the predictions and wait until the on-chain clock passes the maximum prediction
 time. Verify that REQ-11 is cancelled, and compare the wallet balances and reservations on Solana Devnet with the
 expected outputs.
 
@@ -1327,8 +1371,8 @@ expected outputs.
 \subsubsection{Reputation, Rewards, and Penalties}
 
 These tests verify the reputation, reward, and penalty requirements
-(FR35--FR48) and the safety requirements that protect reward and penalty
-transfers (FR.SA.9, FR.SA.10). Each test follows a scenario that a group of
+(\rref{FR_FinalResultDelivery}--\rref{FR_PendingTransferDeadline}) and the safety requirements that protect reward and penalty
+transfers (\saref{SA_RewardValidation}, \saref{SA_ProviderStatusCheck}). Each test follows a scenario that a group of
 providers would go through on the real system: completing a request, misbehaving
 during a request, and leaving a task. The tests run on a local Solana validator
 or Solana Devnet, with mock inference providers that submit preset predictions,
@@ -1346,44 +1390,47 @@ values change.
 
 \item{ST-REP-1: Completed request updates reputations and pays rewards\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: A numerical regression task \texttt{Rep-Test-Task} exists with a
+\textbf{Initial State:} A numerical regression task \texttt{Rep-Test-Task} exists with a
 reputation tolerance $T = 2.0$. Mock providers \texttt{P1} to \texttt{P5} are
 registered with reputation scores of 40, 60, 50, 50, and 50. A requester has
 submitted an inference request with a payment of 1000 tokens held in escrow,
 and all five providers have accepted it.
 
-Input: The providers submit the valid predictions \texttt{P1}: 8.5,
+\textbf{Input:}
+\begin{itemize}
+\item[1.] The providers submit the valid predictions \texttt{P1}: 8.5,
 \texttt{P2}: 11, \texttt{P3}: 12, \texttt{P4}: 13, \texttt{P5}: 20, and the
 request runs to completion.
+\end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item The final aggregated result is 12. The distances from the result are
+\item[1.] The final aggregated result is 12. The distances from the result are
 $d = (3.5, 1, 0, 1, 8)$, so $\bar{d} = 2.7$ and $\bar{d} + T = 4.7$.
-\item \texttt{P2}, \texttt{P3}, and \texttt{P4} ($d_i \le 2.7$) have their
+\item[2.] \texttt{P2}, \texttt{P3}, and \texttt{P4} ($d_i \le 2.7$) have their
 reputation increased. \texttt{P1} ($2.7 < 3.5 \le 4.7$) has an unchanged
 reputation. \texttt{P5} ($8 > 4.7$) has its reputation decreased.
-\item \texttt{P5} receives no reward. \texttt{P1} to \texttt{P4} share the 1000
+\item[3.] \texttt{P5} receives no reward. \texttt{P1} to \texttt{P4} share the 1000
 tokens in proportion to their reputation scores (40, 60, 50, 50): 200, 300,
 250, and 250 tokens.
-\item The total paid out does not exceed 1000 tokens, the request's escrow is
+\item[4.] The total paid out does not exceed 1000 tokens, the request's escrow is
 empty afterwards, and the system logs a status check for each provider before
 its reward is sent.
 \end{itemize}
 
-Test Case Derivation: FR35 requires $d_i$ and $\bar{d}$ to be computed for
-every included provider, and FR37, FR38, and FR39 give the three possible
-outcomes; this fixture places at least one provider in each. FR41 limits
+\textbf{Test Case Derivation:} \rref{FR_FinalResultDelivery} requires $d_i$ and $\bar{d}$ to be computed for
+every included provider, and \rref{FR_RequestHistory}, \rref{FR_UpdateProviderReputations}, and \rref{FR_ReputationRange} give the three possible
+outcomes; this fixture places at least one provider in each. \rref{FR_ReputationUnchanged} limits
 rewards to providers whose reputation did not decrease, split by reputation, so
-\texttt{P1} still qualifies and \texttt{P5} does not. FR.SA.9 forbids paying out
-more than the reward, and FR.SA.10 requires each provider's status to be
+\texttt{P1} still qualifies and \texttt{P5} does not. \saref{SA_RewardValidation} forbids paying out
+more than the reward, and \saref{SA_ProviderStatusCheck} requires each provider's status to be
 checked before a reward is sent. The expected reward shares use the reputation
-snapshot taken for aggregation (FR31); if the design uses the scores after the
+snapshot taken for aggregation (\rref{FR_StakeReservation}); if the design uses the scores after the
 update instead, the expected shares will be recomputed from those scores.
 
-How test will be performed: Record each provider's reputation and token
+\textbf{How test will be performed:} Record each provider's reputation and token
 balance, run the request, and read the result, the reputation scores, and the
 reward transfers from both the application and the on-chain accounts. Assert
 the values above, allowing up to one base unit of difference per reward for
@@ -1391,53 +1438,53 @@ integer rounding, and check the backend log for the status checks.
 
 \item{ST-PEN-1: Misbehaving providers in a single request\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: Task \texttt{Penalty-Test-Task} has a numerical output schema.
+\textbf{Initial State:} Task \texttt{Penalty-Test-Task} has a numerical output schema.
 Providers \texttt{P1} to \texttt{P5} are registered with 100 tokens of stake
 each. \texttt{P1} has a reputation score of 100, and the others have 50. A
 request has been submitted and all five providers have accepted it.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item \texttt{P1} and \texttt{P2} submit accurate predictions (10 and 10.5).
-\item \texttt{P3} submits a valid but very inaccurate prediction (1{,}000{,}000).
-\item \texttt{P4} submits a prediction that does not match the output schema (a
+\item[1.] \texttt{P1} and \texttt{P2} submit accurate predictions (10 and 10.5).
+\item[2.] \texttt{P3} submits a valid but very inaccurate prediction (1{,}000{,}000).
+\item[3.] \texttt{P4} submits a prediction that does not match the output schema (a
 string instead of a number).
-\item \texttt{P5} submits nothing, and the maximum prediction time is allowed
+\item[4.] \texttt{P5} submits nothing, and the maximum prediction time is allowed
 to pass.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item \texttt{P1}'s reputation is increased but stays at 100.
-\item \texttt{P3}'s reputation decreases by no more than
+\item[1.] \texttt{P1}'s reputation is increased but stays at 100.
+\item[2.] \texttt{P3}'s reputation decreases by no more than
 \texttt{MAX\_REPUTATION\_PENALTY}, and its stake stays at 100 tokens.
-\item \texttt{P4}'s prediction is rejected. \texttt{P4} and \texttt{P5} each
+\item[3.] \texttt{P4}'s prediction is rejected. \texttt{P4} and \texttt{P5} each
 have their stake reduced to $100 \times (1 - \texttt{SLASH\_FRACTION})$ tokens
 and their reputation decreased.
-\item \texttt{P2}'s stake is unchanged, and every reputation score stays
+\item[4.] \texttt{P2}'s stake is unchanged, and every reputation score stays
 within $[0, 100]$.
 \end{itemize}
 
-Test Case Derivation: FR43 requires slashing and a reputation decrease for a
-rejected prediction, and FR44 requires the same for a provider that accepted
-but did not submit. FR42 allows slashing only in those two cases, so the
+\textbf{Test Case Derivation:} \rref{FR_ReputationPenaltyCap} requires slashing and a reputation decrease for a
+rejected prediction, and \rref{FR_DistributeRewards} requires the same for a provider that accepted
+but did not submit. \rref{FR_ReputationDecrease} allows slashing only in those two cases, so the
 inaccurate but valid prediction from \texttt{P3} must cost reputation and not
-stake. FR40 caps the reputation decrease from a single request, which the
-extreme prediction from \texttt{P3} checks. FR36 keeps scores within $[0,
+stake. \rref{FR_ReputationIncrease} caps the reputation decrease from a single request, which the
+extreme prediction from \texttt{P3} checks. \rref{FR_ResultSpread} keeps scores within $[0,
 100]$, which \texttt{P1} checks at the top of the range.
 
-How test will be performed: Use a task with a short maximum prediction time.
+\textbf{How test will be performed:} Use a task with a short maximum prediction time.
 Record each provider's stake and reputation, run the request until it
 completes, and read the values again from the on-chain stake and reputation
 accounts. Assert the expected values for each provider.
 
 \item{ST-PEN-2: Providers leaving a task\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: Task \texttt{Exit-Test-Task} has an exit reputation threshold
+\textbf{Initial State:} Task \texttt{Exit-Test-Task} has an exit reputation threshold
 $R_{\text{exit}} = 50$. The following providers are registered:
 \begin{itemize}
 \item \texttt{P1}: stake just above \texttt{MINIMUM\_PROVIDER\_STAKE}, so that
@@ -1450,39 +1497,39 @@ the minimum during the test.
 reputation scores of 80, 50, and 25.
 \end{itemize}
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Run \texttt{REPEAT\_OFFENSE\_WINDOW} requests for the task. \texttt{P1}
+\item[1.] Run \texttt{REPEAT\_OFFENSE\_WINDOW} requests for the task. \texttt{P1}
 fails to submit in the first one. \texttt{P2} fails to submit in
 \texttt{REPEAT\_OFFENSE\_COUNT} of them. \texttt{P3} submits a very inaccurate
 prediction in the first one. The other providers submit accurate predictions.
-\item After the requests finish, \texttt{P4}, \texttt{P5}, and \texttt{P6}
+\item[2.] After the requests finish, \texttt{P4}, \texttt{P5}, and \texttt{P6}
 voluntarily unregister.
-\item While one of the requests is active, \texttt{P4} tries to unregister.
+\item[3.] While one of the requests is active, \texttt{P4} tries to unregister.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item \texttt{P1} is unregistered automatically after its stake falls below
+\item[1.] \texttt{P1} is unregistered automatically after its stake falls below
 \texttt{MINIMUM\_PROVIDER\_STAKE}.
-\item \texttt{P2} is unregistered after its \texttt{REPEAT\_OFFENSE\_COUNT}-th
+\item[2.] \texttt{P2} is unregistered after its \texttt{REPEAT\_OFFENSE\_COUNT}-th
 slash, and its remaining stake is burned.
-\item \texttt{P3}'s reputation reaches 0. \texttt{P3} is unregistered and its
+\item[3.] \texttt{P3}'s reputation reaches 0. \texttt{P3} is unregistered and its
 remaining stake is burned.
-\item \texttt{P4}'s attempt to unregister during an active request is refused.
+\item[4.] \texttt{P4}'s attempt to unregister during an active request is refused.
 After the requests, \texttt{P4} ($R = 80$) and \texttt{P5} ($R = 50 =
 R_{\text{exit}}$) get all 100 tokens back. \texttt{P6} ($R = 25$) gets
 $\frac{25}{50} \times 100 = 50$ tokens back, and the other 50 are burned.
 \end{itemize}
 
-Test Case Derivation: FR45, FR46, and FR47 give the three cases where a
+\textbf{Test Case Derivation:} \rref{FR_RewardTransferFailure}, \rref{FR_PendingTransferNotice}, and \rref{FR_PendingTransferRetry} give the three cases where a
 provider is removed automatically: stake below the minimum, too many slashes,
-and a reputation of 0. FR46 and FR47 also require the remaining stake to be
-burned. FR48 sets how much stake is returned on voluntary unregistration, and
+and a reputation of 0. \rref{FR_PendingTransferNotice} and \rref{FR_PendingTransferRetry} also require the remaining stake to be
+burned. \rref{FR_PendingTransferDeadline} sets how much stake is returned on voluntary unregistration, and
 \texttt{P5} sits exactly on the threshold. The refused attempt by \texttt{P4}
-also exercises FR15.
+also exercises \rref{FR_ProviderWillingUnregistration}.
 
-How test will be performed: After each request, record each provider's
+\textbf{How test will be performed:} After each request, record each provider's
 registration status, stake, and slash count. Record the total burned token
 supply and each provider's token balance before and after unregistration, and
 assert the expected changes.
@@ -1492,55 +1539,55 @@ assert the expected changes.
 \subsubsection{Transparency and Data Handling}
 
 These tests verify that users can see and verify the transactions they
-authorize (FR49--FR52) and that a request's input data is protected for its
-whole life (FR53--FR55). They follow a requester who pays for a request and
+authorize (\rref{FR_RequestCompletion}--\rref{FR_SlashNoShow}) and that a request's input data is protected for its
+whole life (\rref{FR_ProviderMinimumStakeUnregistration}--\rref{FR_ProviderForcedUnregistration}). They follow a requester who pays for a request and
 checks it, and a request's input data from submission to deletion.
 
 \begin{enumerate}
 
 \item{ST-TRANS-1: Requester pays for a request and verifies it\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: An authenticated requester is signed in with a test wallet
+\textbf{Initial State:} An authenticated requester is signed in with a test wallet
 signer that holds 50 tokens. Task \texttt{Rep-Test-Task} and the providers from
 ST-REP-1 are registered.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Submit an inference request with a payment of 137 tokens.
-\item Add funds so the wallet holds 1000 tokens, then submit the request again
+\item[1.] Submit an inference request with a payment of 137 tokens.
+\item[2.] Add funds so the wallet holds 1000 tokens, then submit the request again
 and approve the transaction.
-\item Let the request run to completion, then open the transaction history.
+\item[3.] Let the request run to completion, then open the transaction history.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item On the first attempt, the system shows an insufficient-funds error and
+\item[1.] On the first attempt, the system shows an insufficient-funds error and
 does not ask the wallet for a signature.
-\item On the second attempt, before the wallet asks for a signature, the
+\item[2.] On the second attempt, before the wallet asks for a signature, the
 application shows the action (``Submit inference request'') and the amount
 (137 tokens).
-\item The transaction status is shown as pending and then confirmed.
-\item The requester's token balance goes down by exactly 137 tokens, and the
+\item[3.] The transaction status is shown as pending and then confirmed.
+\item[4.] The requester's token balance goes down by exactly 137 tokens, and the
 request's escrow holds exactly 137 tokens.
-\item The transaction history shows an identifier for the payment. Looking it
+\item[5.] The transaction history shows an identifier for the payment. Looking it
 up on Solana Devnet returns a transaction signed by the requester's wallet
 with the expected instruction and amount.
-\item The blockchain holds records of the payment, the providers' stakes, the
+\item[6.] The blockchain holds records of the payment, the providers' stakes, the
 aggregated result, the reputation updates, and the reward transfers, and each
 matches the value shown in the application.
 \end{itemize}
 
-Test Case Derivation: FR.SA.2 requires a balance check before a signature is
-requested. FR49 requires the action and amount to be shown before signing, and
-FR50 requires the status to be shown until it is final. FR.SA.8 requires the
+\textbf{Test Case Derivation:} \saref{SA_BalanceCheck} requires a balance check before a signature is
+requested. \rref{FR_RequestCompletion} requires the action and amount to be shown before signing, and
+\rref{FR_InferenceProviderSlashing} requires the status to be shown until it is final. \saref{SA_ChargeEqualsAuthorized} requires the
 amount charged to equal the amount approved; an unusual amount (137) is used so
-that a hard-coded or rounded value would be caught. FR51 requires an identifier
-that can be looked up on the blockchain, and FR52 lists the records that must
+that a hard-coded or rounded value would be caught. \rref{FR_SlashInvalidPrediction} requires an identifier
+that can be looked up on the blockchain, and \rref{FR_SlashNoShow} lists the records that must
 be on the blockchain.
 
-How test will be performed: Run the flow in an automated browser test. Pause
+\textbf{How test will be performed:} Run the flow in an automated browser test. Pause
 the test wallet signer when it receives a signing request and check the
 confirmation screen. Record each status shown. Compare balances before and
 after. Query Solana Devnet with the transaction identifier and read the
@@ -1549,44 +1596,44 @@ application's backend.
 
 \item{ST-DATA-1: Input data from submission to deletion\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: Task \texttt{Data-Test-Task} has registered providers
+\textbf{Initial State:} Task \texttt{Data-Test-Task} has registered providers
 \texttt{P1}, \texttt{P2}, and \texttt{P3}. Another authenticated user
 \texttt{U1} is not involved.
 
-Input:
+\textbf{Input:}
 \begin{itemize}
-\item Requester \texttt{R1} submits request \texttt{REQ-A} whose input contains
+\item[1.] Requester \texttt{R1} submits request \texttt{REQ-A} whose input contains
 the marker value \texttt{271828.1828}. \texttt{P1} and \texttt{P2} accept it;
 \texttt{P3} does not.
-\item During the prediction phase, \texttt{R1}, \texttt{P1}, \texttt{P2},
+\item[2.] During the prediction phase, \texttt{R1}, \texttt{P1}, \texttt{P2},
 \texttt{P3}, \texttt{U1}, and an unauthenticated client each try to get the
 input data.
-\item \texttt{REQ-A} runs to completion.
-\item \texttt{R1} submits request \texttt{REQ-B}, which is cancelled because
+\item[3.] \texttt{REQ-A} runs to completion.
+\item[4.] \texttt{R1} submits request \texttt{REQ-B}, which is cancelled because
 too few providers accept it.
 \end{itemize}
 
-Output:
+\textbf{Output:}
 \begin{itemize}
-\item Only \texttt{R1}, \texttt{P1}, and \texttt{P2} can get \texttt{REQ-A}'s
+\item[1.] Only \texttt{R1}, \texttt{P1}, and \texttt{P2} can get \texttt{REQ-A}'s
 input. \texttt{P3}, \texttt{U1}, and the unauthenticated client are refused.
-\item No transaction or account linked to either request contains the marker
+\item[2.] No transaction or account linked to either request contains the marker
 value in readable form.
-\item After each request reaches its final state, its input is no longer in
+\item[3.] After each request reaches its final state, its input is no longer in
 any storage the system controls, and every user, including \texttt{R1}, gets
 ``not found'' when asking for it.
 \end{itemize}
 
-Test Case Derivation: FR53 limits the input to the requester and the providers
-that accepted; \texttt{P3} checks that being registered is not enough. FR54
+\textbf{Test Case Derivation:} \rref{FR_ProviderMinimumStakeUnregistration} limits the input to the requester and the providers
+that accepted; \texttt{P3} checks that being registered is not enough. \rref{FR_SlashRepeatedOffenses}
 forbids readable input on the blockchain, and the marker value makes it
-possible to search raw on-chain data for it. FR55 requires deletion after both
-completion and cancellation. The test also exercises FR24 (input given to
-accepting providers) and FR23 (cancellation when too few providers accept).
+possible to search raw on-chain data for it. \rref{FR_ProviderForcedUnregistration} requires deletion after both
+completion and cancellation. The test also exercises \rref{FR_RequestInputDistribution} (input given to
+accepting providers) and \rref{FR_MinimumAcceptance} (cancellation when too few providers accept).
 
-How test will be performed: Call the input-data endpoint as each user. Search
+\textbf{How test will be performed:} Call the input-data endpoint as each user. Search
 the raw data of every linked transaction and account for the marker in its
 common encodings (text, 32-bit and 64-bit floating point, and the program's
 fixed-point format). After each request ends, query the database, file
@@ -1597,8 +1644,8 @@ storage, and caches directly and through the application.
 \subsubsection{Safety}
 
 This test verifies the transaction safety requirements that are not already
-covered by the tests above (FR.SA.1 and FR.SA.3--FR.SA.7). FR.SA.2 and FR.SA.8
-are covered by ST-TRANS-1, and FR.SA.9 and FR.SA.10 by ST-REP-1. The test
+covered by the tests above (\saref{SA_NoDuplicateSubmission} and \saref{SA_OnChainFundsCheck}--\saref{SA_TransactionSimulation}). \saref{SA_BalanceCheck} and \saref{SA_ChargeEqualsAuthorized}
+are covered by ST-TRANS-1, and \saref{SA_RewardValidation} and \saref{SA_ProviderStatusCheck} by ST-REP-1. The test
 injects faults using a test build of the backend and a proxy between the
 system and the Solana RPC.
 
@@ -1606,50 +1653,52 @@ system and the Solana RPC.
 
 \item{ST-SAFE-1: Requester payments under transaction faults\\}
 
-Control: Automatic, with the retry step also checked manually in the web client
+\textbf{Control:} Automatic, with the retry step also checked manually in the web client
 
-Initial State: A requester is signed in with 1000 tokens. The RPC proxy and
+\textbf{Initial State:} A requester is signed in with 1000 tokens. The RPC proxy and
 the backend test build can each be set to inject one fault.
 
-Input: The requester submits an inference request payment several times, with
-a different fault each time:
-\begin{enumerate}
-\item The proxy forwards the transaction but drops the response.
-\item The proxy holds the transaction until its blockhash has expired.
-\item The requester's tokens are moved out of the wallet after the balance
+\textbf{Input:}
+\begin{itemize}
+\item[1.] The requester submits an inference request payment through a proxy
+that forwards the transaction but drops the response.
+\item[2.] The requester submits an inference request payment through a proxy
+that holds the transaction until its blockhash has expired.
+\item[3.] The requester submits an inference request payment after the requester's
+tokens are moved out of the wallet after the balance
 check but before the transaction runs.
-\item The requester rejects the signature, and separately a test script sends
+\item[4.] The requester rejects the signature, and separately a test script sends
 a payment signed by a different wallet directly to the program.
-\item The backend test build changes the transaction's amount after the amount
+\item[5.] The backend test build changes the transaction's amount after the amount
 has been shown to the user.
-\item After any of the failures above, the requester presses retry.
-\end{enumerate}
+\item[6.] After any of the failures above, the requester presses retry.
+\end{itemize}
 
-Output:
-\begin{enumerate}
-\item The system checks the status before trying again, finds the payment was
+\textbf{Output:}
+\begin{itemize}
+\item[1.] The system checks the status before trying again, finds the payment was
 processed, and does not resubmit. Exactly one payment is made and each status
 is logged.
-\item The system only marks the payment as failed after the validity period
+\item[2.] The system only marks the payment as failed after the validity period
 has ended and it has checked the status.
-\item The on-chain program rejects the payment and no state changes.
-\item The rejected signature is never submitted, and the program rejects the
+\item[3.] The on-chain program rejects the payment and no state changes.
+\item[4.] The rejected signature is never submitted, and the program rejects the
 payment signed by the wrong wallet.
-\item The simulation does not match the shown amount, so the transaction is not
+\item[5.] The simulation does not match the shown amount, so the transaction is not
 sent for signing.
-\item The user sees an error message with an option to retry, and the retry
+\item[6.] The user sees an error message with an option to retry, and the retry
 succeeds.
-\end{enumerate}
+\end{itemize}
 
-Test Case Derivation: Each fault matches one requirement: FR.SA.1 (no
+\textbf{Test Case Derivation:} Each fault matches one requirement: \saref{SA_NoDuplicateSubmission} (no
 resubmission before confirming the first was not processed, with status logs),
-FR.SA.5 (wait for expiry and a status check), FR.SA.3 (the on-chain program
-checks funds at execution), FR.SA.4 (only signed transactions are submitted),
-FR.SA.7 (simulation must match the shown amounts), and FR.SA.6 (show the error
+\saref{SA_ExpiryCheck} (wait for expiry and a status check), \saref{SA_OnChainFundsCheck} (the on-chain program
+checks funds at execution), \saref{SA_SignedTransactionsOnly} (only signed transactions are submitted),
+\saref{SA_TransactionSimulation} (simulation must match the shown amounts), and \saref{SA_FailureRetry} (show the error
 and allow a retry). After the whole test, the requester should have paid only
 for the requests that succeeded.
 
-How test will be performed: Run each fault in turn. Use the proxy to count
+\textbf{How test will be performed:} Run each fault in turn. Use the proxy to count
 submitted transactions and the test wallet signer to count signing requests.
 Count payments from the requester's wallet on Devnet and compare the final
 balance with the number of successful requests. A tester also runs step 6 by
@@ -1660,7 +1709,7 @@ hand in the web client and records the error message shown.
 \subsection{Tests for Nonfunctional Requirements}
 
 This section describes the tests for the non-functional requirements in the
-\href{../SRS/SRS.pdf}{SRS} (NFR1--NFR17 and NFR.SA.1--NFR.SA.4). As with the
+\href{../SRS/SRS.pdf}{SRS} (\nfrref{NFR_ReputationWeightedAggregate}--\nfrref{NFR_NoExtraSoftware} and \saref{SA_ErrorMessageTime}--\saref{SA_DependencyScan}). As with the
 functional tests, each test is a larger activity that checks several related
 requirements at once: a large simulation of many requests, a usability study, a
 security and privacy audit, and a set of release checks. Some tests produce
@@ -1674,52 +1723,52 @@ are listed in the Symbolic Parameters appendix.
 
 \item{NFR-SIM-1: Large-scale request simulation\\}
 
-Control: Automatic
+\textbf{Control:} Automatic
 
-Initial State: The system runs on a local Solana validator with a simulation
+\textbf{Initial State:} The system runs on a local Solana validator with a simulation
 harness that controls mock providers and can inject faults. A separate
 reference implementation of the Appendix A aggregation algorithm is written
 in TypeScript by a team member who did not write the system's version.
 
-Input/Condition:
+\textbf{Input:}
 \begin{itemize}
-\item Run \texttt{NUM\_SIMULATED\_REQUESTS} requests with random predictions
+\item[1.] Run \texttt{NUM\_SIMULATED\_REQUESTS} requests with random predictions
 and reputation scores, including values at the edges of their declared ranges
 (reputation 0 and 100, the largest and smallest allowed predictions and token
 amounts) and the worked examples from the SRS.
-\item Mix in failure scenarios: too few providers accept, too few valid
+\item[2.] Mix in failure scenarios: too few providers accept, too few valid
 predictions, providers that do not submit, invalid predictions, dropped or
 delayed RPC responses, and a backend restart during the prediction phase.
-\item Run the requests at 1, 5, 10, 20, and \texttt{MAX\_CONCURRENT\_REQUESTS}
+\item[3.] Run the requests at 1, 5, 10, 20, and \texttt{MAX\_CONCURRENT\_REQUESTS}
 at the same time. Mock providers reply immediately, so only the system's own
 processing time is measured.
-\item During each prediction phase, try to read submitted predictions as
+\item[4.] During each prediction phase, try to read submitted predictions as
 another provider, as the requester, and from the raw on-chain data.
 \end{itemize}
 
-Output/Result:
+\textbf{Output:}
 \begin{itemize}
-\item Every aggregated result equals the reference implementation's result.
+\item[1.] Every aggregated result equals the reference implementation's result.
 The test reports the number of mismatches (expected: 0).
-\item No calculation overflows. Any input that would overflow causes the
+\item[2.] No calculation overflows. Any input that would overflow causes the
 transaction to fail with no change to on-chain state.
-\item Every request reaches a final state before its final deadline, and its
+\item[3.] Every request reaches a final state before its final deadline, and its
 escrow is empty afterwards.
-\item No prediction can be read before its prediction phase ends.
-\item A table and graph of the median and 95th-percentile processing time at
+\item[4.] No prediction can be read before its prediction phase ends.
+\item[5.] A table and graph of the median and 95th-percentile processing time at
 each concurrency level. The test passes if the median at
 \texttt{MAX\_CONCURRENT\_REQUESTS} is no more than
 \texttt{PERFORMANCE\_DEGRADATION\_TOLERANCE} higher than for a single request.
 \end{itemize}
 
-Test Case Derivation: NFR1 requires simulation tests to show that the results
-match the Appendix A algorithm. NFR2 forbids overflow and requires an
-overflowing transaction to leave no change. NFR13 requires every request to
-reach a final state and settle its escrow before the final deadline. NFR11
-requires predictions to stay hidden until the phase ends. NFR15 requires
+\textbf{Test Case Derivation:} \nfrref{NFR_ReputationWeightedAggregate} requires simulation tests to show that the results
+match the Appendix A algorithm. \nfrref{NFR_AggregationArithmeticErrors} forbids overflow and requires an
+overflowing transaction to leave no change. \nfrref{NFR_FinalState} requires every request to
+reach a final state and settle its escrow before the final deadline. \nfrref{NFR_PredictionsHidden}
+requires predictions to stay hidden until the phase ends. \nfrref{NFR_ConcurrentRequests} requires
 concurrent requests without a drop in performance.
 
-How test will be performed: The harness runs the requests and then reads each
+\textbf{How test will be performed:} The harness runs the requests and then reads each
 request's status, result, and escrow from the blockchain. It compares each
 result with the reference implementation and logs the inputs of any mismatch
 so they can be added as a unit test. It checks that the tokens escrowed at the
@@ -1734,48 +1783,48 @@ concurrency level is run 3 times, and the timings come from the system's logs.
 
 \item{NFR-USE-1: Usability study with new users\\}
 
-Control: Manual, with timing checks automated
+\textbf{Control:} Manual, with timing checks automated
 
-Initial State: The web application is deployed on a test environment
+\textbf{Initial State:} The web application is deployed on a test environment
 connected to Solana Devnet. 5 to 8 participants who use a web browser but have
 never used a blockchain wallet or built a machine learning model are recruited.
 
-Input/Condition: Each participant gets a short description of DAIIM, but no
+\textbf{Input:} Each participant gets a short description of DAIIM, but no
 instructions on how to use it, and completes these tasks while thinking out
 loud:
-\begin{enumerate}
-\item Sign in by creating an embedded wallet with an email address.
-\item Find the documentation and the list of available tasks.
-\item Submit an inference request for an existing task.
-\item Find the result of the request and the payment for it.
-\item Sign out.
-\end{enumerate}
+\begin{itemize}
+\item[1.] Sign in by creating an embedded wallet with an email address.
+\item[2.] Find the documentation and the list of available tasks.
+\item[3.] Submit an inference request for an existing task.
+\item[4.] Find the result of the request and the payment for it.
+\item[5.] Sign out.
+\end{itemize}
 During task 3, the test build forces one error (a failed transaction). The
 participant then fills out the survey in the Usability Survey Questions
 appendix.
 
-Output/Result:
+\textbf{Output:}
 \begin{itemize}
-\item At least \texttt{USABILITY\_COMPLETION\_RATE} of participants complete
+\item[1.] At least \texttt{USABILITY\_COMPLETION\_RATE} of participants complete
 every task without help, including creating a wallet with no Web3 knowledge.
-\item The median time to finish tasks 1 to 3 is 5 minutes or less.
-\item Every feature can be reached within 2 clicks of the home page.
-\item Every error shown has a name, a description, and a suggested fix, and
+\item[2.] The median time to finish tasks 1 to 3 is 5 minutes or less.
+\item[3.] Every feature can be reached within 2 clicks of the home page.
+\item[4.] Every error shown has a name, a description, and a suggested fix, and
 appears within 2 seconds of the failure being detected.
-\item A progress indicator is shown during every operation longer than
+\item[5.] A progress indicator is shown during every operation longer than
 \texttt{LONG\_OPERATION\_THRESHOLD}.
-\item A plain-language confirmation is shown after every transaction.
-\item The survey results are summarized in a table and bar chart.
+\item[6.] A plain-language confirmation is shown after every transaction.
+\item[7.] The survey results are summarized in a table and bar chart.
 \end{itemize}
 
-Test Case Derivation: NFR3 requires a new user to learn the system within 5
-minutes, and NFR8 requires them to create an embedded wallet without Web3
-knowledge. NFR4 requires every feature within 2 clicks. NFR5 requires errors to
-have a name, description, and fix, and NFR.SA.1 requires them within 2 seconds.
-NFR6 requires progress to be shown for long operations, and NFR7 requires
+\textbf{Test Case Derivation:} \nfrref{NFR_Learnability} requires a new user to learn the system within 5
+minutes, and \nfrref{NFR_EmbeddedWalletAccess} requires them to create an embedded wallet without Web3
+knowledge. \nfrref{NFR_TwoClickAccess} requires every feature within 2 clicks. \nfrref{NFR_ErrorVisibility} requires errors to
+have a name, description, and fix, and \saref{SA_ErrorMessageTime} requires them within 2 seconds.
+\nfrref{NFR_ProgressStatus} requires progress to be shown for long operations, and \nfrref{NFR_TransactionConfirmation} requires
 plain-language confirmations.
 
-How test will be performed: A team member observes each session, times each
+\textbf{How test will be performed:} A team member observes each session, times each
 task, records clicks, and only helps if the participant is stuck for more than
 3 minutes (which counts as not completing the task). A team member also
 counts the clicks to each feature from the home page. Error timings and
@@ -1791,44 +1840,44 @@ demo and a second after changes are made in response to it.
 
 \item{NFR-SEC-1: Security and privacy audit\\}
 
-Control: Manual, with automated scans
+\textbf{Control:} Manual, with automated scans
 
-Initial State: The system is deployed in its test environment. A request is in
+\textbf{Initial State:} The system is deployed in its test environment. A request is in
 progress, so its input data is stored. Test providers have consented to
 showing different sets of profile information.
 
-Input/Condition:
+\textbf{Input:}
 \begin{itemize}
-\item Run a full request with an extension wallet and with an embedded wallet,
+\item[1.] Run a full request with an extension wallet and with an embedded wallet,
 capturing network traffic and backend logs.
-\item Read the raw contents of the database and file storage.
-\item Scan every endpoint's TLS setup, connect over plain HTTP, and point the
+\item[2.] Read the raw contents of the database and file storage.
+\item[3.] Scan every endpoint's TLS setup, connect over plain HTTP, and point the
 backend at RPC and storage endpoints that use a self-signed certificate.
-\item Visit every public page without signing in.
+\item[4.] Visit every public page without signing in.
 \end{itemize}
 
-Output/Result:
+\textbf{Output:}
 \begin{itemize}
-\item Input data is encrypted in all captured traffic and cannot be read in
+\item[1.] Input data is encrypted in all captured traffic and cannot be read in
 raw storage, using algorithms and key lengths on a recognized recommended list
 (for example, NIST SP 800-175B).
-\item All endpoints use TLS 1.2 or later with valid certificates. Plain HTTP
+\item[2.] All endpoints use TLS 1.2 or later with valid certificates. Plain HTTP
 is refused or redirected, and the backend refuses endpoints with invalid
 certificates.
-\item No private key or recovery phrase appears in traffic, logs, or storage,
+\item[3.] No private key or recovery phrase appears in traffic, logs, or storage,
 and no email address or phone number appears on the blockchain.
-\item Public pages show only the information each provider agreed to share.
-\item A completed audit checklist based on the PIPEDA safeguards principle,
+\item[4.] Public pages show only the information each provider agreed to share.
+\item[5.] A completed audit checklist based on the PIPEDA safeguards principle,
 with any gaps recorded as issues.
 \end{itemize}
 
-Test Case Derivation: NFR9 and NFR10 require sensitive data to be encrypted in
+\textbf{Test Case Derivation:} \nfrref{NFR_DataEncryption} and \nfrref{NFR_InputDataAccess} require sensitive data to be encrypted in
 transit and at rest to an industry standard, verified through a security
-audit. NFR.SA.3 requires TLS with certificate checks. NFR.SA.2 requires all
+audit. \saref{SA_TLS} requires TLS with certificate checks. \saref{SA_WalletSigning} requires all
 signing to happen in the user's wallet with no private information on the
-blockchain. NFR12 limits public pages to information providers consented to.
+blockchain. \nfrref{NFR_PublicPagesPrivacy} limits public pages to information providers consented to.
 
-How test will be performed: A team member who did not write the storage code
+\textbf{How test will be performed:} A team member who did not write the storage code
 leads the audit. Search the captured traffic, logs, storage, and on-chain data
 for marker values in the input and for the test wallets' keys and the test
 users' contact details. Run \texttt{testssl.sh} against each endpoint. Compare
@@ -1843,40 +1892,40 @@ checklist in a meeting.
 
 \item{NFR-RELEASE-1: Release checks\\}
 
-Control: Automatic, with a manual run on Safari
+\textbf{Control:} Automatic, with a manual run on Safari
 
-Initial State: A release candidate is on a pull request to \texttt{main}, and
+\textbf{Initial State:} A release candidate is on a pull request to \texttt{main}, and
 the GitHub Actions workflow is set up.
 
-Input/Condition:
+\textbf{Input:}
 \begin{itemize}
-\item CI runs \texttt{ESLint}, \texttt{Prettier --check}, \texttt{cargo clippy}
+\item[1.] CI runs \texttt{ESLint}, \texttt{Prettier --check}, \texttt{cargo clippy}
 (with warnings treated as errors), \texttt{cargo fmt --check},
 \texttt{npm audit}, and \texttt{cargo audit}.
-\item The main user flow (sign in with an embedded wallet, browse tasks,
+\item[2.] The main user flow (sign in with an embedded wallet, browse tasks,
 submit a request, view the result and transaction history, sign out) is run on
 the current versions of Chrome, Firefox, Edge, and Safari, each in a new
 browser profile with no extensions installed.
 \end{itemize}
 
-Output/Result:
+\textbf{Output:}
 \begin{itemize}
-\item The linters and formatters report no errors, and the pull request
+\item[1.] The linters and formatters report no errors, and the pull request
 cannot be merged while any check fails.
-\item No dependency vulnerability of high or critical severity is reported
+\item[2.] No dependency vulnerability of high or critical severity is reported
 unless the team has reviewed it and recorded it in an issue.
-\item The flow completes in every browser with no console errors and without
+\item[3.] The flow completes in every browser with no console errors and without
 asking the user to install any software or extension. The result is a table of
 each browser and step.
 \end{itemize}
 
-Test Case Derivation: NFR14 requires the coding standards in the Development
-Plan, enforced by linting; the Development Plan names these tools. NFR.SA.4
-requires dependencies to be scanned for known vulnerabilities. NFR16 requires
-the system to work on current modern browsers, and NFR17 requires
+\textbf{Test Case Derivation:} \nfrref{NFR_CodingStandards} requires the coding standards in the Development
+Plan, enforced by linting; the Development Plan names these tools. \saref{SA_DependencyScan}
+requires dependencies to be scanned for known vulnerabilities. \nfrref{NFR_BrowserSupport} requires
+the system to work on current modern browsers, and \nfrref{NFR_NoExtraSoftware} requires
 embedded-wallet users to need nothing beyond a browser.
 
-How test will be performed: The linters and scans run in CI on every pull
+\textbf{How test will be performed:} The linters and scans run in CI on every pull
 request and once a week, and branch protection on \texttt{main} requires them
 to pass. The browser flow runs as an automated test on Chrome, Firefox, and
 Edge in CI. A team member runs it by hand on Safari, since Safari cannot run
@@ -1887,11 +1936,61 @@ in CI. Reviewers check the standards that linters cannot (such as
 
 \subsection{Traceability Between Test Cases and Requirements}
 
-\wss{Provide a table that shows which test cases are supporting which
-  requirements.}
+The following table summarizes the traceability from each system test to the
+requirements it supports. The mappings are derived from the Test Case
+Derivation for each test and correspond to the functional and non-functional
+requirements in the \href{../SRS/SRS.pdf}{SRS}.
+
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{p{0.25\textwidth} p{0.65\textwidth}}
+\caption{Traceability Between Test Cases and Requirements}\\
+\toprule
+\textbf{System test} & \textbf{Supported requirements}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{System test} & \textbf{Supported requirements}\\
+\midrule
+\endhead
+ST-AUTH-EXT-1 & \rref{FR_WalletAuthentication}\\
+ST-AUTH-EXT-2 & \rref{FR_WalletAuthentication}\\
+ST-AUTH-EMB-1 & \rref{FR_WalletAuthentication}, \rref{FR_EmbeddedWalletCreation}\\
+ST-AUTH-EMB-2 & \rref{FR_WalletAuthentication}\\
+ST-TASK-CREATE-1 & \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \nfrref{NFR_TransactionConfirmation}\\
+ST-PROV-1 & \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \nfrref{NFR_TransactionConfirmation}\\
+ST-PROV-2 & \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}\\
+ST-PROV-3 & \rref{FR_ProviderWillingUnregistration}, \rref{FR_ProviderUnregistrationStakeReturn}\\
+ST-PROV-4 & \rref{FR_ProviderWillingUnregistration}\\
+ST-PROV-5 & \rref{FR_ProviderDashboard}\\
+ST-REQ-1 & \rref{FR_RequestSubmission}\\
+ST-REQ-2 & \rref{FR_RequestValidation}, \rref{FR_RequestSubmission}\\
+ST-REQ-3 & \rref{FR_RequestPayment}, \rref{FR_TransactionAuthorization}\\
+ST-REQ-4 & \rref{FR_RequestBroadcast}\\
+ST-ACC-1 & \rref{FR_AcceptancePeriodStart}, \rref{FR_TransactionAuthorization}, \rref{FR_StakeReservation}, \rref{FR_TaskAcceptancePeriod}\\
+ST-ACC-2 & \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_TaskMinimumProviders}\\
+ST-ACC-3 & \rref{FR_MinimumAcceptance}, \rref{FR_StakeReservationRelease}\\
+ST-ACC-4 & \rref{FR_StakeReservation}, \rref{FR_StakeReservationRelease}\\
+ST-PRED-1 & \rref{FR_PredictionSubmission}, \rref{FR_PredictionPhaseEnd}\\
+ST-PRED-2 & \rref{FR_PredictionPhaseStart}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_PredictionPhaseEnd}\\
+ST-PRED-3 & \rref{FR_MinimumPredictions}, \rref{FR_CancellationCompensation}, \rref{FR_StakeReservationRelease}\\
+ST-REP-1 & \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread}, \rref{FR_ReputationRange}, \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, \rref{FR_ReputationDecrease}, \saref{SA_RewardValidation}, \saref{SA_ProviderStatusCheck}\\
+ST-PEN-1 & \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}, \rref{FR_ReputationPenaltyCap}\\
+ST-PEN-2 & \rref{FR_RewardTransferFailure}, \rref{FR_PendingTransferNotice}, \rref{FR_PendingTransferRetry}, \rref{FR_PendingTransferDeadline}, \rref{FR_ProviderMinimumStakeUnregistration}, \rref{FR_ProviderForcedUnregistration}, \rref{FR_SlashRepeatedOffenses}, \rref{FR_ProviderUnregistrationStakeReturn}\\
+ST-TRANS-1 & \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \saref{SA_BalanceCheck}, \saref{SA_ChargeEqualsAuthorized}\\
+ST-DATA-1 & \rref{FR_InputAccessRestriction}, \rref{FR_InputNotOnChain}, \rref{FR_InputDeletion}\\
+ST-SAFE-1 & \saref{SA_NoDuplicateSubmission}, \saref{SA_OnChainFundsCheck}, \saref{SA_TransactionSimulation}, \saref{SA_ExpiryCheck}, \saref{SA_SignedTransactionsOnly}, \saref{SA_FailureRetry}\\
+NFR-SIM-1 & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_PredictionsHidden}, \nfrref{NFR_FinalState}, \nfrref{NFR_ConcurrentRequests}\\
+NFR-USE-1 & \nfrref{NFR_Learnability}, \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_EmbeddedWalletAccess}, \saref{SA_ErrorMessageTime}\\
+NFR-SEC-1 & \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess}, \nfrref{NFR_PublicPagesPrivacy}, \saref{SA_WalletSigning}, \saref{SA_TLS}\\
+NFR-RELEASE-1 & \nfrref{NFR_CodingStandards}, \nfrref{NFR_BrowserSupport}, \nfrref{NFR_NoExtraSoftware}, \saref{SA_DependencyScan}\\
+\bottomrule
+\end{longtable}
 
 \section{Unit Test Description}
 
+\textit{The unit test plan will be added upon completion of the MIS.}
+
+\begin{comment}
 \wss{This section should not be filled in until after the MIS (detailed design
   document) has been completed.}
 
@@ -2014,6 +2113,7 @@ How test will be performed:
 \subsection{Traceability Between Test Cases and Modules}
 
 \wss{Provide evidence that all modules have been considered.}
+\end{comment}
 				
 \bibliographystyle{plainnat}
 
@@ -2022,8 +2122,6 @@ How test will be performed:
 \newpage
 
 \section{Appendix}
-
-This is where you can place additional information.
 
 \subsection{Symbolic Parameters}
 

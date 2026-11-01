@@ -41,6 +41,11 @@ all: $(patsubst %.tex, %.pdf, $(wildcard **/*.tex))
 	$(call COMPILE_TEX,$<)
 	$(call COMPILE_TEX,$<)
 
+# These documents import labels from the SRS auxiliary file. Making the SRS
+# PDF a prerequisite ensures its .aux file exists before either document is
+# compiled, including on a clean CI runner.
+docs/VnVPlan/VnVPlan.pdf: docs/SRS/SRS.pdf
+
 # Clean generated files
 clean:
 	find . -name "*.aux" -o -name "*.log" -o -name "*.pdf" -o -name "*.toc" -o -name "*.out" -o -name "*.bbl" -o -name "*.blg" -exec rm -f {} +
