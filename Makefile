@@ -45,6 +45,7 @@ all: $(patsubst %.tex, %.pdf, $(wildcard **/*.tex))
 # PDF a prerequisite ensures its .aux file exists before either document is
 # compiled, including on a clean CI runner.
 docs/VnVPlan/VnVPlan.pdf: docs/SRS/SRS.pdf
+docs/HazardAnalysis/HazardAnalysis.pdf: docs/SRS/SRS.pdf
 
 # Clean generated files
 clean:
