@@ -640,9 +640,12 @@ session, grants no profile access and displays the appropriate error message.
 
 \subsubsection{Inference Task Creation}
 
-This test verifies the end-to-end task creation flow, including validation of
+These tests verify the end-to-end task creation flow, including validation of
 the task definition, user authorization, and confirmation that the task-creation
-program instruction succeeds on the blockchain.
+program instruction succeeds on the blockchain. They also verify that the
+timing and tolerance fields of a task are stored and applied to its requests,
+and that all users, including users who are not signed in, can browse the
+marketplace and its tasks.
 
 \paragraph{Create and Validate Inference Tasks}
 
@@ -711,6 +714,118 @@ is rejected before authorization and no task is created. Finally, submit the
 valid definition named \texttt{Rejected-Authorization-Task}, configure the
 signer to reject authorization, and assert that no task-creation instruction
 is submitted and no task is created.
+\item{ST-TASK-CREATE-2\\}
+
+\textbf{Control:} Automatic
+
+\textbf{Initial State:} The system is running on Solana Devnet. An authenticated
+requester RQ-41 has a test wallet signer with enough SOL for transaction fees.
+The task names TASK-41, TASK-42, and TASK-43 are not already in use.
+PROV-41 and PROV-42 are authenticated providers with enough SOL to register for
+a task.
+
+\textbf{Input:}
+\begin{itemize}
+\item[1.] RQ-41 creates TASK-41 with a valid numerical regression definition,
+a minimum of 2 and a maximum of 4 providers, a reputation tolerance of 2.0, an
+acceptance period of 2 minutes, and a maximum prediction time of 5 minutes,
+and approves the transaction.
+\item[2.] RQ-41 submits the same definition as TASK-42, with the reputation
+tolerance left out.
+\item[3.] RQ-41 submits the same definition as TASK-43, with the maximum
+prediction time left out.
+\item[4.] PROV-41 and PROV-42 register for TASK-41, and RQ-41 submits inference
+request REQ-41 for TASK-41.
+\end{itemize}
+
+\textbf{Output:}
+\begin{itemize}
+\item[1.] TASK-41 is created, and its on-chain account stores a minimum of 2
+and a maximum of 4 providers, a reputation tolerance of 2.0, an acceptance
+period of 2 minutes, and a maximum prediction time of 5 minutes.
+\item[2.] TASK-42 is rejected with an error saying the reputation tolerance is
+missing, and no task is created.
+\item[3.] TASK-43 is rejected with an error saying the maximum prediction time
+is missing, and no task is created.
+\item[4.] The broadcast of REQ-41 to PROV-41 and PROV-42 includes the maximum
+prediction time of 5 minutes. REQ-41's acceptance period ends 2 minutes after
+the broadcast, and its prediction phase deadline is 5 minutes after the end of
+the acceptance period.
+\end{itemize}
+
+\textbf{Test Case Derivation:} \rref{FR_TaskMinimumProviders}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, and \rref{FR_TaskMaxPredictionTime} require each
+task definition to specify the number of providers, the reputation tolerance,
+the acceptance period, and the maximum prediction time, so a definition missing
+either of the last two must be rejected. \rref{FR_TaskAcceptancePeriod} sets the end of the acceptance
+period relative to the broadcast, and \rref{FR_TaskMaxPredictionTime} measures the maximum prediction time
+from the end of the acceptance period. \rref{FR_RequestBroadcast} requires the maximum prediction time
+to be included in the broadcast. The use of the reputation tolerance when
+updating reputations is checked by ST-REP-1.
+
+\textbf{How test will be performed:} Submit each definition through the
+task-creation flow. Read TASK-41's account on Solana Devnet and compare each
+field with the submitted value. For TASK-42 and TASK-43, check that no
+signing request is sent and that no task account exists. For REQ-41, record the
+broadcast received by each mock provider, and compare the acceptance period end
+and prediction phase deadline stored in the request's account with the
+broadcast time.
+
+\end{enumerate}
+
+\paragraph{Browsing Tasks and the Marketplace}
+
+\begin{enumerate}
+
+\item{ST-TASK-BROWSE-1\\}
+
+\textbf{Control:} Automatic
+
+\textbf{Initial State:} The system is running on Solana Devnet. TASK-41 from
+ST-TASK-CREATE-2 exists, with a required minimum provider stake of 100 SOL, and
+PROV-41 and PROV-42 are registered for it with reputation scores of 50 and 70.
+PROV-43 is an authenticated provider that is not registered for TASK-41. A
+visitor V-01 opens the web application without signing in. Requester RQ-41 is
+signed in on another browser.
+
+\textbf{Input:}
+\begin{itemize}
+\item[1.] V-01 opens the marketplace page.
+\item[2.] V-01 opens the list of inference tasks.
+\item[3.] V-01 opens TASK-41.
+\item[4.] PROV-43 registers for TASK-41, and V-01 reloads TASK-41.
+\item[5.] RQ-41 opens the marketplace page, the task list, and TASK-41.
+\item[6.] V-01 tries to create a task and to submit an inference request for
+TASK-41.
+\end{itemize}
+
+\textbf{Output:}
+\begin{itemize}
+\item[1.] V-01 sees the registered providers, the models they offer, and their
+reputation scores, including PROV-41 (50) and PROV-42 (70).
+\item[2.] The list includes TASK-41.
+\item[3.] V-01 sees TASK-41's full definition (name, description, type, input
+and output schemas, evaluation metric, number of providers, reputation
+tolerance, acceptance period, and maximum prediction time), a required minimum
+provider stake of 100 SOL, and 2 registered providers.
+\item[4.] TASK-41 now shows 3 registered providers.
+\item[5.] RQ-41 sees the same information as V-01.
+\item[6.] V-01 is asked to sign in, and no task or request is created.
+\end{itemize}
+
+\textbf{Test Case Derivation:} \rref{FR_PublicAccess} lets unauthenticated users browse marketplace information,
+including registered providers, available models, and provider reputations.
+\rref{FR_TaskBrowsing} lets all users, signed in or not, browse tasks and view each task's definition,
+required minimum provider stake, and number of registered providers, and the
+count must change when a provider registers. \rref{FR_InferenceTaskCreation} and \rref{FR_RequestSubmission} only allow
+authenticated users to create tasks and submit requests, so browsing access
+must not extend to those actions.
+
+\textbf{How test will be performed:} Run the steps in an automated browser test,
+using a new browser profile for V-01 with no wallet connected. Compare the
+values shown on each page with the task and provider accounts on Solana Devnet.
+For step 6, check that no signing request is sent and that no new task or
+request account is created.
+
 \end{enumerate}
 
 \subsubsection{Provider Registration and Staking}
@@ -1369,23 +1484,162 @@ expected outputs.
 
 \end{enumerate}
 
+\subsubsection{Aggregation and Results}
+
+These tests verify the aggregation and results requirements in the SRS. They
+cover combining valid predictions into a final result with the weighted-median
+algorithm in Appendix A of the SRS, returning the result and its details to the
+requester, and letting requesters follow the status of their requests. Each
+numbered input in ST-AGG-1 is a separate request whose predictions are chosen
+so that the expected result can be worked out by hand.
+
+\paragraph{Aggregating Predictions}
+
+\begin{enumerate}
+
+\item{ST-AGG-1\\}
+
+\textbf{Control:} Automatic
+
+\textbf{Initial State:} The system is running on Solana Devnet. TASK-11 has a
+numerical output schema and requires at least 3 valid predictions. PROV-31 to
+PROV-36 are registered for TASK-11 with these reputation scores: PROV-31: 40,
+PROV-32: 60, PROV-33: 50, PROV-34: 50, PROV-35: 50, PROV-36: 0. PROV-36's score
+of 0 is set directly by the test fixture, since a provider whose reputation
+reaches 0 is normally unregistered. Requester RQ-01 submits each request below,
+and the listed providers accept it.
+
+\textbf{Input:}
+\begin{itemize}
+\item[1.] For REQ-21, PROV-31 to PROV-35 submit 8.5, 11, 12, 13, and 20.
+\item[2.] For REQ-22, PROV-33, PROV-34, PROV-35, and a fourth provider with a
+reputation of 50 submit 10, 12, 14, and 18.
+\item[3.] For REQ-23, PROV-31, PROV-32, and PROV-33 submit 10, 20, and 30,
+PROV-36 submits 1000, and PROV-34 submits a string instead of a number.
+\item[4.] For REQ-24, four providers with equal reputation submit 1.0001,
+1.0001, 1.0002, and 1.0002.
+\item[5.] For REQ-25, four providers with equal reputation submit $-1.0002$,
+$-1.0002$, $-1.0001$, and $-1.0001$.
+\end{itemize}
+
+\textbf{Output:}
+\begin{itemize}
+\item[1.] The result of REQ-21 is 12, with 5 included predictions, a minimum of
+8.5, and a maximum of 20.
+\item[2.] The result of REQ-22 is 13, with 4 included predictions, a minimum of
+10, and a maximum of 18.
+\item[3.] The result of REQ-23 is 20, with 3 included predictions, a minimum of
+10, and a maximum of 30. The predictions from PROV-36 and PROV-34 are not
+included.
+\item[4.] The result of REQ-24 is 1.0002.
+\item[5.] The result of REQ-25 is $-1.0002$.
+\end{itemize}
+For every request, RQ-01 is shown the result, the number of included
+predictions, the minimum and maximum included predictions, and the time
+elapsed since the request was submitted.
+
+\textbf{Test Case Derivation:} \rref{FR_PredictionAggregation} weights each included prediction by its provider's
+reputation divided by the total reputation of the included providers, and takes
+the weighted median from Appendix A of the SRS.
+\begin{itemize}
+\item[1.] The weights are 0.16, 0.24, 0.2, 0.2, and 0.2. The running total first
+goes above 0.5 at 12.
+\item[2.] Each weight is 0.25. The running total is exactly 0.5 after 12, so the
+result is the average of 12 and 14.
+\item[3.] \rref{FR_PredictionAggregation} leaves out PROV-36 (reputation 0) and PROV-34 (rejected under
+\rref{FR_PredictionValidation}). The remaining weights are 0.27, 0.4, and 0.33, and the running total
+first goes above 0.5 at 20. Leaving out 1000 means it is not the maximum.
+\item[4.] The running total is exactly 0.5 after the second 1.0001, so the
+result is 1.00015, which Appendix A rounds away from zero to 1.0002.
+\item[5.] The same case with negative values, which rounds to $-1.0002$.
+\end{itemize}
+\rref{FR_FinalResultDelivery} requires the result, the elapsed time, and the number of included
+predictions to be returned to the requester, and \rref{FR_ResultSpread} requires the minimum and
+maximum of the included predictions.
+
+\textbf{How test will be performed:} Run each request until its prediction phase
+ends. Read the stored result from the request's on-chain account and the
+result details shown to RQ-01 in the application, and compare both with the
+expected outputs. Check that the elapsed time shown is within 1 second of the
+time between the request's submission and its result on the blockchain.
+
+\end{enumerate}
+
+\paragraph{Viewing Results}
+
+\begin{enumerate}
+
+\item{ST-AGG-2\\}
+
+\textbf{Control:} Automatic
+
+\textbf{Initial State:} The system is running on Solana Devnet. Requester RQ-02
+has submitted these requests for TASK-11:
+\begin{itemize}
+\item REQ-26, which is in its acceptance period.
+\item REQ-27, which is in its prediction phase.
+\item REQ-28, which has finished, with every reward transfer successful.
+\item REQ-29, which was cancelled because too few providers accepted it.
+\item REQ-30, which has a final result, but one provider's reward transfer
+failed because its token account was closed.
+\end{itemize}
+Requester RQ-03 has submitted no requests.
+
+\textbf{Input:}
+\begin{itemize}
+\item[1.] RQ-02 opens their request history.
+\item[2.] RQ-02 opens REQ-28.
+\item[3.] RQ-02 opens REQ-30.
+\item[4.] RQ-02 opens REQ-26 and REQ-29.
+\item[5.] RQ-03 opens their request history.
+\end{itemize}
+
+\textbf{Output:}
+\begin{itemize}
+\item[1.] The history lists REQ-26 to REQ-30, each with its current status:
+accepting providers (REQ-26), collecting predictions (REQ-27), Completed
+(REQ-28), Cancelled (REQ-29), and Pending Transfer (REQ-30).
+\item[2.] REQ-28 shows its final result, the number of included predictions,
+the minimum and maximum included predictions, and the elapsed time.
+\item[3.] REQ-30 shows its final result and the same details, even though its
+status is Pending Transfer.
+\item[4.] REQ-26 and REQ-29 show their status and no result.
+\item[5.] RQ-03's history is empty and does not show any of RQ-02's requests.
+\end{itemize}
+
+\textbf{Test Case Derivation:} \rref{FR_RequestHistory} requires requesters to see the status of each request they
+submitted and, once available, its result. \rref{FR_FinalResultDelivery} and \rref{FR_ResultSpread} list the details returned with
+a result. \rref{FR_RewardTransferFailure} says a failed reward transfer must not affect the requester's access to
+the result, so REQ-30 still shows it. \rref{FR_RequestCompletion} only marks a request Completed once every
+transfer has succeeded or been forfeited, which is why REQ-30 is Pending
+Transfer and REQ-28 is Completed. \rref{FR_MinimumAcceptance} cancels a request that too few providers
+accepted, which gives REQ-29 its status and no result.
+
+\textbf{How test will be performed:} Set up the five requests by running them to
+the stated points, closing one provider's token account before rewards are
+paid for REQ-30. Sign in as RQ-02 and RQ-03 in an automated browser test, open
+each page, and compare what is shown with the expected outputs and with the
+request accounts on Solana Devnet.
+
+\end{enumerate}
+
 \subsubsection{Reputation, Rewards, and Penalties}
 
-These tests verify the reputation, reward, and penalty requirements
-(\rref{FR_FinalResultDelivery}--\rref{FR_PendingTransferDeadline}) and the safety requirements that protect reward and penalty
+These tests verify the reputation, reward, reward transfer, and penalty
+requirements (\rref{FR_UpdateProviderReputations}--\rref{FR_ProviderUnregistrationStakeReturn}) and the safety requirements that protect reward and penalty
 transfers (\saref{SA_RewardValidation}, \saref{SA_ProviderStatusCheck}). Each test follows a scenario that a group of
-providers would go through on the real system: completing a request, misbehaving
-during a request, and leaving a task. The tests run on a local Solana validator
-or Solana Devnet, with mock inference providers that submit preset predictions,
-so that the expected results can be worked out by hand before the test is run.
-Boundary cases for each rule (such as a distance exactly equal to $\bar{d}$)
-are covered by the unit tests.
+providers would go through on the real system: completing a request, having a
+reward transfer fail, misbehaving during a request, and leaving a task. The
+tests run on a local Solana validator or Solana Devnet, with mock inference
+providers that submit preset predictions, so that the expected results can be
+worked out by hand before the test is run. Boundary cases for each rule (such
+as a distance exactly equal to $\bar{d}$) are covered by the unit tests.
 
 The values of \texttt{SLASH\_FRACTION}, \texttt{MAX\_REPUTATION\_PENALTY},
-\texttt{MINIMUM\_PROVIDER\_STAKE}, \texttt{REPEAT\_OFFENSE\_COUNT}, and
-\texttt{REPEAT\_OFFENSE\_WINDOW} are defined in the SRS. The tests read them
-from the deployed program's configuration, so they do not need to change if the
-values change.
+\texttt{MINIMUM\_PROVIDER\_STAKE}, \texttt{REPEAT\_OFFENSE\_COUNT},
+\texttt{REPEAT\_OFFENSE\_WINDOW}, and \texttt{PENDING\_TRANSFER\_PERIOD} are
+defined in the SRS. The tests read them from the deployed program's
+configuration, so they do not need to change if the values change.
 
 \begin{enumerate}
 
@@ -1413,22 +1667,23 @@ $d = (3.5, 1, 0, 1, 8)$, so $\bar{d} = 2.7$ and $\bar{d} + T = 4.7$.
 \item[2.] \texttt{P2}, \texttt{P3}, and \texttt{P4} ($d_i \le 2.7$) have their
 reputation increased. \texttt{P1} ($2.7 < 3.5 \le 4.7$) has an unchanged
 reputation. \texttt{P5} ($8 > 4.7$) has its reputation decreased.
-\item[3.] \texttt{P5} receives no reward. \texttt{P1} to \texttt{P4} share the 1000
-tokens in proportion to their reputation scores (40, 60, 50, 50): 200, 300,
-250, and 250 tokens.
-\item[4.] The total paid out does not exceed 1000 tokens, the request's escrow is
-empty afterwards, and the system logs a status check for each provider before
-its reward is sent.
+\item[3.] \texttt{P5} receives no reward. \texttt{P1} to \texttt{P4} receive
+reward transfers from the request's escrow address of 200, 300, 250, and 250
+tokens, in proportion to their reputation scores (40, 60, 50, 50).
+\item[4.] The reward transfers add up to no more than 1000 tokens, the request's
+status is Completed, and the backend log has a provider status check for each
+provider recorded before that provider's reward transfer.
 \end{itemize}
 
-\textbf{Test Case Derivation:} \rref{FR_FinalResultDelivery} requires $d_i$ and $\bar{d}$ to be computed for
-every included provider, and \rref{FR_RequestHistory}, \rref{FR_UpdateProviderReputations}, and \rref{FR_ReputationRange} give the three possible
-outcomes; this fixture places at least one provider in each. \rref{FR_ReputationUnchanged} limits
+\textbf{Test Case Derivation:} \rref{FR_UpdateProviderReputations} requires $d_i$ and $\bar{d}$ to be computed for
+every included provider, and \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, and \rref{FR_ReputationDecrease} give the three possible
+outcomes; this fixture places at least one provider in each. \rref{FR_DistributeRewards} limits
 rewards to providers whose reputation did not decrease, split by reputation, so
-\texttt{P1} still qualifies and \texttt{P5} does not. \saref{SA_RewardValidation} forbids paying out
+\texttt{P1} still qualifies and \texttt{P5} does not. \rref{FR_RequestCompletion} allows the
+request to be Completed once every reward transfer has succeeded. \saref{SA_RewardValidation} forbids paying out
 more than the reward, and \saref{SA_ProviderStatusCheck} requires each provider's status to be
 checked before a reward is sent. The expected reward shares use the reputation
-snapshot taken for aggregation (\rref{FR_StakeReservation}); if the design uses the scores after the
+snapshot taken for aggregation (\rref{FR_PredictionAggregation}); if the design uses the scores after the
 update instead, the expected shares will be recomputed from those scores.
 
 \textbf{How test will be performed:} Record each provider's reputation and token
@@ -1436,6 +1691,59 @@ balance, run the request, and read the result, the reputation scores, and the
 reward transfers from both the application and the on-chain accounts. Assert
 the values above, allowing up to one base unit of difference per reward for
 integer rounding, and check the backend log for the status checks.
+
+\item{ST-REP-2: A reward transfer fails and is held\\}
+
+\textbf{Control:} Automatic
+
+\textbf{Initial State:} The same task, providers, and request as ST-REP-1, with
+two changes: \texttt{P2}'s token account is closed before rewards are
+distributed, so it cannot receive tokens, and \texttt{P3}'s token account is
+also closed. The test controls the validator's clock so that time can be moved
+forward past the pending transfer deadline.
+
+\textbf{Input:}
+\begin{itemize}
+\item[1.] The providers submit the same predictions as ST-REP-1, and the
+request reaches reward distribution.
+\item[2.] \texttt{P2} opens a new token account and retries its reward transfer
+from the provider dashboard before the pending transfer deadline.
+\item[3.] \texttt{P3} does nothing, and the clock is moved past the pending
+transfer deadline (end of the prediction phase plus
+\texttt{PENDING\_TRANSFER\_PERIOD}).
+\end{itemize}
+
+\textbf{Output:}
+\begin{itemize}
+\item[1.] \texttt{P1} and \texttt{P4} receive their rewards (200 and 250
+tokens). The 300 tokens for \texttt{P2} and the 250 tokens for \texttt{P3} stay
+in the request's escrow, both transfers are recorded as unresolved, and the
+request's status is Pending Transfer. The requester can still see the final
+aggregated result.
+\item[2.] \texttt{P2} and \texttt{P3} each receive a notification, and each of
+their dashboards shows the held reward amount and the pending transfer
+deadline.
+\item[3.] After the retry, \texttt{P2}'s new token account holds the 300 tokens
+and \texttt{P2}'s transfer is recorded as resolved. The request stays in
+Pending Transfer because \texttt{P3}'s transfer is still unresolved.
+\item[4.] After the deadline, \texttt{P3}'s 250 tokens are burned (the total
+burned supply increases by 250), \texttt{P3}'s transfer is recorded as
+forfeited, and the request's status changes to Completed.
+\end{itemize}
+
+\textbf{Test Case Derivation:} \rref{FR_RewardTransferFailure} requires a failed transfer to be held in escrow and
+recorded as unresolved, with the request set to Pending Transfer, while other
+transfers and the result are not affected. \rref{FR_PendingTransferNotice} requires a notification and the
+dashboard details. \rref{FR_PendingTransferRetry} allows the provider to retry before the deadline, and
+\rref{FR_PendingTransferDeadline} requires the held reward to be burned at the deadline. \rref{FR_RequestCompletion} only
+allows the request to become Completed once every transfer has succeeded or
+been forfeited, which is why it stays in Pending Transfer after
+\texttt{P2}'s retry.
+
+\textbf{How test will be performed:} After each input step, read the request's
+status, the escrow balance, each provider's token balance, the transfer
+records, and the total burned supply from the blockchain, and check each
+provider's notifications and dashboard in the application.
 
 \item{ST-PEN-1: Misbehaving providers in a single request\\}
 
@@ -1448,8 +1756,10 @@ request has been submitted and all five providers have accepted it.
 
 \textbf{Input:}
 \begin{itemize}
-\item[1.] \texttt{P1} and \texttt{P2} submit accurate predictions (10 and 10.5).
-\item[2.] \texttt{P3} submits a valid but very inaccurate prediction (1{,}000{,}000).
+\item[1.] \texttt{P1} and \texttt{P2} submit predictions close to each other (10
+and 10.5).
+\item[2.] \texttt{P3} submits a valid prediction far from the others
+(1{,}000{,}000).
 \item[3.] \texttt{P4} submits a prediction that does not match the output schema (a
 string instead of a number).
 \item[4.] \texttt{P5} submits nothing, and the maximum prediction time is allowed
@@ -1458,23 +1768,27 @@ to pass.
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] \texttt{P1}'s reputation is increased but stays at 100.
+\item[1.] The final aggregated result is 10.25. \texttt{P1}'s reputation stays at
+100, and \texttt{P2}'s reputation increases.
 \item[2.] \texttt{P3}'s reputation decreases by no more than
 \texttt{MAX\_REPUTATION\_PENALTY}, and its stake stays at 100 tokens.
 \item[3.] \texttt{P4}'s prediction is rejected. \texttt{P4} and \texttt{P5} each
 have their stake reduced to $100 \times (1 - \texttt{SLASH\_FRACTION})$ tokens
 and their reputation decreased.
-\item[4.] \texttt{P2}'s stake is unchanged, and every reputation score stays
-within $[0, 100]$.
+\item[4.] \texttt{P1}'s and \texttt{P2}'s stakes are unchanged, and every
+reputation score is within $[0, 100]$.
 \end{itemize}
 
-\textbf{Test Case Derivation:} \rref{FR_ReputationPenaltyCap} requires slashing and a reputation decrease for a
-rejected prediction, and \rref{FR_DistributeRewards} requires the same for a provider that accepted
-but did not submit. \rref{FR_ReputationDecrease} allows slashing only in those two cases, so the
-inaccurate but valid prediction from \texttt{P3} must cost reputation and not
-stake. \rref{FR_ReputationIncrease} caps the reputation decrease from a single request, which the
-extreme prediction from \texttt{P3} checks. \rref{FR_ResultSpread} keeps scores within $[0,
-100]$, which \texttt{P1} checks at the top of the range.
+\textbf{Test Case Derivation:} The result of 10.25 follows from the weighted-median
+algorithm (\rref{FR_PredictionAggregation}): \texttt{P1}, \texttt{P2}, and \texttt{P3} are included with weights
+0.5, 0.25, and 0.25, and the running total is exactly 0.5 after 10, so the
+result is the average of 10 and 10.5. \rref{FR_SlashInvalidPrediction} requires slashing and a reputation
+decrease for a rejected prediction, and \rref{FR_SlashNoShow} requires the same for a provider that
+accepted but did not submit. \rref{FR_InferenceProviderSlashing} allows slashing only in those two cases, so the
+valid prediction from \texttt{P3} must cost reputation and not stake.
+\rref{FR_ReputationPenaltyCap} caps the reputation decrease from a single request, which the distant
+prediction from \texttt{P3} checks. \rref{FR_ReputationRange} keeps scores within $[0, 100]$, which
+\texttt{P1} checks at the top of the range.
 
 \textbf{How test will be performed:} Use a task with a short maximum prediction time.
 Record each provider's stake and reputation, run the request until it
@@ -1500,35 +1814,37 @@ reputation scores of 80, 50, and 25.
 
 \textbf{Input:}
 \begin{itemize}
-\item[1.] Run \texttt{REPEAT\_OFFENSE\_WINDOW} requests for the task. \texttt{P1}
-fails to submit in the first one. \texttt{P2} fails to submit in
-\texttt{REPEAT\_OFFENSE\_COUNT} of them. \texttt{P3} submits a very inaccurate
-prediction in the first one. The other providers submit accurate predictions.
-\item[2.] After the requests finish, \texttt{P4}, \texttt{P5}, and \texttt{P6}
+\item[1.] Run \texttt{REPEAT\_OFFENSE\_WINDOW} requests for the task. In every
+request, most providers submit predictions close to 50. \texttt{P1} submits
+nothing in the first request. \texttt{P2} submits nothing in
+\texttt{REPEAT\_OFFENSE\_COUNT} of the requests. \texttt{P3} submits a
+prediction far from the others (5000) in the first request.
+\item[2.] While one of the requests is active, \texttt{P4} tries to unregister.
+\item[3.] After the requests finish, \texttt{P4}, \texttt{P5}, and \texttt{P6}
 voluntarily unregister.
-\item[3.] While one of the requests is active, \texttt{P4} tries to unregister.
 \end{itemize}
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] \texttt{P1} is unregistered automatically after its stake falls below
-\texttt{MINIMUM\_PROVIDER\_STAKE}.
-\item[2.] \texttt{P2} is unregistered after its \texttt{REPEAT\_OFFENSE\_COUNT}-th
-slash, and its remaining stake is burned.
-\item[3.] \texttt{P3}'s reputation reaches 0. \texttt{P3} is unregistered and its
-remaining stake is burned.
-\item[4.] \texttt{P4}'s attempt to unregister during an active request is refused.
-After the requests, \texttt{P4} ($R = 80$) and \texttt{P5} ($R = 50 =
-R_{\text{exit}}$) get all 100 tokens back. \texttt{P6} ($R = 25$) gets
+\item[1.] \texttt{P1} is no longer in the task's list of registered providers
+after the first request, because its stake fell below
+\texttt{MINIMUM\_PROVIDER\_STAKE}. \texttt{P2} is no longer registered after
+its \texttt{REPEAT\_OFFENSE\_COUNT}-th slash, and its remaining stake is
+burned. \texttt{P3}'s reputation is 0 after the first request, \texttt{P3} is
+no longer registered, and its remaining stake is burned.
+\item[2.] \texttt{P4}'s attempt to unregister is refused with an error message,
+and \texttt{P4} stays registered.
+\item[3.] \texttt{P4} ($R = 80$) and \texttt{P5} ($R = 50 = R_{\text{exit}}$)
+each get all 100 tokens back. \texttt{P6} ($R = 25$) gets
 $\frac{25}{50} \times 100 = 50$ tokens back, and the other 50 are burned.
 \end{itemize}
 
-\textbf{Test Case Derivation:} \rref{FR_RewardTransferFailure}, \rref{FR_PendingTransferNotice}, and \rref{FR_PendingTransferRetry} give the three cases where a
+\textbf{Test Case Derivation:} \rref{FR_ProviderMinimumStakeUnregistration}, \rref{FR_SlashRepeatedOffenses}, and \rref{FR_ProviderForcedUnregistration} give the three cases where a
 provider is removed automatically: stake below the minimum, too many slashes,
-and a reputation of 0. \rref{FR_PendingTransferNotice} and \rref{FR_PendingTransferRetry} also require the remaining stake to be
-burned. \rref{FR_PendingTransferDeadline} sets how much stake is returned on voluntary unregistration, and
-\texttt{P5} sits exactly on the threshold. The refused attempt by \texttt{P4}
-also exercises \rref{FR_ProviderWillingUnregistration}.
+and a reputation of 0. \rref{FR_SlashRepeatedOffenses} and \rref{FR_ProviderForcedUnregistration} also require the remaining stake to be
+burned. \rref{FR_ProviderWillingUnregistration} does not allow a provider to unregister while it has an active
+request. \rref{FR_ProviderUnregistrationStakeReturn} sets how much stake is returned on voluntary unregistration, and
+\texttt{P5} sits exactly on the threshold.
 
 \textbf{How test will be performed:} After each request, record each provider's
 registration status, stake, and slash count. Record the total burned token
@@ -1540,8 +1856,8 @@ assert the expected changes.
 \subsubsection{Transparency and Data Handling}
 
 These tests verify that users can see and verify the transactions they
-authorize (\rref{FR_RequestCompletion}--\rref{FR_SlashNoShow}) and that a request's input data is protected for its
-whole life (\rref{FR_ProviderMinimumStakeUnregistration}--\rref{FR_ProviderForcedUnregistration}). They follow a requester who pays for a request and
+authorize (\rref{FR_TransactionPreview}--\rref{FR_OnChainRecords}) and that a request's input data is protected for its
+whole life (\rref{FR_InputAccessRestriction}--\rref{FR_InputDeletion}). They follow a requester who pays for a request and
 checks it, and a request's input data from submission to deletion.
 
 \begin{enumerate}
@@ -1570,30 +1886,45 @@ does not ask the wallet for a signature.
 application shows the action (``Submit inference request'') and the amount
 (137 tokens).
 \item[3.] The transaction status is shown as pending and then confirmed.
-\item[4.] The requester's token balance goes down by exactly 137 tokens, and the
-request's escrow holds exactly 137 tokens.
+\item[4.] The requester's token balance is exactly 137 tokens lower than before
+the payment.
 \item[5.] The transaction history shows an identifier for the payment. Looking it
-up on Solana Devnet returns a transaction signed by the requester's wallet
-with the expected instruction and amount.
-\item[6.] The blockchain holds records of the payment, the providers' stakes, the
-aggregated result, the reputation updates, and the reward transfers, and each
-matches the value shown in the application.
+up on Solana Devnet returns a transaction that:
+\begin{itemize}
+\item is signed by the requester's wallet;
+\item transfers exactly 137 tokens from the requester's token account to the
+request's escrow address.
+\end{itemize}
+\item[6.] After the request is completed, the blockchain shows:
+\begin{itemize}
+\item the 137 tokens arriving at the request's escrow address, and then being
+transferred from the escrow address to the providers' token accounts, with
+transfers that add up to no more than 137 tokens;
+\item a stake account for each provider that holds the stake shown on that
+provider's dashboard;
+\item the final aggregated result stored for the request, equal to the result
+shown to the requester;
+\item each provider's reputation after the request, equal to the reputation
+shown in the application.
+\end{itemize}
 \end{itemize}
 
 \textbf{Test Case Derivation:} \saref{SA_BalanceCheck} requires a balance check before a signature is
-requested. \rref{FR_RequestCompletion} requires the action and amount to be shown before signing, and
-\rref{FR_InferenceProviderSlashing} requires the status to be shown until it is final. \saref{SA_ChargeEqualsAuthorized} requires the
-amount charged to equal the amount approved; an unusual amount (137) is used so
-that a hard-coded or rounded value would be caught. \rref{FR_SlashInvalidPrediction} requires an identifier
-that can be looked up on the blockchain, and \rref{FR_SlashNoShow} lists the records that must
-be on the blockchain.
+requested. \rref{FR_TransactionAuthorization} requires the requester to sign the payment, \rref{FR_TransactionPreview} requires the action and
+amount to be shown before signing, and \rref{FR_TransactionStatus} requires the status to be shown until
+it is final. \saref{SA_ChargeEqualsAuthorized} requires the amount charged to equal the amount approved; an
+unusual amount (137) is used so that a hard-coded or rounded value would be
+caught. \rref{FR_TransactionVerification} requires an identifier that can be looked up on the blockchain, and
+\rref{FR_OnChainRecords} lists the records that must be on the blockchain. The escrow is checked by
+its transaction history instead of its balance, because the tokens may already
+have been paid out by the time it is checked.
 
 \textbf{How test will be performed:} Run the flow in an automated browser test. Pause
 the test wallet signer when it receives a signing request and check the
 confirmation screen. Record each status shown. Compare balances before and
-after. Query Solana Devnet with the transaction identifier and read the
-request, stake, and reputation accounts directly, without going through the
-application's backend.
+after. Query Solana Devnet with the transaction identifier, and read the
+escrow address's transaction history and the request, stake, and reputation
+accounts directly, without going through the application's backend.
 
 \item{ST-DATA-1: Input data from submission to deletion\\}
 
@@ -1608,9 +1939,15 @@ application's backend.
 \item[1.] Requester \texttt{R1} submits request \texttt{REQ-A} whose input contains
 the marker value \texttt{271828.1828}. \texttt{P1} and \texttt{P2} accept it;
 \texttt{P3} does not.
-\item[2.] During the prediction phase, \texttt{R1}, \texttt{P1}, \texttt{P2},
-\texttt{P3}, \texttt{U1}, and an unauthenticated client each try to get the
-input data.
+\item[2.] During the prediction phase:
+\begin{itemize}
+\item \texttt{R1} opens \texttt{REQ-A} in the web client.
+\item \texttt{P1}, \texttt{P2}, and \texttt{P3} each call the provider SDK's
+method for fetching a request's input and try to decrypt the result with their
+own private key.
+\item \texttt{U1} and an unauthenticated client call the backend's input-data
+endpoint for \texttt{REQ-A} directly.
+\end{itemize}
 \item[3.] \texttt{REQ-A} runs to completion.
 \item[4.] \texttt{R1} submits request \texttt{REQ-B}, which is cancelled because
 too few providers accept it.
@@ -1618,27 +1955,31 @@ too few providers accept it.
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] Only \texttt{R1}, \texttt{P1}, and \texttt{P2} can get \texttt{REQ-A}'s
-input. \texttt{P3}, \texttt{U1}, and the unauthenticated client are refused.
+\item[1.] \texttt{R1} sees \texttt{REQ-A}'s input in the web client.
+\texttt{P1} and \texttt{P2} receive the encrypted input and can decrypt it to
+the original values. \texttt{P3}'s SDK call is refused, or returns data
+\texttt{P3} cannot decrypt. \texttt{U1} and the unauthenticated client are
+refused and receive no part of the input.
 \item[2.] No transaction or account linked to either request contains the marker
 value in readable form.
 \item[3.] After each request reaches its final state, its input is no longer in
-any storage the system controls, and every user, including \texttt{R1}, gets
-``not found'' when asking for it.
+any storage the system controls, and the web client, the SDK, and the backend
+endpoint all return ``not found'' for it, including for \texttt{R1}.
 \end{itemize}
 
-\textbf{Test Case Derivation:} \rref{FR_ProviderMinimumStakeUnregistration} limits the input to the requester and the providers
-that accepted; \texttt{P3} checks that being registered is not enough. \rref{FR_SlashRepeatedOffenses}
+\textbf{Test Case Derivation:} \rref{FR_InputAccessRestriction} limits the input to the requester and the providers
+that accepted; \texttt{P3} checks that being registered is not enough. \rref{FR_InputNotOnChain}
 forbids readable input on the blockchain, and the marker value makes it
-possible to search raw on-chain data for it. \rref{FR_ProviderForcedUnregistration} requires deletion after both
+possible to search raw on-chain data for it. \rref{FR_InputDeletion} requires deletion after both
 completion and cancellation. The test also exercises \rref{FR_RequestInputDistribution} (input given to
 accepting providers) and \rref{FR_MinimumAcceptance} (cancellation when too few providers accept).
 
-\textbf{How test will be performed:} Call the input-data endpoint as each user. Search
-the raw data of every linked transaction and account for the marker in its
-common encodings (text, 32-bit and 64-bit floating point, and the program's
-fixed-point format). After each request ends, query the database, file
-storage, and caches directly and through the application.
+\textbf{How test will be performed:} Run each access attempt and compare what is
+returned with the original input. Search the raw data of every linked
+transaction and account for the marker in its common encodings (text, 32-bit
+and 64-bit floating point, and the program's fixed-point format). After each
+request ends, query the database, file storage, and caches directly and
+through the application.
 
 \end{enumerate}
 
@@ -1665,45 +2006,62 @@ the backend test build can each be set to inject one fault.
 that forwards the transaction but drops the response.
 \item[2.] The requester submits an inference request payment through a proxy
 that holds the transaction until its blockhash has expired.
-\item[3.] The requester submits an inference request payment after the requester's
-tokens are moved out of the wallet after the balance
-check but before the transaction runs.
-\item[4.] The requester rejects the signature, and separately a test script sends
-a payment signed by a different wallet directly to the program.
-\item[5.] The backend test build changes the transaction's amount after the amount
-has been shown to the user.
-\item[6.] After any of the failures above, the requester presses retry.
+\item[3.] The requester submits an inference request payment, and the
+requester's tokens are moved out of the wallet after the balance check but
+before the transaction runs.
+\item[4.] The requester submits an inference request payment and signs it with
+a different wallet address than the one connected to their account.
+\item[5.] The requester submits an inference request payment while the backend
+test build changes the transaction's amount to 150 tokens after 100 tokens has
+been shown to the user.
+\item[6.] After the failure in step 2, the requester presses retry.
 \end{itemize}
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] The system checks the status before trying again, finds the payment was
-processed, and does not resubmit. Exactly one payment is made and each status
-is logged.
-\item[2.] The system only marks the payment as failed after the validity period
-has ended and it has checked the status.
-\item[3.] The on-chain program rejects the payment and no state changes.
-\item[4.] The rejected signature is never submitted, and the program rejects the
-payment signed by the wrong wallet.
-\item[5.] The simulation does not match the shown amount, so the transaction is not
-sent for signing.
-\item[6.] The user sees an error message with an option to retry, and the retry
-succeeds.
+\item[1.] Exactly one payment transaction from the requester appears on the
+blockchain, the requester's balance goes down by the payment amount once, and
+the transaction log shows each status the payment went through.
+\item[2.] The payment is shown as failed only after its blockhash has expired,
+and no payment from this attempt appears on the blockchain.
+\item[3.] The payment transaction fails on the blockchain, no request is
+created, and the requester's escrow and request accounts are unchanged.
+\item[4.] No transaction is submitted to the blockchain, and the user sees an
+error message saying the transaction was signed by the wrong wallet.
+\item[5.] The web client does not send the transaction to the wallet for
+signing, and the user sees an error message saying the transaction does not
+match the amount shown.
+\item[6.] The user sees an error message with an option to retry. After pressing
+retry, the request is created and exactly one payment for it appears on the
+blockchain.
 \end{itemize}
 
-\textbf{Test Case Derivation:} Each fault matches one requirement: \saref{SA_NoDuplicateSubmission} (no
-resubmission before confirming the first was not processed, with status logs),
-\saref{SA_ExpiryCheck} (wait for expiry and a status check), \saref{SA_OnChainFundsCheck} (the on-chain program
-checks funds at execution), \saref{SA_SignedTransactionsOnly} (only signed transactions are submitted),
-\saref{SA_TransactionSimulation} (simulation must match the shown amounts), and \saref{SA_FailureRetry} (show the error
-and allow a retry). After the whole test, the requester should have paid only
-for the requests that succeeded.
+\textbf{Test Case Derivation:} Each fault matches one requirement:
+\begin{itemize}
+\item[1.] \saref{SA_NoDuplicateSubmission} forbids resubmitting before confirming the first transaction was not
+processed, and requires status logs.
+\item[2.] \saref{SA_ExpiryCheck} requires the system to wait for the validity period to end and check
+the status before logging a failure.
+\item[3.] \saref{SA_OnChainFundsCheck} requires the on-chain program to check funds when the
+transaction runs.
+\item[4.] \saref{SA_SignedTransactionsOnly} forbids submitting a transaction that is not signed by the
+authorized wallet.
+\item[5.] \saref{SA_TransactionSimulation} requires the transaction to be simulated and checked against the
+displayed amount before it is signed. The error is introduced by the backend,
+and the check is done by the web client, which compares what the user is about
+to sign with what is displayed.
+\item[6.] \saref{SA_FailureRetry} requires the error to be shown and a retry to be allowed.
+\end{itemize}
 
 \textbf{How test will be performed:} Run each fault in turn. Use the proxy to count
 submitted transactions and the test wallet signer to count signing requests.
-Count payments from the requester's wallet on Devnet and compare the final
-balance with the number of successful requests. A tester also runs step 6 by
-hand in the web client and records the error message shown.
+For step 2, compare the time the payment is shown as failed with the block
+height at which its blockhash expired, and check that the backend queried the
+transaction's status before marking it as failed. For step 4, configure the
+test wallet signer to sign with a second test wallet. Count payments from the
+requester's wallet on Devnet after the whole test and compare the final balance
+with the number of successful requests. A tester also runs step 6 by hand in
+the web client and records the error message shown.
 
 \end{enumerate}
 
@@ -1958,6 +2316,8 @@ ST-AUTH-EXT-2 & \rref{FR_WalletAuthentication}\\
 ST-AUTH-EMB-1 & \rref{FR_WalletAuthentication}, \rref{FR_EmbeddedWalletCreation}\\
 ST-AUTH-EMB-2 & \rref{FR_WalletAuthentication}\\
 ST-TASK-CREATE-1 & \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \nfrref{NFR_TransactionConfirmation}\\
+ST-TASK-CREATE-2 & \rref{FR_TaskMinimumProviders}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_TaskMaxPredictionTime}, \rref{FR_RequestBroadcast}\\
+ST-TASK-BROWSE-1 & \rref{FR_PublicAccess}, \rref{FR_TaskBrowsing}, \rref{FR_InferenceTaskCreation}, \rref{FR_RequestSubmission}\\
 ST-PROV-1 & \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \nfrref{NFR_TransactionConfirmation}\\
 ST-PROV-2 & \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}\\
 ST-PROV-3 & \rref{FR_ProviderWillingUnregistration}, \rref{FR_ProviderUnregistrationStakeReturn}\\
@@ -1974,11 +2334,14 @@ ST-ACC-4 & \rref{FR_StakeReservation}, \rref{FR_StakeReservationRelease}\\
 ST-PRED-1 & \rref{FR_PredictionSubmission}, \rref{FR_PredictionPhaseEnd}\\
 ST-PRED-2 & \rref{FR_PredictionPhaseStart}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_PredictionPhaseEnd}\\
 ST-PRED-3 & \rref{FR_MinimumPredictions}, \rref{FR_CancellationCompensation}, \rref{FR_StakeReservationRelease}\\
-ST-REP-1 & \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread}, \rref{FR_ReputationRange}, \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, \rref{FR_ReputationDecrease}, \saref{SA_RewardValidation}, \saref{SA_ProviderStatusCheck}\\
-ST-PEN-1 & \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}, \rref{FR_ReputationPenaltyCap}\\
-ST-PEN-2 & \rref{FR_RewardTransferFailure}, \rref{FR_PendingTransferNotice}, \rref{FR_PendingTransferRetry}, \rref{FR_PendingTransferDeadline}, \rref{FR_ProviderMinimumStakeUnregistration}, \rref{FR_ProviderForcedUnregistration}, \rref{FR_SlashRepeatedOffenses}, \rref{FR_ProviderUnregistrationStakeReturn}\\
-ST-TRANS-1 & \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \saref{SA_BalanceCheck}, \saref{SA_ChargeEqualsAuthorized}\\
-ST-DATA-1 & \rref{FR_InputAccessRestriction}, \rref{FR_InputNotOnChain}, \rref{FR_InputDeletion}\\
+ST-AGG-1 & \rref{FR_PredictionAggregation}, \rref{FR_PredictionValidation}, \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread}\\
+ST-AGG-2 & \rref{FR_RequestHistory}, \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread}, \rref{FR_RewardTransferFailure}, \rref{FR_RequestCompletion}, \rref{FR_MinimumAcceptance}\\
+ST-REP-1 & \rref{FR_UpdateProviderReputations}, \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, \rref{FR_ReputationDecrease}, \rref{FR_DistributeRewards}, \rref{FR_RequestCompletion}, \saref{SA_RewardValidation}, \saref{SA_ProviderStatusCheck}\\
+ST-REP-2 & \rref{FR_RewardTransferFailure}, \rref{FR_PendingTransferNotice}, \rref{FR_PendingTransferRetry}, \rref{FR_PendingTransferDeadline}, \rref{FR_RequestCompletion}\\
+ST-PEN-1 & \rref{FR_InferenceProviderSlashing}, \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}, \rref{FR_ReputationPenaltyCap}, \rref{FR_ReputationRange}\\
+ST-PEN-2 & \rref{FR_ProviderWillingUnregistration}, \rref{FR_ProviderMinimumStakeUnregistration}, \rref{FR_SlashRepeatedOffenses}, \rref{FR_ProviderForcedUnregistration}, \rref{FR_ProviderUnregistrationStakeReturn}\\
+ST-TRANS-1 & \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \rref{FR_OnChainRecords}, \saref{SA_BalanceCheck}, \saref{SA_ChargeEqualsAuthorized}\\
+ST-DATA-1 & \rref{FR_RequestInputDistribution}, \rref{FR_InputAccessRestriction}, \rref{FR_InputNotOnChain}, \rref{FR_InputDeletion}\\
 ST-SAFE-1 & \saref{SA_NoDuplicateSubmission}, \saref{SA_OnChainFundsCheck}, \saref{SA_TransactionSimulation}, \saref{SA_ExpiryCheck}, \saref{SA_SignedTransactionsOnly}, \saref{SA_FailureRetry}\\
 NFR-SIM-1 & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_PredictionsHidden}, \nfrref{NFR_FinalState}, \nfrref{NFR_ConcurrentRequests}\\
 NFR-USE-1 & \nfrref{NFR_Learnability}, \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_EmbeddedWalletAccess}, \saref{SA_ErrorMessageTime}\\
