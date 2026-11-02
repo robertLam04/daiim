@@ -364,8 +364,11 @@ The system's goals are to:
 
 \item \textbf{Blockchain Network Responsibilities:}
 \begin{itemize}
-    \item Process marketplace transactions authorized by users, including transactions related to request payments, provider stakes, and provider compensation.
-    \item Record marketplace information designated for on-chain storage, including request payments, provider stakes, aggregated results, reputation updates, and reward distributions.
+    \item Process user-authorized marketplace transactions related to inference request
+    payments, provider staking and slashing, and provider rewards. 
+    \item Execute the deterministic request state machine, including request
+    creation, provider registration and per-task reputation, final
+    aggregation, reputation updates, and reward calculation and distribution.
     \item Make transaction status and transaction records available for verification.
 \end{itemize}
 
@@ -661,7 +664,7 @@ Authenticated user
 
 \textbf{Postconditions}
 \begin{itemize}
-\item The new inference task is created and stored in the system.
+\item The new inference task is created in the on-chain program
 \end{itemize}
 
 \textbf{Related Requirements:} \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_TaskMaxPredictionTime}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \ref{SA_BalanceCheck}, \ref{SA_SignedTransactionsOnly}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_TwoClickAccess}.
@@ -791,7 +794,7 @@ Provider
 \item The provider is registered as an accepted provider for the inference request, and the stake is locked in escrow.
 \end{itemize}
 
-\textbf{Related Requirements:} \rref{FR_RequestBroadcast}, \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \ref{SA_BalanceCheck}, \ref{SA_OnChainFundsCheck}, \ref{SA_SignedTransactionsOnly}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}, \ref{SA_WalletSigning}.
+\textbf{Related Requirements:} \rref{FR_RequestBroadcast}, \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_MaximumAcceptance}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \ref{SA_BalanceCheck}, \ref{SA_OnChainFundsCheck}, \ref{SA_SignedTransactionsOnly}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}, \ref{SA_WalletSigning}.
 
 \refstepcounter{ucnum} \label{UC_SubmitPrediction}
 \subsection{\ucref{UC_SubmitPrediction}: Process and submit a prediction for an inference request}
@@ -837,14 +840,16 @@ System
 
 \textbf{Preconditions}
 \begin{itemize}
-\item The prediction phase has ended, and at least the task's minimum number of providers with non-zero reputation have submitted valid predictions.
+\item The prediction phase has ended, and at least the task's minimum number of providers with non-zero reputation have submitted valid predictions to the on-chain smart program.
 \end{itemize}
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item System retrieves all submitted predictions for the inference request.
-\item System calculates the final inference result from the valid predictions of providers with non-zero reputation, using the weighted-median algorithm specified in Appendix~A (\nameref{App_WeightedMedian}) and the reputation snapshot defined in \rref{FR_PredictionAggregation}.
-\item System stores the final inference result in a secure location and records the final result on-chain.
+\item The on-chain program calculates and stores the final inference result
+from valid predictions of providers with non-zero reputation, using the
+weighted-median algorithm specified in Appendix~A
+(\nameref{App_WeightedMedian}) and the snapshot defined in
+\rref{FR_PredictionAggregation}.
 \item System displays the final inference result in the requester's dashboard, along with the accuracy information and number of provider results used.
 \item System removes the input data and predictions from the secure location to maintain privacy and data retention policies after a set retention time has elapsed.
 \end{enumerate}
@@ -875,10 +880,14 @@ System
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item System retrieves valid submitted predictions from providers whose reputation score at the end of the prediction phase, before any reputation updates for that request, was non-zero, and retrieves the final inference result.
-\item System calculates the accuracy of each provider's prediction by comparing it to the final inference result produced using the weighted-median algorithm in Appendix~A (\nameref{App_WeightedMedian}).
-\item System updates the reputation score of each provider whose valid prediction was included in the aggregate, based on the accuracy of their prediction and using the reputation update rules in \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, and \rref{FR_ReputationDecrease}.
-\item System stores the updated reputation scores in the provider's profile.
+
+\item The on-chain program calculates the accuracy of each provider's
+prediction by comparing it to the final inference result produced using the
+weighted-median algorithm in Appendix~A (\nameref{App_WeightedMedian}).
+\item The on-chain program calculates and applies the reputation score update
+for each provider whose valid prediction was included in the aggregate, using
+the reputation update rules in \rref{FR_ReputationIncrease},
+\rref{FR_ReputationUnchanged}, and \rref{FR_ReputationDecrease}.
 \end{enumerate}
 
 \textbf{Alternative Flows}
@@ -909,10 +918,12 @@ System
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item System retrieves the reputation scores of the accepted providers who are eligible for rewards and the total payment amount for the inference request.
-\item System calculates the reward distribution for each eligible provider based on their reputation score and the total payment amount, using a predefined reward distribution algorithm for the task.
-\item System initiates the transfer of rewards to each eligible provider's wallet, deducting the appropriate amount of tokens from the escrowed funds.
-\item System verifies the successful transfer of rewards to each provider's wallet and updates their balance accordingly.
+\item The on-chain program calculates and distributes rewards for eligible
+providers according to \rref{FR_DistributeRewards}.
+\item The on-chain program automatically transfers rewards to each eligible
+provider's wallet using the escrowed payment for the request.
+\item The system displays the confirmed on-chain transfers and updated balances
+to each provider.
 \item System sends a confirmation message to each provider, indicating the amount of tokens received and their updated balance.
 \end{enumerate}
 
@@ -1107,7 +1118,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistration}:] The system shall allow authenticated users to register as inference providers for an inference task by staking the required minimum amount of tokens.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistration}:] The system shall allow authenticated users to register as inference providers for an inference task by staking the required minimum amount of tokens. Upon registration, the on-chain program shall create a provider entry for the provider's wallet address and store the provider's reputation and stake in that entry.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceTaskRegistrationStaking}:] When a provider registers for an inference task, the system shall lock the required minimum stake for that task in escrow. The system shall return the provider's stake when the applicable conditions for releasing it are met.
 
@@ -1121,7 +1132,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestSubmission}:] The system shall allow authenticated users to submit inference requests for an existing inference task. Each request shall include input data that conforms to the task's input schema.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestSubmission}:] The system shall allow authenticated users to submit inference requests for an existing inference task. Each request shall include input data that conforms to the task's input schema, and the on-chain program shall create a unique on-chain request record for it. The on-chain program will not store the request's input data.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestValidation}:] The system shall reject inference requests whose input data does not conform to the task's input schema.
 
@@ -1135,11 +1146,13 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_AcceptancePeriodStart}:] Upon broadcast of an inference request, the system shall automatically begin the acceptance period, during which every provider registered for the task may accept or decline participation.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_AcceptancePeriodStart}:] Upon creation of an inference request, the on-chain program shall automatically begin the acceptance period, during which registered providers may accept or decline participation.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_AcceptancePeriodEnd}:] At the specified expiry time, the system shall end the acceptance period. All registered providers that have not accepted the request will be treated as non-participating. Inference request acceptances from inference providers outside of the acceptance period will not be considered.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumAcceptance}:] If fewer than the task's minimum number of participating providers have accepted an inference request when the acceptance period ends, the system shall cancel the request and return the requester's escrowed payment.
+
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MaximumAcceptance}:] The on-chain program shall reject an acceptance that would exceed the task's maximum number of participating providers. Once that maximum is reached, the acceptance period shall close and no further provider may accept the request.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RequestInputDistribution}:] Once the acceptance period has ended, the system shall make the request's input data, or information needed to access it, available to all providers that accepted the request during the acceptance period.
 
@@ -1167,7 +1180,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionAggregation}:] The system shall aggregate only valid submitted predictions from providers whose reputation score at the end of the prediction phase, before any reputation updates for that request, is non-zero. For each included prediction, its weight shall be that reputation score divided by the sum of the reputation scores of all included providers. The system shall calculate the final numerical result using the weighted-median algorithm specified in Appendix~A (\nameref{App_WeightedMedian}).
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_PredictionAggregation}:] The on-chain program shall aggregate only valid submitted predictions from providers whose reputation score at the end of the prediction phase, before any reputation updates for that request, is non-zero. For each included prediction, its weight shall be that reputation score divided by the sum of the reputation scores of all included providers. The on-chain program shall calculate and store the final numerical result using the weighted-median algorithm specified in Appendix~A (\nameref{App_WeightedMedian}).
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_FinalResultDelivery}:] The system shall return the final aggregated result, time elapsed since submitting the request, and the number of provider predictions included in the aggregation to the user that submitted the inference request.
 
@@ -1181,7 +1194,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:] After the final aggregated result for an inference request is computed, the system shall update the reputation score of each provider whose valid prediction was included in the aggregate under \rref{FR_PredictionAggregation}. For each such provider $i$, the system shall compute $d_i$, the absolute difference between the provider's prediction and the final aggregated result, and $\bar{d}$, the average of $d_j$ over all providers whose valid predictions were included in the aggregate.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:] After the final aggregated result for an inference request is computed, the on-chain program shall calculate and apply the reputation update for each provider whose valid prediction was included in the aggregate under \rref{FR_PredictionAggregation}. For each such provider $i$, the on-chain program shall compute $d_i$, the absolute difference between the provider's prediction and the final aggregated result, and $\bar{d}$, the average of $d_j$ over all providers whose valid predictions were included in the aggregate.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationRange}:] The system shall maintain each provider's reputation score within the inclusive range $[0,100]$
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationIncrease}:] The system shall increase the reputation score of a provider whose distance $d_i$ is less than or equal to the average distance $\bar{d}$.
@@ -1192,7 +1205,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationPenaltyCap}:] The system shall limit the reputation decrease a provider receives for a single inference request to at most MAX\_REPUTATION\_PENALTY, regardless of how far the provider's prediction is from the final aggregated result.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_DistributeRewards}:] The system shall distribute the inference request's reward among all providers whose predictions contributed to the final aggregated result and whose reputation did not decrease as a result of the request, in proportion to each provider's reputation score. 
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_DistributeRewards}:] The on-chain program shall calculate and automatically distribute the inference request's reward among all providers whose predictions contributed to the final aggregated result and whose reputation did not decrease as a result of the request, in proportion to each provider's reputation score.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RewardTransferFailure}:] If a reward transfer to a provider fails because the provider's wallet is invalid or cannot receive tokens, the system shall keep that provider's reward in escrow, record the transfer as unresolved, and set the request's status to Pending Transfer. Transfers to other providers and the requester's access to the final aggregated result shall not be affected.
 
@@ -1234,7 +1247,7 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TransactionVerification}:] The system shall provide, for each transaction a user has authorized, the transaction identifier needed to look up the transaction on the blockchain.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_OnChainRecords}:] The system shall record request payments, provider stakes, aggregated results, reputation updates, and reward distributions on the blockchain.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_OnChainRecords}:] The system shall create and maintain each inference request, the provider registry and per-task reputations, request payments, provider stakes, aggregated results, reputation updates, and reward distributions on the blockchain.
 
 \end{itemize}
 
@@ -1264,7 +1277,8 @@ The system shall verify if the wallet of a user has sufficient funds before requ
 The on-chain programs shall reject any transaction that the wallet cannot cover at the time of execution, regardless of any balance check made earlier.
 
 \item[\refstepcounter{sanum}\thesanum \label{SA_SignedTransactionsOnly}:]
-The system shall not submit any transaction which is not signed by an authorized wallet on-chain or off-chain.
+The system shall not submit any user-initiated transaction which is not
+signed by the authorized wallet.
 
 \item[\refstepcounter{sanum}\thesanum \label{SA_ExpiryCheck}:]
 The system shall wait for validity period to end and status to be checked before logging transaction as failed and attempting to reprocess.
@@ -1553,7 +1567,7 @@ Stakeholder Req & Use Case & Functional Req \\
   & \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_MinimumAcceptance}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_MinimumPredictions}, \rref{FR_PredictionAggregation}, \rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} \\[0.5em]
 
 \srref{SR_ResilientService} & \ucref{UC_AcceptRequest}, \ucref{UC_SubmitPrediction}, \ucref{UC_CancelRequest}
-  & \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_MinimumAcceptance}, \rref{FR_PredictionPhaseEnd}, \rref{FR_MinimumPredictions}, \ref{SA_ExpiryCheck}, \ref{SA_FailureRetry} \\[0.5em]
+  & \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_MaximumAcceptance}, \rref{FR_MinimumAcceptance}, \rref{FR_PredictionPhaseEnd}, \rref{FR_MinimumPredictions}, \ref{SA_ExpiryCheck}, \ref{SA_FailureRetry} \\[0.5em]
 
 \srref{SR_ResultQuality} & \ucref{UC_AggregateResult}
   & \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread} \\[0.5em]
@@ -1652,6 +1666,25 @@ requirements, data requirements, and AI requirements.  You don't need a
 rationale for everything, ust the major decisions that are not obvious.  You
 should have traceability to the entities in the document that you are
 referencing.}
+
+\subsection{On-Chain Execution}
+
+Every inference task, inference request, the provider registry and per-task
+reputations, final aggregation, reputation updates, reward calculation and
+distribution are all executed and / or stored on the public blockchain.
+(\rref{FR_RequestSubmission}, \rref{FR_InferenceTaskRegistration},
+\rref{FR_PredictionAggregation}, \rref{FR_UpdateProviderReputations},
+\rref{FR_DistributeRewards}, and \rref{FR_OnChainRecords}). The backend is used for encrypted input delivery, transaction handling, validating transactions, user
+notifications and several other imporant functionalities, but it is not trusted to decide any state changes to the
+marketplace.
+
+This boundary is necessary for decentralization, verifiability and the trustlessness of the system.
+If a backend controlled state changes, it could refuse to aggregate a request, omit a provider's
+prediction, delay a reputation update, or withhold a reward. Unlike a conventional piece of software, which
+runs on servers controlled by one organization, an on-chain program runs on a public blockchain 
+network. No single entity can stop it, change its rules, or decide who may use it. Therefore, within DAIIM, any user can 
+start an inference a request, and the program itself checks that the required conditions are
+met, so the outcome does not depend on any central authority.
 
 \subsection{Provider Staking}
 
@@ -1765,10 +1798,11 @@ rewards after they were paid.
 
 \subsection{Request Broadcast and Collusion} \label{sec_RationaleBroadcast}
 
-Every provider registered for a task receives each of its inference requests,
-and any of them may accept (\rref{FR_RequestBroadcast},
-\rref{FR_AcceptancePeriodStart}). The system does not invite a random subset of
-providers, and it does not cap how many providers can accept a request.
+Every registered provider is eligible to receive each request, and any
+registered provider may accept until the task's finite maximum is reached
+(\rref{FR_RequestBroadcast}, \rref{FR_AcceptancePeriodStart},
+\rref{FR_MaximumAcceptance}). The system does not invite a random subset of
+providers to each request.
 
 The Hazard Analysis (H4.3) identified collusion as a risk: a coordinated group
 of providers could submit similar inaccurate predictions to skew the aggregated
