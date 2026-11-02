@@ -643,8 +643,8 @@ session, grants no profile access and displays the appropriate error message.
 These tests verify the end-to-end task creation flow, including validation of
 the task definition, user authorization, and confirmation that the task-creation
 program instruction succeeds on the blockchain. They also verify that the
-timing and tolerance fields of a task are stored and applied to its requests,
-and that all users, including users who are not signed in, can browse the
+provider counts, tolerance, and timing fields of a task are required and
+stored, and that all users, including users who are not signed in, can browse the
 marketplace and its tasks.
 
 \paragraph{Create and Validate Inference Tasks}
@@ -660,33 +660,46 @@ wallet address fixture is authenticated, and the test harness is configured with
 wallet signer and sufficient test SOL to pay transaction fees. The unique task
 names \texttt{Regression-Test-Task},
 \texttt{Regression-Test-Min-Providers},
-\texttt{Regression-Test-Invalid-Schema}, and
+\texttt{Regression-Test-Invalid-Schema},
+\texttt{Regression-Test-No-Tolerance},
+\texttt{Regression-Test-No-Max-Time}, and
 \texttt{Rejected-Authorization-Task} are not already in use.
 
 \textbf{Input:}
 \begin{itemize}
 \item[1.] A valid numerical regression task definition named
 \texttt{Regression-Test-Task}, including a description, numerical input and
-output schemas, an evaluation metric, a minimum provider count of 2 or more,
-reputation tolerance, acceptance period, and maximum prediction time.
+output schemas, an evaluation metric, a minimum of 2 and a maximum of 4
+providers, a reputation tolerance of 2.0, an acceptance period of 2 minutes,
+and a maximum prediction time of 5 minutes.
 \item[2.] The valid definition named
 \texttt{Regression-Test-Min-Providers}, with its minimum provider count
 changed to 1.
 \item[3.] The valid definition named \texttt{Regression-Test-Invalid-Schema},
 with an input or output schema containing non-numerical values incompatible
 with a numerical regression task.
-\item[4.] The valid definition named \texttt{Rejected-Authorization-Task}.
+\item[4.] The valid definition named \texttt{Regression-Test-No-Tolerance},
+with the reputation tolerance left out.
+\item[5.] The valid definition named \texttt{Regression-Test-No-Max-Time},
+with the maximum prediction time left out.
+\item[6.] The valid definition named \texttt{Rejected-Authorization-Task}.
 \end{itemize}
 
 \textbf{Output:}
 \begin{itemize}
 \item[1.] The valid definition is created with the submitted values, and its
-authorized transaction succeeds.
+authorized transaction succeeds. The task's on-chain account stores a minimum
+of 2 and a maximum of 4 providers, a reputation tolerance of 2.0, an
+acceptance period of 2 minutes, and a maximum prediction time of 5 minutes.
 \item[2.] The definition with fewer than 2 minimum providers is rejected, and
 no task is created.
 \item[3.] The definition with an incompatible schema is rejected, and no task
 is created.
-\item[4.] The authorization-rejected definition is not created, and no
+\item[4.] The definition without a reputation tolerance is rejected with an
+error saying the reputation tolerance is missing, and no task is created.
+\item[5.] The definition without a maximum prediction time is rejected with an
+error saying the maximum prediction time is missing, and no task is created.
+\item[6.] The authorization-rejected definition is not created, and no
 successful task-creation transaction occurs.
 \end{itemize}
 
@@ -694,7 +707,14 @@ successful task-creation transaction occurs.
 description, type, input schema, and output schema; the incompatible-schema
 case checks that the definition matches the numerical regression task.
 \rref{FR_MinimumProvidersFloor} requires at least 2 providers, so a value of 1
-must be rejected. \rref{FR_InferenceTaskCreation} permits authenticated users
+must be rejected. \rref{FR_TaskMinimumProviders}, \rref{FR_TaskReputationTolerance},
+\rref{FR_TaskAcceptancePeriod}, and \rref{FR_TaskMaxPredictionTime} require each
+definition to specify the minimum and maximum number of providers, the
+reputation tolerance, the acceptance period, and the maximum prediction time,
+so the valid task must store each value, and a definition missing the
+tolerance or the maximum prediction time must be rejected. The broadcast of
+these values with each request is checked by ST-REQ-4, and the use of the
+reputation tolerance is checked by ST-REP-1. \rref{FR_InferenceTaskCreation} permits authenticated users
 to create tasks, while \rref{FR_TransactionAuthorization} requires wallet
 approval before an on-chain state change. Therefore, the valid task should be
 created only after approval, and rejecting authorization should leave it
@@ -708,67 +728,14 @@ match the submitted definition. Configure the test wallet signer to approve
 the authorization request. After confirmation, query Solana Devnet using the
 returned transaction identifier and assert that the transaction succeeded and
 contains the task-creation instruction. Query the application to confirm that
-\texttt{Regression-Test-Task} is available with the submitted definition.
-Submit the minimum-provider and invalid-schema definitions; assert that each
-is rejected before authorization and no task is created. Finally, submit the
+\texttt{Regression-Test-Task} is available with the submitted definition, and
+read its task account on Solana Devnet to compare each provider count,
+tolerance, and timing field with the submitted value. Submit the
+minimum-provider, invalid-schema, missing-tolerance, and missing-maximum-time
+definitions; assert that each is rejected before authorization and no task is created. Finally, submit the
 valid definition named \texttt{Rejected-Authorization-Task}, configure the
 signer to reject authorization, and assert that no task-creation instruction
 is submitted and no task is created.
-\item{ST-TASK-CREATE-2\\}
-
-\textbf{Control:} Automatic
-
-\textbf{Initial State:} The system is running on Solana Devnet. An authenticated
-requester RQ-41 has a test wallet signer with enough SOL for transaction fees.
-The task names TASK-41, TASK-42, and TASK-43 are not already in use.
-PROV-41 and PROV-42 are authenticated providers with enough SOL to register for
-a task.
-
-\textbf{Input:}
-\begin{itemize}
-\item[1.] RQ-41 creates TASK-41 with a valid numerical regression definition,
-a minimum of 2 and a maximum of 4 providers, a reputation tolerance of 2.0, an
-acceptance period of 2 minutes, and a maximum prediction time of 5 minutes,
-and approves the transaction.
-\item[2.] RQ-41 submits the same definition as TASK-42, with the reputation
-tolerance left out.
-\item[3.] RQ-41 submits the same definition as TASK-43, with the maximum
-prediction time left out.
-\item[4.] PROV-41 and PROV-42 register for TASK-41, and RQ-41 submits inference
-request REQ-41 for TASK-41.
-\end{itemize}
-
-\textbf{Output:}
-\begin{itemize}
-\item[1.] TASK-41 is created, and its on-chain account stores a minimum of 2
-and a maximum of 4 providers, a reputation tolerance of 2.0, an acceptance
-period of 2 minutes, and a maximum prediction time of 5 minutes.
-\item[2.] TASK-42 is rejected with an error saying the reputation tolerance is
-missing, and no task is created.
-\item[3.] TASK-43 is rejected with an error saying the maximum prediction time
-is missing, and no task is created.
-\item[4.] The broadcast of REQ-41 to PROV-41 and PROV-42 includes the maximum
-prediction time of 5 minutes. REQ-41's acceptance period ends 2 minutes after
-the broadcast, and its prediction phase deadline is 5 minutes after the end of
-the acceptance period.
-\end{itemize}
-
-\textbf{Test Case Derivation:} \rref{FR_TaskMinimumProviders}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, and \rref{FR_TaskMaxPredictionTime} require each
-task definition to specify the number of providers, the reputation tolerance,
-the acceptance period, and the maximum prediction time, so a definition missing
-either of the last two must be rejected. \rref{FR_TaskAcceptancePeriod} sets the end of the acceptance
-period relative to the broadcast, and \rref{FR_TaskMaxPredictionTime} measures the maximum prediction time
-from the end of the acceptance period. \rref{FR_RequestBroadcast} requires the maximum prediction time
-to be included in the broadcast. The use of the reputation tolerance when
-updating reputations is checked by ST-REP-1.
-
-\textbf{How test will be performed:} Submit each definition through the
-task-creation flow. Read TASK-41's account on Solana Devnet and compare each
-field with the submitted value. For TASK-42 and TASK-43, check that no
-signing request is sent and that no task account exists. For REQ-41, record the
-broadcast received by each mock provider, and compare the acceptance period end
-and prediction phase deadline stored in the request's account with the
-broadcast time.
 
 \end{enumerate}
 
@@ -780,10 +747,10 @@ broadcast time.
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on Solana Devnet. TASK-41 from
-ST-TASK-CREATE-2 exists, with a required minimum provider stake of 100 SOL, and
+\textbf{Initial State:} The system is running on Solana Devnet. \texttt{Regression-Test-Task} from
+ST-TASK-CREATE-1 exists, with a required minimum provider stake of 100 SOL, and
 PROV-41 and PROV-42 are registered for it with reputation scores of 50 and 70.
-PROV-43 is an authenticated provider that is not registered for TASK-41. A
+PROV-43 is an authenticated provider that is not registered for \texttt{Regression-Test-Task}. A
 visitor V-01 opens the web application without signing in. Requester RQ-41 is
 signed in on another browser.
 
@@ -791,23 +758,23 @@ signed in on another browser.
 \begin{itemize}
 \item[1.] V-01 opens the marketplace page.
 \item[2.] V-01 opens the list of inference tasks.
-\item[3.] V-01 opens TASK-41.
-\item[4.] PROV-43 registers for TASK-41, and V-01 reloads TASK-41.
-\item[5.] RQ-41 opens the marketplace page, the task list, and TASK-41.
+\item[3.] V-01 opens \texttt{Regression-Test-Task}.
+\item[4.] PROV-43 registers for \texttt{Regression-Test-Task}, and V-01 reloads \texttt{Regression-Test-Task}.
+\item[5.] RQ-41 opens the marketplace page, the task list, and \texttt{Regression-Test-Task}.
 \item[6.] V-01 tries to create a task and to submit an inference request for
-TASK-41.
+\texttt{Regression-Test-Task}.
 \end{itemize}
 
 \textbf{Output:}
 \begin{itemize}
 \item[1.] V-01 sees the registered providers, the models they offer, and their
 reputation scores, including PROV-41 (50) and PROV-42 (70).
-\item[2.] The list includes TASK-41.
-\item[3.] V-01 sees TASK-41's full definition (name, description, type, input
+\item[2.] The list includes \texttt{Regression-Test-Task}.
+\item[3.] V-01 sees \texttt{Regression-Test-Task}'s full definition (name, description, type, input
 and output schemas, evaluation metric, number of providers, reputation
 tolerance, acceptance period, and maximum prediction time), a required minimum
 provider stake of 100 SOL, and 2 registered providers.
-\item[4.] TASK-41 now shows 3 registered providers.
+\item[4.] \texttt{Regression-Test-Task} now shows 3 registered providers.
 \item[5.] RQ-41 sees the same information as V-01.
 \item[6.] V-01 is asked to sign in, and no task or request is created.
 \end{itemize}
@@ -2331,8 +2298,7 @@ ST-AUTH-EXT-1 & \rref{FR_WalletAuthentication}\\
 ST-AUTH-EXT-2 & \rref{FR_WalletAuthentication}\\
 ST-AUTH-EMB-1 & \rref{FR_WalletAuthentication}, \rref{FR_EmbeddedWalletCreation}\\
 ST-AUTH-EMB-2 & \rref{FR_WalletAuthentication}\\
-ST-TASK-CREATE-1 & \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \nfrref{NFR_TransactionConfirmation}\\
-ST-TASK-CREATE-2 & \rref{FR_TaskMinimumProviders}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_TaskMaxPredictionTime}, \rref{FR_RequestBroadcast}\\
+ST-TASK-CREATE-1 & \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_TaskMaxPredictionTime}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \nfrref{NFR_TransactionConfirmation}\\
 ST-TASK-BROWSE-1 & \rref{FR_PublicAccess}, \rref{FR_TaskBrowsing}, \rref{FR_InferenceTaskCreation}, \rref{FR_RequestSubmission}\\
 ST-PROV-1 & \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \nfrref{NFR_TransactionConfirmation}\\
 ST-PROV-2 & \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}\\
