@@ -2606,6 +2606,14 @@ graduate attribute of Lifelong Learning.
   to the SRS, writing the system tests forced me to better understand how embedded wallets
   work in practice, and the important aspects to consider for validation.
 
+  \textbf{Keira:} Something that went well when writing this document was the conversation it 
+  sparked with our supervisor, Dr. Hassan. Section 3 prompted us to think more concretely about 
+  development of the system and the roles each team member would play. As a result of this, 
+  we were inspired to discuss with Dr. Hassan what kind of guidance and expertise he would 
+  reasonably be able to offer to us for the remainder of the project. We planned structured 
+  meetings in which we will demostrate our PoC and Rev 0, and Dr. Hassan will offer advise and 
+  critiques from the perspective of the stakeholder, as well as a subject matter expert.
+
   \item What pain points did you experience during this deliverable, and how
   did you resolve them?
 
@@ -2641,6 +2649,17 @@ graduate attribute of Lifelong Learning.
   in which tests, and what each one represented. We decided, to resolve this, to avoid
   reusing fixtures across tests, and instead create a new fixture, with a new ID,
   each time.
+
+  \textbf{Keira:} The main pain point I had was keeping the system tests
+  independent of the blockchain platform. My first drafts named Solana Devnet
+  directly and used fixed values such as a stake of 100 SOL. After review
+  feedback, I had to remove these references. I resolved this by replacing 
+  fixed amounts with symbolic constants, such as
+  \texttt{REQUEST\_PAYMENT} and \texttt{MINIMUM\_REQUEST\_PAYMENT}, and
+  defining them once in the appendix. Now a test describes what must be true,
+  not how one platform does it, and changing a value only means updating the
+  appendix. In hindsight, deciding on this convention before writing the tests
+  would have saved most of the rework.
 
   \item What knowledge and skills will the team collectively need to acquire to
   successfully complete the verification and validation of your project?
