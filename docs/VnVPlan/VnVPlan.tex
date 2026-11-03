@@ -1253,7 +1253,7 @@ predictions, and cancelling requests that receive too few valid predictions.
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on Solana Devnet. TASK-07 requires at least 2 accepting providers, allows
+Initial State: The system is running on a supported blockchain platform. TASK-07 requires at least 2 accepting providers, allows
 at most 3, and has an acceptance period of 2 minutes. PROV-11, PROV-12, and PROV-13 are registered for TASK-07.
 A requester has submitted inference request REQ-01 for TASK-07.
 
@@ -1277,15 +1277,15 @@ to its prediction phase with PROV-11 and PROV-12.
 decline, and \rref{FR_TaskAcceptancePeriod} sets its length. \rref{FR_TransactionAuthorization} requires each acceptance to be signed, and \rref{FR_StakeReservation} requires part of the
 provider's stake to be reserved for the request.
 
-\textbf{How test will be performed:} Send the two acceptances and the decline. Query REQ-01 and the provider accounts on
-Solana Devnet, and verify the acceptance period times, the recorded acceptances and decline, and the
+How test will be performed: Send the two acceptances and the decline. Query REQ-01 and the provider accounts on
+the blockchain, and verify the acceptance period times, the recorded acceptances and decline, and the
 reservations. After the period ends, verify that REQ-01 is in its prediction phase.
 
 \item{ST-ACC-2\\}
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on Solana Devnet. PROV-11 to PROV-15 are registered for TASK-07, and
+Initial State: The system is running on a supported blockchain platform. PROV-11 to PROV-15 are registered for TASK-07, and
 PROV-16 is not. A requester has submitted inference requests REQ-02 and REQ-03 for TASK-07.
 
 \textbf{Input:}
@@ -1299,23 +1299,22 @@ PROV-16 is not. A requester has submitted inference requests REQ-02 and REQ-03 f
 \begin{itemize}
 \item[1.] The acceptance from PROV-16 is rejected with a not-registered error.
 \item[2.] The acceptance from PROV-14 is rejected because the acceptance period has ended.
-\item[3.] The acceptance from PROV-15 is rejected because REQ-03 already has 3 accepting providers.
+\item[3.] The acceptance from PROV-11, PROV-12, and PROV-13 are registered. The acceptance from PROV-15 is rejected because REQ-03 already has 3 accepting providers.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_AcceptancePeriodStart} only lets registered providers accept a request. \rref{FR_AcceptancePeriodEnd} ignores acceptances after the
 acceptance period ends, and \rref{FR_TaskMinimumProviders} sets the task's maximum number of accepting providers for each request.
 
-\textbf{How test will be performed:} Send each acceptance at the stated time, using the on-chain clock to wait for the
-end of the acceptance period of REQ-02. Verify that each is rejected with the expected error and that none of
-these providers is recorded as accepting.
+How test will be performed: Send each acceptance at the stated time, using the on-chain clock to wait for the
+end of the acceptance period of REQ-02. Verify that each faulty provider is rejected with the expected error and that none of
+these providers is recorded as accepting. 
 
 \item{ST-ACC-3\\}
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on Solana Devnet. PROV-11 is registered for TASK-07, which requires at
-least 2 accepting providers. A requester has submitted inference request REQ-04 for TASK-07 with a payment of
-30 SOL.
+Initial State: The system is running on a supported blockchain platform. PROV-11 is registered for TASK-07, which requires at
+least 2 accepting providers. A requester has submitted inference request REQ-04 for TASK-07 with a payment of \textttt{REQUEST_PAYMENT}.
 
 \textbf{Input:}
 \begin{itemize}
@@ -1324,24 +1323,25 @@ least 2 accepting providers. A requester has submitted inference request REQ-04 
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] REQ-04 is cancelled when the acceptance period ends, and does not enter a prediction phase. The 30 SOL
-payment is returned to the requester, and the stake reserved by PROV-11 is released.
+\item[1.] REQ-04 is cancelled when the acceptance period ends, and does not enter a prediction phase. The \textttt{REQUEST\_PAYMENT} 
+is returned to the requester, and the stake reserved from PROV-11 is released.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_MinimumAcceptance} cancels a request that fewer than the task's minimum number of providers have
 accepted, and returns the requester's payment. \rref{FR_StakeReservationRelease} releases the reservations of a cancelled request.
 
-\textbf{How test will be performed:} Have PROV-11 accept REQ-04, and wait until the on-chain clock passes the end of the
-acceptance period. Verify that REQ-04 is cancelled, that the requester's wallet balance went back up by 30 SOL,
-and that PROV-11 has no reservation left for it.
+How test will be performed: Have PROV-11 accept REQ-04, and wait until the on-chain clock passes the end of the
+acceptance period. Verify that REQ-04 is cancelled, that the requester's wallet balance went back up by \textttt{REQUEST\_PAYMENT},
+and that PROV-11 has no reservation left for REQ-04.
 
 \item{ST-ACC-4\\}
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on Solana Devnet. PROV-17 is registered for TASK-08 with a stake of
-\texttt{MINIMUM\_PROVIDER\_STAKE} plus 50 SOL. Each request for TASK-08 reserves 20 SOL of an accepting
-provider's stake. A requester has submitted inference requests REQ-05, REQ-06, REQ-07, and REQ-08.
+Initial State: The system is running on a supported blockchain platform. Each request for TASK-08 reserves \texttt{TASK\_RESERVATION\_AMOUNT} of an accepting
+provider's stake. PROV-17 is registered for TASK-08 with a stake of
+$\texttt{MINIMUM\_PROVIDER\_STAKE} + \texttt{TASK\_RESERVATION\_AMOUNT} \times 2.5 $. 
+A requester has submitted inference requests REQ-05, REQ-06, REQ-07, and REQ-08.
 
 \textbf{Input:}
 \begin{itemize}
@@ -1356,9 +1356,9 @@ third reservation would take the stake of PROV-17 below \texttt{MINIMUM\_PROVIDE
 \item[2.] After REQ-05 completes, its reservation is released and the acceptance of REQ-08 is recorded.
 \end{itemize}
 
-\textbf{Test Case Derivation:} \rref{FR_StakeReservation} rejects an acceptance if the stake left after all reservations would be below
-\texttt{MINIMUM\_PROVIDER\_STAKE}. With 50 SOL above the minimum, two 20 SOL reservations fit and a third does
-not. \rref{FR_StakeReservationRelease} releases a reservation when its request ends.
+Test Case Derivation: FR31 rejects an acceptance if the stake left after all reservations would be below
+\texttt{MINIMUM\_PROVIDER\_STAKE}. With $\texttt{TASK\_RESERVATION\_AMOUNT} \times 2.5$ above the minimum, two \texttt{TASK\_RESERVATION\_AMOUNT} reservations fit and a third does
+not. FR32 releases a reservation when its request ends.
 
 \textbf{How test will be performed:} Have PROV-17 accept the requests in order, and read its reservations from the
 on-chain program accounts after each acceptance. Run REQ-05 to completion before the last acceptance, and verify
@@ -1374,7 +1374,7 @@ that each acceptance is recorded or rejected as expected.
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on Solana Devnet. TASK-09 has a numerical output schema and a maximum
+Initial State: The system is running on a supported blockchain platform. TASK-09 has a numerical output schema and a maximum
 prediction time of 5 minutes. PROV-18 and PROV-19 have accepted inference request REQ-09 for TASK-09, and its
 acceptance period has ended.
 
@@ -1400,14 +1400,14 @@ prediction phase recorded on-chain is earlier than the maximum prediction time.
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on Solana Devnet. PROV-18 to PROV-21 have accepted inference request REQ-10
+Initial State: The system is running on a supported blockchain platform. PROV-18 to PROV-21 have accepted inference request REQ-10
 for TASK-09, and PROV-22 is registered for TASK-09 but did not accept REQ-10.
 
 \textbf{Input:}
 \begin{itemize}
 \item[1.] During the acceptance period, PROV-18 submits a prediction.
 \item[2.] During the prediction phase, PROV-18 submits 10.0 and then 50.0.
-\item[3.] During the prediction phase, PROV-19 submits a string instead of a number and then a valid number.
+\item[3.] During the prediction phase, PROV-19 submits a string instead of a number and then submits a valid number.
 \item[4.] During the prediction phase, PROV-22 submits a valid number.
 \item[5.] After the maximum prediction time, PROV-20 submits a prediction.
 \end{itemize}
@@ -1434,9 +1434,9 @@ PROV-18 is 10.0.
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on Solana Devnet. TASK-10 requires 3 valid predictions and allows at most 4
+Initial State: The system is running on a supported blockchain platform. TASK-10 requires 3 valid predictions and allows at most 4
 accepting providers. PROV-23 to PROV-26 have accepted inference request REQ-11 for TASK-10, which has a payment
-of 40 SOL, so the per-provider compensation is 10 SOL.
+of \textttt{REQUEST\_PAYMENT}, and the per-provider compensation is \textttt{MINIMUM\_REQUEST\_PAYMENT}.
 
 \textbf{Input:}
 \begin{itemize}
@@ -1448,12 +1448,12 @@ of 40 SOL, so the per-provider compensation is 10 SOL.
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] Both predictions are accepted, and once REQ-11 is cancelled, PROV-23 and PROV-24 each receive 10 SOL
+\item[1.] Both predictions are accepted, and once REQ-11 is cancelled, PROV-23 and PROV-24 each receive \textttt{MINIMUM\_REQUEST\_PAYMENT}
 of compensation.
-\item[2.] The prediction from PROV-25 is rejected and does not count toward the 3 valid predictions. Half of
-the 20 SOL compensation is taken from its reserved stake.
-\item[3.] The other half of the 20 SOL compensation is taken from the reserved stake of PROV-26.
-\item[4.] REQ-11 is cancelled with no aggregated result, the requester gets the 40 SOL back, and all remaining
+\item[2.] The prediction from PROV-25 is rejected and does not count toward the 3 valid predictions. Its stake is 
+slashed by \texttt{SLASH\_FRACTION}, reflected in the remaining reservation.
+\item[3.] The stake of PROV-26 is slashed by \texttt{SLASH\_FRACTION} for not submitting a prediction, reflected in the remaining reservation.
+\item[4.] REQ-11 is cancelled with no aggregated result, the requester gets the \textttt{REQUEST\_PAYMENT} back, and all remaining
 reservations for REQ-11 are released.
 \end{itemize}
 
@@ -1461,8 +1461,8 @@ reservations for REQ-11 are released.
 payment, and under \rref{FR_PredictionValidation} the rejected prediction does not count. \rref{FR_CancellationCompensation} pays each provider with a valid prediction
 the per-provider compensation from the providers without one, and \rref{FR_StakeReservationRelease} releases the remaining reservations.
 
-\textbf{How test will be performed:} Send the predictions and wait until the on-chain clock passes the maximum prediction
-time. Verify that REQ-11 is cancelled, and compare the wallet balances and reservations on Solana Devnet with the
+How test will be performed: Send the predictions and wait until the on-chain clock passes the maximum prediction
+time. Verify that REQ-11 is cancelled, and compare the wallet balances and reservations on the blockchain with the
 expected outputs.
 
 \end{enumerate}
@@ -2482,6 +2482,12 @@ The constants used by the system itself (\texttt{MINIMUM\_PROVIDER\_STAKE},
 this document.
 
 \begin{itemize}
+\item \texttt{TASK\_RESERVATION\_AMOUNT}: the amount of provider stake that is reserved 
+when a provider accepts a request and becomes an accepted provider. Proposed value: 10.
+\item \textttt{REQUEST\_PAYMENT}: the amount a requester pays to submit a request and receive 
+an aggregated prediction, including transaction fees and provider payment. Proposed value: 40.
+\textttt{MINIMUM\_REQUEST\_PAYMENT}: the amount a provider is guaranteed to be paid for a given 
+request, if a valid prediction is submitted. Proposed value: 10.
 \item \texttt{LONG\_OPERATION\_THRESHOLD}: the length of time after which an
 operation counts as ``long'' and must show progress (NFR-USE-1). Proposed
 value: 1 second.
