@@ -1314,7 +1314,7 @@ these providers is recorded as accepting.
 \textbf{Control:} Automatic
 
 Initial State: The system is running on a supported blockchain platform. PROV-11 is registered for TASK-07, which requires at
-least 2 accepting providers. A requester has submitted inference request REQ-04 for TASK-07 with a payment of \textttt{REQUEST_PAYMENT}.
+least 2 accepting providers. A requester has submitted inference request REQ-04 for TASK-07 with a payment of \texttt{REQUEST_PAYMENT}.
 
 \textbf{Input:}
 \begin{itemize}
@@ -1323,7 +1323,7 @@ least 2 accepting providers. A requester has submitted inference request REQ-04 
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] REQ-04 is cancelled when the acceptance period ends, and does not enter a prediction phase. The \textttt{REQUEST\_PAYMENT} 
+\item[1.] REQ-04 is cancelled when the acceptance period ends, and does not enter a prediction phase. The \texttt{REQUEST\_PAYMENT} 
 is returned to the requester, and the stake reserved from PROV-11 is released.
 \end{itemize}
 
@@ -1331,7 +1331,7 @@ is returned to the requester, and the stake reserved from PROV-11 is released.
 accepted, and returns the requester's payment. \rref{FR_StakeReservationRelease} releases the reservations of a cancelled request.
 
 How test will be performed: Have PROV-11 accept REQ-04, and wait until the on-chain clock passes the end of the
-acceptance period. Verify that REQ-04 is cancelled, that the requester's wallet balance went back up by \textttt{REQUEST\_PAYMENT},
+acceptance period. Verify that REQ-04 is cancelled, that the requester's wallet balance went back up by \texttt{REQUEST\_PAYMENT},
 and that PROV-11 has no reservation left for REQ-04.
 
 \item{ST-ACC-4\\}
@@ -1436,7 +1436,7 @@ PROV-18 is 10.0.
 
 Initial State: The system is running on a supported blockchain platform. TASK-10 requires 3 valid predictions and allows at most 4
 accepting providers. PROV-23 to PROV-26 have accepted inference request REQ-11 for TASK-10, which has a payment
-of \textttt{REQUEST\_PAYMENT}, and the per-provider compensation is \textttt{MINIMUM\_REQUEST\_PAYMENT}.
+of \texttt{REQUEST\_PAYMENT}, and the per-provider compensation is \texttt{MINIMUM\_REQUEST\_PAYMENT}.
 
 \textbf{Input:}
 \begin{itemize}
@@ -1448,12 +1448,12 @@ of \textttt{REQUEST\_PAYMENT}, and the per-provider compensation is \textttt{MIN
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] Both predictions are accepted, and once REQ-11 is cancelled, PROV-23 and PROV-24 each receive \textttt{MINIMUM\_REQUEST\_PAYMENT}
+\item[1.] Both predictions are accepted, and once REQ-11 is cancelled, PROV-23 and PROV-24 each receive \texttt{MINIMUM\_REQUEST\_PAYMENT}
 of compensation.
 \item[2.] The prediction from PROV-25 is rejected and does not count toward the 3 valid predictions. Its stake is 
 slashed by \texttt{SLASH\_FRACTION}, reflected in the remaining reservation.
 \item[3.] The stake of PROV-26 is slashed by \texttt{SLASH\_FRACTION} for not submitting a prediction, reflected in the remaining reservation.
-\item[4.] REQ-11 is cancelled with no aggregated result, the requester gets the \textttt{REQUEST\_PAYMENT} back, and all remaining
+\item[4.] REQ-11 is cancelled with no aggregated result, the requester gets the \texttt{REQUEST\_PAYMENT} back, and all remaining
 reservations for REQ-11 are released.
 \end{itemize}
 
@@ -2484,9 +2484,9 @@ this document.
 \begin{itemize}
 \item \texttt{TASK\_RESERVATION\_AMOUNT}: the amount of provider stake that is reserved 
 when a provider accepts a request and becomes an accepted provider. Proposed value: 10.
-\item \textttt{REQUEST\_PAYMENT}: the amount a requester pays to submit a request and receive 
+\item \texttt{REQUEST\_PAYMENT}: the amount a requester pays to submit a request and receive 
 an aggregated prediction, including transaction fees and provider payment. Proposed value: 40.
-\textttt{MINIMUM\_REQUEST\_PAYMENT}: the amount a provider is guaranteed to be paid for a given 
+\texttt{MINIMUM\_REQUEST\_PAYMENT}: the amount a provider is guaranteed to be paid for a given 
 request, if a valid prediction is submitted. Proposed value: 10.
 \item \texttt{LONG\_OPERATION\_THRESHOLD}: the length of time after which an
 operation counts as ``long'' and must show progress (NFR-USE-1). Proposed
