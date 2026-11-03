@@ -725,11 +725,11 @@ used to verify the successful instruction.
 \textbf{How test will be performed:} Submit the valid
 definition to the task-creation flow and assert that the confirmation details
 match the submitted definition. Configure the test wallet signer to approve
-the authorization request. After confirmation, query the blockchain using the
+the authorization request. After confirmation, query Solana Devnet using the
 returned transaction identifier and assert that the transaction succeeded and
 contains the task-creation instruction. Query the application to confirm that
 \texttt{Regression-Test-Task} is available with the submitted definition, and
-read its task account on the blockchain to compare each provider count,
+read its task account on Solana Devnet to compare each provider count,
 tolerance, and timing field with the submitted value. Submit the
 minimum-provider, invalid-schema, missing-tolerance, and missing-maximum-time
 definitions; assert that each is rejected before authorization and no task is created. Finally, submit the
@@ -747,8 +747,8 @@ is submitted and no task is created.
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on a supported blockchain platform. \texttt{Regression-Test-Task} from
-ST-TASK-CREATE-1 exists, with a required minimum provider stake of \texttt{MINIMUM\_PROVIDER\_STAKE}, and
+\textbf{Initial State:} The system is running on Solana Devnet. \texttt{Regression-Test-Task} from
+ST-TASK-CREATE-1 exists, with a required minimum provider stake of 100 SOL, and
 PROV-41 and PROV-42 are registered for it with reputation scores of 50 and 70.
 PROV-43 is an authenticated provider that is not registered for \texttt{Regression-Test-Task}. A
 visitor V-01 opens the web application without signing in. Requester RQ-41 is
@@ -773,7 +773,7 @@ reputation scores, including PROV-41 (50) and PROV-42 (70).
 \item[3.] V-01 sees \texttt{Regression-Test-Task}'s full definition (name, description, type, input
 and output schemas, evaluation metric, number of providers, reputation
 tolerance, acceptance period, and maximum prediction time), a required minimum
-provider stake, and 2 registered providers.
+provider stake of 100 SOL, and 2 registered providers.
 \item[4.] \texttt{Regression-Test-Task} now shows 3 registered providers.
 \item[5.] RQ-41 sees the same information as V-01.
 \item[6.] V-01 is asked to sign in, and no task or request is created.
@@ -789,7 +789,7 @@ must not extend to those actions.
 
 \textbf{How test will be performed:} Run the steps in an automated browser test,
 using a new browser profile for V-01 with no wallet connected. Compare the
-values shown on each page with the task and provider accounts on the blockchain.
+values shown on each page with the task and provider accounts on Solana Devnet.
 For step 6, check that no signing request is sent and that no new task or
 request account is created.
 
@@ -813,8 +813,8 @@ eligible, and viewing provider information through the dashboard.
 \textbf{Initial State:} The application is running in a supported browser. A provider
 account is authenticated and connected to a compatible wallet. The provider
 is not registered for inference task \texttt{TASK-01}. The task requires a
-minimum stake of tokens, and the provider's wallet contains sufficient a
-balance to complete the transaction.
+minimum stake of tokens, and the provider's wallet contains sufficient
+tokens and SOL to complete the transaction.
 
 \textbf{Input:}
 \begin{itemize}
@@ -1040,7 +1040,8 @@ requests to registered providers.
 account is authenticated and connected to a compatible wallet. An existing
 inference task, \texttt{TASK-01}, is available and has at least two registered
 providers. The task's input schema requires a numerical input field named
-\texttt{input\_value}. The requester's wallet contains sufficient tokens to submit the request.
+\texttt{input\_value}. The requester's wallet contains sufficient tokens and
+SOL to submit the request.
 
 \textbf{Input:}
 \begin{itemize}
@@ -1135,7 +1136,7 @@ account is authenticated and connected to a compatible wallet. An existing
 inference task, \texttt{TASK-03}, is available and has at least two registered
 providers. The task has a minimum payment requirement defined by
 \texttt{MINIMUM\_REQUEST\_PAYMENT}. The requester's wallet contains sufficient
-tokens to authorize a payment.
+tokens and SOL to authorize a payment.
 
 \textbf{Input:}
 \begin{itemize}
@@ -1483,7 +1484,7 @@ so that the expected result can be worked out by hand.
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on a supported blockchain platform. TASK-11 has a
+\textbf{Initial State:} The system is running on Solana Devnet. TASK-11 has a
 numerical output schema and requires at least 3 valid predictions. PROV-31 to
 PROV-36 are registered for TASK-11 with these reputation scores: PROV-31: 40,
 PROV-32: 60, PROV-33: 50, PROV-34: 50, PROV-35: 50, PROV-36: 0. PROV-36's score
@@ -1555,7 +1556,7 @@ time between the request's submission and its result on the blockchain.
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running on a supported blockchain platform. Requester RQ-02
+\textbf{Initial State:} The system is running on Solana Devnet. Requester RQ-02
 has submitted these requests for TASK-11:
 \begin{itemize}
 \item REQ-26, which is in its acceptance period.
@@ -1601,7 +1602,7 @@ accepted, which gives REQ-29 its status and no result.
 the stated points, closing one provider's token account before rewards are
 paid for REQ-30. Sign in as RQ-02 and RQ-03 in an automated browser test, open
 each page, and compare what is shown with the expected outputs and with the
-request accounts on the blockchain.
+request accounts on Solana Devnet.
 
 \end{enumerate}
 
@@ -1612,7 +1613,7 @@ requirements (\rref{FR_UpdateProviderReputations}--\rref{FR_ProviderUnregistrati
 transfers (\saref{SA_RewardValidation}, \saref{SA_ProviderStatusCheck}). Each test follows a scenario that a group of
 providers would go through on the real system: completing a request, having a
 reward transfer fail, misbehaving during a request, and leaving a task. The
-tests run on a local blockchain platform, with mock inference
+tests run on a local Solana validator or Solana Devnet, with mock inference
 providers that submit preset predictions, so that the expected results can be
 worked out by hand before the test is run. Boundary cases for each rule (such
 as a distance exactly equal to $\bar{d}$) are covered by the unit tests.
@@ -1871,7 +1872,7 @@ application shows the action (``Submit inference request'') and the amount
 \item[4.] The requester's token balance is exactly 137 tokens lower than before
 the payment.
 \item[5.] The transaction history shows an identifier for the payment. Looking it
-up on the blockchain returns a transaction that:
+up on Solana Devnet returns a transaction that:
 \begin{itemize}
 \item is signed by the requester's wallet;
 \item transfers exactly 137 tokens from the requester's token account to the
@@ -1904,7 +1905,7 @@ have been paid out by the time it is checked.
 \textbf{How test will be performed:} Run the flow in an automated browser test. Pause
 the test wallet signer when it receives a signing request and check the
 confirmation screen. Record each status shown. Compare balances before and
-after. Query the blockchain with the transaction identifier, and read the
+after. Query Solana Devnet with the transaction identifier, and read the
 escrow address's transaction history and the request, stake, and reputation
 accounts directly, without going through the application's backend.
 
@@ -1971,7 +1972,7 @@ This test verifies the transaction safety requirements that are not already
 covered by the tests above (\saref{SA_NoDuplicateSubmission} and \saref{SA_OnChainFundsCheck}--\saref{SA_TransactionSimulation}). \saref{SA_BalanceCheck} and \saref{SA_ChargeEqualsAuthorized}
 are covered by ST-TRANS-1, and \saref{SA_RewardValidation} and \saref{SA_ProviderStatusCheck} by ST-REP-1. The test
 injects faults using a test build of the backend and a proxy between the
-system and the blockchain RPC.
+system and the Solana RPC.
 
 \begin{enumerate}
 
@@ -2066,7 +2067,7 @@ are listed in the Symbolic Parameters appendix.
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system runs on a local blockchain validator with a simulation
+\textbf{Initial State:} The system runs on a local Solana validator with a simulation
 harness that controls mock providers and can inject faults. A separate
 reference implementation of the Appendix A aggregation algorithm is written
 in TypeScript by a team member who did not write the system's version.
@@ -2127,7 +2128,7 @@ concurrency level is run 3 times, and the timings come from the system's logs.
 \textbf{Control:} Manual, with timing checks automated
 
 \textbf{Initial State:} The web application is deployed on a test environment
-connected to a supported blockchain platform. 5 to 8 participants who use a web browser but have
+connected to Solana Devnet. 5 to 8 participants who use a web browser but have
 never used a blockchain wallet or built a machine learning model are recruited.
 
 \textbf{Input:} Each participant gets a short description of DAIIM, but no
