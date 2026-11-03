@@ -450,24 +450,24 @@ wallet extension and an embedded wallet.
 
 \textbf{Initial State:} The application is running in a supported browser on its public
 page. A compatible Web3 wallet extension is installed and active. Test
-profiles \texttt{EXT-USER-01} and \texttt{EXT-USER-02} are associated with
-wallet fixtures \texttt{EXT-WALLET-01} and \texttt{EXT-WALLET-02}; neither
+profiles \texttt{EXT-USER-00}, \texttt{EXT-USER-01}, and \texttt{EXT-USER-02} are associated with
+wallet fixtures \texttt{EXT-WALLET-00}, \texttt{EXT-WALLET-01}, and \texttt{EXT-WALLET-02}; neither
 user is signed in.
 
 \textbf{Input:}
 \begin{itemize}
-\item[1.] Connect \texttt{EXT-WALLET-01} and approve the verification-message
+\item[1.] Connect \texttt{EXT-WALLET-00} and approve the verification-message
 signature requested by the application.
-\item[2.] Connect \texttt{EXT-WALLET-02} and approve its verification-message
+\item[2.] Connect \texttt{EXT-WALLET-01} and approve its verification-message
 signature.
-\item[3.] Connect \texttt{EXT-WALLET-01} and reject the signature request.
+\item[3.] Connect \texttt{EXT-WALLET-02} and reject the signature request.
 \end{itemize}
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] \texttt{EXT-WALLET-01} authenticates as \texttt{EXT-USER-01}, whose
+\item[1.] \texttt{EXT-WALLET-00} authenticates as \texttt{EXT-USER-00}, whose
 profile and authenticated features are accessible.
-\item[2.] \texttt{EXT-WALLET-02} authenticates as \texttt{EXT-USER-02}, whose
+\item[2.] \texttt{EXT-WALLET-01} authenticates as \texttt{EXT-USER-01}, whose
 profile and authenticated features are accessible.
 \item[3.] Rejecting the signature leaves the user unauthenticated, with no
 profile or authenticated features accessible.
@@ -583,7 +583,7 @@ compare the displayed address with the configured mock address, verify that
 the corresponding profile is authenticated, and confirm that exactly one
 wallet was created. For the malformed email, enter it using the email sign-in
 method and verify that the system reports an input error, does not call the
-provider, and does not create a wallet or authenticated session.
+embedded-wallet provider, and does not create a wallet or authenticated session.
 
 \item{ST-AUTH-EMB-2\\}
 
@@ -595,18 +595,28 @@ accounts \texttt{EMB-RETURN-01}, \texttt{EMB-RETURN-02}, and
 respectively \texttt{EMB-WALLET-RETURN-01},
 \texttt{EMB-WALLET-RETURN-02}, and \texttt{EMB-WALLET-RETURN-03}. Configure
 the embedded-wallet provider mock to return successful authentication
-responses with those address mappings. Configure it to return an
-authentication failure for \texttt{locked.user@example.test}, which has no
-associated account.
+responses with those address mappings. The email
+\texttt{returning.email@example.test} belongs to
+\texttt{EMB-RETURN-01} and \texttt{EMB-WALLET-RETURN-01}; the phone number
+\texttt{+15555550102} belongs to \texttt{EMB-RETURN-02} and
+\texttt{EMB-WALLET-RETURN-02}; and the social-account subject
+\texttt{social-return-03} belongs to \texttt{EMB-RETURN-03} and
+\texttt{EMB-WALLET-RETURN-03}. Configure it to return an authentication
+failure for \texttt{locked.user@example.test}, which has no associated
+account or wallet.
 
 \textbf{Input:}
 \begin{itemize}
-\item[1.] Enter \texttt{returning.email@example.test} using the email sign-in
-method.
-\item[2.] Enter \texttt{+15555550102} using the phone sign-in method.
+\item[1.] Sign in as \texttt{EMB-RETURN-01}, using wallet
+\texttt{EMB-WALLET-RETURN-01}, with email
+\texttt{returning.email@example.test}.
+\item[2.] Sign in as \texttt{EMB-RETURN-02}, using wallet
+\texttt{EMB-WALLET-RETURN-02}, with phone number \texttt{+15555550102}.
 \item[3.] Provide social-account subject \texttt{social-return-03} using the
-supported social sign-in method.
-\item[4.] Enter \texttt{locked.user@example.test} using the email sign-in method.
+supported social sign-in method for \texttt{EMB-RETURN-03}, using wallet
+\texttt{EMB-WALLET-RETURN-03}.
+\item[4.] Enter \texttt{locked.user@example.test} using the email sign-in
+method; this identity has no associated account or wallet.
 \end{itemize}
 
 \textbf{Output:}
@@ -676,7 +686,7 @@ and a maximum prediction time of 5 minutes.
 \texttt{Regression-Test-Min-Providers}, with its minimum provider count
 changed to 1.
 \item[3.] The valid definition named \texttt{Regression-Test-Invalid-Schema},
-with an input or output schema containing non-numerical values incompatible
+with an input or output schema containing non-numerical values invalid
 with a numerical regression task.
 \item[4.] The valid definition named \texttt{Regression-Test-No-Tolerance},
 with the reputation tolerance left out.
@@ -693,7 +703,7 @@ of 2 and a maximum of 4 providers, a reputation tolerance of 2.0, an
 acceptance period of 2 minutes, and a maximum prediction time of 5 minutes.
 \item[2.] The definition with fewer than 2 minimum providers is rejected, and
 no task is created.
-\item[3.] The definition with an incompatible schema is rejected, and no task
+\item[3.] The definition with an invalid schema is rejected, and no task
 is created.
 \item[4.] The definition without a reputation tolerance is rejected with an
 error saying the reputation tolerance is missing, and no task is created.
@@ -704,7 +714,7 @@ successful task-creation transaction occurs.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_InferenceTaskDefinition} requires a task name,
-description, type, input schema, and output schema; the incompatible-schema
+description, type, input schema, and output schema; the invalid-schema
 case checks that the definition matches the numerical regression task.
 \rref{FR_MinimumProvidersFloor} requires at least 2 providers, so a value of 1
 must be rejected. \rref{FR_TaskMinimumProviders}, \rref{FR_TaskReputationTolerance},
@@ -2484,7 +2494,7 @@ this document.
 \begin{itemize}
 \item \texttt{TASK\_RESERVATION\_AMOUNT}: the amount of provider stake that is reserved 
 when a provider accepts a request and becomes an accepted provider. Proposed value: 10.
-\item \textttt{REQUEST\_PAYMENT}: the amount a requester pays to submit a request and receive 
+\item \texttt{REQUEST\_PAYMENT}: the amount a requester pays to submit a request and receive 
 an aggregated prediction, including transaction fees and provider payment. Proposed value: 40.
 \textttt{MINIMUM\_REQUEST\_PAYMENT}: the amount a provider is guaranteed to be paid for a given 
 request, if a valid prediction is submitted. Proposed value: 10.
