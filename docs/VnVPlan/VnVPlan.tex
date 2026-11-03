@@ -1910,6 +1910,12 @@ The constants used by the system itself (\texttt{MINIMUM\_PROVIDER\_STAKE},
 this document.
 
 \begin{itemize}
+\item \texttt{TASK\_RESERVATION\_AMOUNT}: the amount of provider stake that is reserved 
+when a provider accepts a request and becomes an accepted provider. Proposed value: 10.
+\item \textttt{REQUEST\_PAYMENT}: the amount a requester pays to submit a request and receive 
+an aggregated prediction, including transaction fees and provider payment. Proposed value: 40.
+\textttt{MINIMUM\_REQUEST\_PAYMENT}: the amount a provider is guaranteed to be paid for a given 
+request, if a valid prediction is submitted. Proposed value: 10.
 \item \texttt{LONG\_OPERATION\_THRESHOLD}: the length of time after which an
 operation counts as ``long'' and must show progress (NFR-USE-1). Proposed
 value: 1 second.
