@@ -296,7 +296,8 @@ an inference task for a regression problem is executed by the network. Several t
 The simulation will start with a simple Machine Learning (ML) task (e.g., predict $y$, where $y = mx + b$), and each round some input data will be randomly generated.
 The different actors will be given some algorithm (good or bad algorithm depending on the actor) to determine their predictions given the input.
 The actors will submit their predictions, and the aggregation algorithm will determine the aggregated result. Actors' reputations will be updated
-and rewards will be distributed after each round.
+and rewards will be distributed after each round. The ground truth will be known to the testers and used only to evaluate the results.
+It will not be available to the aggregation algorithm, reputation updates, or reward distribution. 
 
 Another layer of this simulation is to economically model the system. We will
 assign providers a cost for running their model, transaction fees for submitting
