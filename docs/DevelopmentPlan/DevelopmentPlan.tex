@@ -35,6 +35,7 @@ September 28 & Nathan & Added section 11 \\
 September 28 & All & Reviewed document and fixed formatting \\
 October 8 & Aidan & Refined section 9 POC success criteria to be less vague by defining concrete accuracy, malicious actor, and reward thresholds \\
 October 27 & Aidan & Expanded the workflow plan with issue types, Kanban board usage, commit types, and pull request steps; fixed formatting and grammar (TA feedback) \\
+November 4 & Keira & Added and assigned specific team roles \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -84,7 +85,7 @@ Feedback is expected from at least one other team member for each issue, through
 \section{Team Member Roles}
 
 \begin{itemize}
-  \item \textbf{Agenda creator (Kiera, Robert)}: The agenda creator is responsible for creating
+  \item \textbf{Agenda creator (Keira, Robert)}: The agenda creator is responsible for creating
   the agenda for a meeting, and posting it to the meeting issue. The agenda creator will 
   use the template for team meetings located in the repo, containing the agenda and an attendance tracker. 
   
@@ -97,7 +98,17 @@ Feedback is expected from at least one other team member for each issue, through
   Every team member is expected to review pull requests, but the pull request reviewer is the primary reviewer for that pull request. They are in charge of making the final decision on approving the request. 
 
   \item \textbf{Developer (All)}: The developer role is a role assigned to a team member for each development task. The developer is responsible for implementing the task, and updating the associated issue with their progress.
-  Every team member is expected to take on this role and contribute to development tasks as necessary, but the developer is the primary person responsible for completing a given task.
+  Every team member is expected to take on this role and contribute to development tasks as necessary, but the developer is the primary person responsible for completing a given task. The development will be supported by all members. Leads are assigned and listed as follows:
+
+  \begin{itemize}
+    \item \textbf{Frontend and UX Lead (Keira)}: Build the web application and wallet integration for submitting requests, authorizing transactions, and viewing results. Lead the cognitive walkthrough and usability testing.
+    \item \textbf{Backend Provider SDK Lead (Aidan)}: Build the inference provider client that listens for requests, runs models, and submits predictions. Develop the simulated providers.
+    \item \textbf{Smart Contract and Blackchain Lead (Robert)}: Design and implement the marketplace smart contracts for task definitions, inference requests, provider registration, payments, and settlement. Manage deployment to the test network and on-chain record. 
+    \item \textbf{Aggregation and Reputation Lead (Nathan)}: Design and implement the prediction aggregation algorithm and the provider reputation and reward mechanisms. 
+    \item \textbf{Test Lead (All)}: The test developer will be in charge of writing tests for components of the system. Components will be assigned to all members of the team to ensure testing covers all part of the system.
+  \end{itemize}
+
+  \item \textbf{Document Verifier (All)}: The document verifier will review documents and check them against rubrics and checklists. This role will be assigned to one member for every document, and will change throughout the duration of the project.
   
 \end{itemize}
 
