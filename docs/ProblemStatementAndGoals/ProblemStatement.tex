@@ -31,6 +31,7 @@ September 28 & Robert & Revise problem statement \\
 September 28 & All & Review document and fix formatting \\
 October 10 & Robert & Ensure goals support claims made in prob statement. Ensure all goals are measurable. \\
 October 27 & Robert & Fix typos and grammar inconsistencies.\\
+November 4 & Keira & Fix stakeholder claims not being in scope
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -68,31 +69,35 @@ The aggregated inference results include the final prediction for a given infere
 
 \begin{itemize}
     \item \textbf{Task requesters} \newline
-    Task requesters are people who are requesting inferences to be made for a given task. These people would value the decentralized nature of our platform. 
-    For example, healthcare researchers would make requests to predict various regression inferences (such as biomarker levels) while still complying with privacy constraints. 
-    Similarly, decentralized finance platforms could make requests to predict various regression inferences (such as stock prices) while still complying with privacy constraints.
+    Task requesters are people who are requesting inferences to be made for a given task. These people value the decentralized nature of our platform which 
+    removes the risk of potential bias and a single point of failure. 
+    Some task requesters may value data privacy when making inference requests.
+    For example, healthcare researchers would like to make requests to predict various regression inferences (such as biomarker levels) while still complying with privacy constraints. 
+    Similarly, decentralized finance platforms would like to make requests to predict various regression inferences (such as stock prices) while still complying with privacy constraints.
 
     \item \textbf{Inference providers} \newline
-    Inference providers are people with computing resources and models who want to monetize their regression models.
+    Inference providers are people with computing resources and models who want to monetize their regression models but lack the customer base, infrastructure, and visibility needed to compete with large established AI companies.
     These people usually have specialized or powerful models that can be used to make predictions for a given task.
    
     \item \textbf{Data providers}   \newline
     Data providers are people with data that can be used to train models for a given task.
-    They would be interested in helping the inference providers improve their models by providing them with data to train on.
+    They are interested in helping the inference providers improve their models by providing them with data to train on.
+    They want to be compensated and credited for their data, 
+    but lack a transparent way to share it with model developers and to track how it 
+    is used.
 \end{itemize}
 
 \subsection{Environment}
 
 This software is compatible with any computer running a modern browser that is connected to the internet. There is no hardware component. 
 
-```latex
 \section{Goals}
 
 This project has five primary goals.
 
 \subsection{Transparency and Decentralization}
 
-Enable inference consumers and model providers to participate in a
+Enable inference requesters and model providers to participate in a
 transparent inference marketplace that does not rely on a single
 centralized entity to manage its core operations. The marketplace's
 core logic, including payments, ownership, and settlement, will be
@@ -251,6 +256,16 @@ Execution Environments (TEEs). This is considered a stretch goal because
 incorporating TEEs would introduce additional security, infrastructure,
 and integration requirements beyond those necessary to support the core
 marketplace and inference functionality.
+
+\subsection{Data Provider Participation}
+Enable data providers to contribute training data to the marketplace and receive 
+compensation when that data is used by inference providers to train or improve their 
+models. Data contributions and their use would be recorded on-chain, allowing data 
+providers to be credited and rewarded in a transparent manner. This is considered a 
+stretch goal because it would require mechanisms for data submission, storage, access 
+control, and attribution of model improvements to specific datasets, all of which 
+extend beyond the core inference marketplace established by the primary goals.
+
 
 \section{Custom Documents (CDs)}
 
