@@ -1336,6 +1336,7 @@ Model Provider & Wallet address & Address & Provider's wallet\\
  & Registered tasks & Task IDs & Tasks the provider joined\\
  & Task reputations & List<Number> & List of this Provider's reputation for registered tasks. Ranging from 0 to 100\\
  & Amount Staked & List<Integer> & List of staked tokens per registerd task\\
+ & Slashing Offenses & List<Task ID, Request ID> & List of inference requests for which the provider was slashed\\
 Inference Task & Task ID & Identifier & Unique task identifier\\
  & Name and type & String & Task name and category\\
  & Description & String & Problem addressed by the task\\
@@ -1477,7 +1478,7 @@ be covered in the Verification and Validation document.}
 
 \noindent \begin{itemize}
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ConcurrentRequests}:] The system shall support multiple concurrent inference requests without degradation to performance.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_ConcurrentRequests}:] The system shall support multiple concurrent inference requests without degradation to performance beyond \texttt{PERFORMANCE\_DEGRADATION\_TOLERANCE}.
 
 \end{itemize}
 

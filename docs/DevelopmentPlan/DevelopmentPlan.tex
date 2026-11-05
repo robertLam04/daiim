@@ -34,7 +34,9 @@ September 28 & Keira & Revised section 13 \\
 September 28 & Nathan & Added section 11 \\
 September 28 & All & Reviewed document and fixed formatting \\
 October 8 & Aidan & Refined section 9 POC success criteria to be less vague by defining concrete accuracy, malicious actor, and reward thresholds \\
+October 26 & Keira & Updated GenAI Disclosure to add more information regarding brainstorming uses \\
 October 27 & Aidan & Expanded the workflow plan with issue types, Kanban board usage, commit types, and pull request steps; fixed formatting and grammar (TA feedback) \\
+November 4 & Keira & Added and assigned specific team roles \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -84,7 +86,7 @@ Feedback is expected from at least one other team member for each issue, through
 \section{Team Member Roles}
 
 \begin{itemize}
-  \item \textbf{Agenda creator (Kiera, Robert)}: The agenda creator is responsible for creating
+  \item \textbf{Agenda creator (Keira, Robert)}: The agenda creator is responsible for creating
   the agenda for a meeting, and posting it to the meeting issue. The agenda creator will 
   use the template for team meetings located in the repo, containing the agenda and an attendance tracker. 
   
@@ -97,7 +99,17 @@ Feedback is expected from at least one other team member for each issue, through
   Every team member is expected to review pull requests, but the pull request reviewer is the primary reviewer for that pull request. They are in charge of making the final decision on approving the request. 
 
   \item \textbf{Developer (All)}: The developer role is a role assigned to a team member for each development task. The developer is responsible for implementing the task, and updating the associated issue with their progress.
-  Every team member is expected to take on this role and contribute to development tasks as necessary, but the developer is the primary person responsible for completing a given task.
+  Every team member is expected to take on this role and contribute to development tasks as necessary, but the developer is the primary person responsible for completing a given task. The development will be supported by all members. Leads are assigned and listed as follows:
+
+  \begin{itemize}
+    \item \textbf{Frontend and UX Lead (Keira)}: Build the web application and wallet integration for submitting requests, authorizing transactions, and viewing results. Lead the cognitive walkthrough and usability testing.
+    \item \textbf{Backend Provider SDK Lead (Aidan)}: Build the inference provider client that listens for requests, runs models, and submits predictions. Develop the simulated providers.
+    \item \textbf{Smart Contract and Blackchain Lead (Robert)}: Design and implement the marketplace smart contracts for task definitions, inference requests, provider registration, payments, and settlement. Manage deployment to the test network and on-chain record. 
+    \item \textbf{Aggregation and Reputation Lead (Nathan)}: Design and implement the prediction aggregation algorithm and the provider reputation and reward mechanisms. 
+    \item \textbf{Test Lead (All)}: The test developer will be in charge of writing tests for components of the system. Components will be assigned to all members of the team to ensure testing covers all part of the system.
+  \end{itemize}
+
+  \item \textbf{Document Verifier (All)}: The document verifier will review documents and check them against rubrics and checklists. This role will be assigned to one member for every document, and will change throughout the duration of the project.
   
 \end{itemize}
 
@@ -296,7 +308,8 @@ an inference task for a regression problem is executed by the network. Several t
 The simulation will start with a simple Machine Learning (ML) task (e.g., predict $y$, where $y = mx + b$), and each round some input data will be randomly generated.
 The different actors will be given some algorithm (good or bad algorithm depending on the actor) to determine their predictions given the input.
 The actors will submit their predictions, and the aggregation algorithm will determine the aggregated result. Actors' reputations will be updated
-and rewards will be distributed after each round.
+and rewards will be distributed after each round. The ground truth will be known to the testers and used only to evaluate the results.
+It will not be available to the aggregation algorithm, reputation updates, or reward distribution. 
 
 Another layer of this simulation is to economically model the system. We will
 assign providers a cost for running their model, transaction fees for submitting
@@ -467,7 +480,7 @@ This section will provide an overview of how AI tools were used in the making of
 
 Some members used AI to aid in explaining certain machine learning topics and applications, as there were varying levels of experience in the subject matter. 
 
-Additionally, AI was used to facilitate some brainstorming. This occurred in parts of the Team Charter as supplementary ideas for elements of a code of conduct and ways to reward members for positive contributions. It was also used in the Expected Technology section to generate a list of potential libraries that could be used in the project.
+Additionally, AI was used to facilitate some brainstorming. This occurred in parts of the Team Charter as supplementary ideas for elements of a code of conduct and ways to reward members for positive contributions. It was also used in the Expected Technology section to generate a list of potential libraries that could be used in the project. The AI models generated lists of ideas for each of these tasks, and aided in offering a basis for further research into available technologies and team charter ideas. Everything produced by the AI models were reviewed and verified (see the verification section below) before being incorporated into the document.
 
 AI tools were also used throughout this document to check for grammar and spelling errors, but were not used to write whole sentences or significantly rewrite text that had been written by members. Occasionally, AI tools were also used to learn LaTeX syntax (how to insert a hyperlink, for example).
 
