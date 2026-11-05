@@ -305,7 +305,7 @@ verified.  Techniques for this include review and mutation testing.}
   \item \textbf{Team Member Review: }
   Each team member will review the tests in a section they did not write, checking that the expected outputs
   follow from the requirements and that each test can be run as described. Tests that rely on Solana Devnet
-  will be reviewed for timing assumptions, such as acceptance periods and prediction times.
+  will be reviewed for timing assumptions, including the task acceptance period and protocol-wide commit and reveal periods.
   \item \textbf{Checklist-Based Inspection: } 
   The team will check that every functional and non-functional requirement in the SRS is named in the test
   case derivation of at least one test, and record the result in the traceability tables. Requirements that
@@ -673,8 +673,7 @@ wallet signer and sufficient wallet balance to pay transaction fees. The unique 
 names \fixture{Regression-Test-Task},
 \fixture{Regression-Test-Min-Providers},
 \fixture{Regression-Test-Invalid-Schema},
-\fixture{Regression-Test-No-Tolerance},
-\fixture{Regression-Test-No-Max-Time}, and
+\fixture{Regression-Test-No-Tolerance}, and
 \fixture{Rejected-Authorization-Task} are not already in use.
 
 \textbf{Input:}
@@ -682,8 +681,7 @@ names \fixture{Regression-Test-Task},
 \item[1.] A valid numerical regression task definition named
 \fixture{Regression-Test-Task}, including a description, numerical input and
 output schemas, an evaluation metric, a minimum of 2 and a maximum of 4
-providers, a reputation tolerance of 2.0, an acceptance period of 2 minutes,
-and a maximum prediction time of 5 minutes.
+providers, a reputation tolerance of 2.0, and an acceptance period of 2 minutes.
 \item[2.] The valid definition named
 \fixture{Regression-Test-Min-Providers}, with its minimum provider count
 changed to 1.
@@ -692,41 +690,35 @@ with an input or output schema containing non-numerical values invalid
 with a numerical regression task.
 \item[4.] The valid definition named \fixture{Regression-Test-No-Tolerance},
 with the reputation tolerance left out.
-\item[5.] The valid definition named \fixture{Regression-Test-No-Max-Time},
-with the maximum prediction time left out.
-\item[6.] The valid definition named \fixture{Rejected-Authorization-Task}.
+\item[5.] The valid definition named \fixture{Rejected-Authorization-Task}.
 \end{itemize}
 
 \textbf{Output:}
 \begin{itemize}
 \item[1.] The valid definition is created with the submitted values, and its
 authorized transaction succeeds. The task's on-chain account stores a minimum
-of 2 and a maximum of 4 providers, a reputation tolerance of 2.0, an
-acceptance period of 2 minutes, and a maximum prediction time of 5 minutes.
+of 2 and a maximum of 4 providers, a reputation tolerance of 2.0, and an
+acceptance period of 2 minutes.
 \item[2.] The definition with fewer than 2 minimum providers is rejected, and
 no task is created.
 \item[3.] The definition with an invalid schema is rejected, and no task
 is created.
 \item[4.] The definition without a reputation tolerance is rejected with an
 error saying the reputation tolerance is missing, and no task is created.
-\item[5.] The definition without a maximum prediction time is rejected with an
-error saying the maximum prediction time is missing, and no task is created.
-\item[6.] The authorization-rejected definition is not created, and no
+\item[5.] The authorization-rejected definition is not created, and no
 successful task-creation transaction occurs.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_InferenceTaskDefinition} requires a task name,
-description, type, input schema, and output schema; the invalid-schema
-case checks that the definition matches the numerical regression task.
+description, type, input schema, and output schema; the invalid-schema case
+checks that the definition matches the numerical regression task.
 \rref{FR_MinimumProvidersFloor} requires at least 2 providers, so a value of 1
-must be rejected. \rref{FR_TaskMinimumProviders}, \rref{FR_TaskReputationTolerance},
-\rref{FR_TaskAcceptancePeriod}, and \rref{FR_TaskMaxPredictionTime} require each
-definition to specify the minimum and maximum number of providers, the
-reputation tolerance, the acceptance period, and the maximum prediction time,
-so the valid task must store each value, and a definition missing the
-tolerance or the maximum prediction time must be rejected. The broadcast of
-these values with each request is checked by ST-REQ-4, and the use of the
-reputation tolerance is checked by ST-REP-1. \rref{FR_InferenceTaskCreation} permits authenticated users
+must be rejected. \rref{FR_TaskMinimumProviders} requires the provider counts to be defined per
+task, and \rref{FR_TaskReputationTolerance} requires its reputation tolerance. \rref{FR_TaskAcceptancePeriod} requires each task to define its acceptance
+period. \rref{FR_ProtocolCommitPeriod} and
+\rref{FR_ProtocolRevealPeriod} define protocol-wide durations, not task fields;
+ST-REQ-4 checks their resulting request deadlines and broadcasts. ST-REP-1
+checks the use of the reputation tolerance. \rref{FR_InferenceTaskCreation} permits authenticated users
 to create tasks, while \rref{FR_TransactionAuthorization} requires wallet
 approval before an on-chain state change. Therefore, the valid task should be
 created only after approval, and rejecting authorization should leave it
@@ -784,7 +776,7 @@ reputation scores, including \fixture{PROV-41} (50) and \fixture{PROV-42} (70).
 \item[2.] The list includes \fixture{Regression-Test-Task}.
 \item[3.] \fixture{V-01} sees \fixture{Regression-Test-Task}'s full definition (name, description, type, input
 and output schemas, evaluation metric, number of providers, reputation
-tolerance, acceptance period, and maximum prediction time), a required minimum
+tolerance, and acceptance period), a required minimum
 provider stake of 100 tokens, and 2 registered providers.
 \item[4.] \fixture{Regression-Test-Task} now shows 3 registered providers.
 \item[5.] \fixture{RQ-41} sees the same information as \fixture{V-01}.
@@ -1211,7 +1203,8 @@ escrow.
 inference task, \fixture{TASK-04}, has three registered providers:
 \fixture{PROV-01}, \fixture{PROV-02}, and \fixture{PROV-03}. All three providers
 are available to receive inference requests. The task has a configured
-acceptance period of 10 minutes and a maximum prediction time of 30 minutes.
+acceptance period of 10 minutes. The test protocol sets COMMIT\_PERIOD and
+REVEAL\_PERIOD to 30 minutes each.
 
 \textbf{Input:}
 \begin{itemize}
@@ -1224,25 +1217,27 @@ acceptance period of 10 minutes and a maximum prediction time of 30 minutes.
 \item[1.] The system successfully submits the inference request and broadcasts
 it to all three registered providers.
 \item[2.] Each provider receives the proposed payment amount, task definition,
-acceptance-period expiry time, and maximum prediction time. The broadcast
+acceptance-period expiry time, commit deadline, and latest possible reveal deadline. At commit-phase end, the actual reveal deadline is also broadcast. The broadcast
 information is consistent across all three providers and matches the submitted
 request and task definition.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_RequestBroadcast} requires the system to broadcast
 the task definition, proposed payment amount, acceptance-period expiry time,
-and maximum prediction time to all providers registered for the task after
+and the calculated commit and reveal deadlines to all providers registered for the task after
 an inference request is submitted.
 
-\textbf{How test will be performed:} Configure \fixture{TASK-04} with the three
-specified registered providers, an acceptance period of 10 minutes, and a
-maximum prediction time of 30 minutes. Submit a valid inference request with
+\textbf{How test will be performed:} Configure the test protocol with COMMIT\_PERIOD and REVEAL\_PERIOD set to
+30 minutes each. Configure \fixture{TASK-04} with the three specified registered
+providers and a 10-minute acceptance period. Submit a valid inference request with
 the specified payment amount. Monitor the messages or notifications received
 by each provider. Verify that the request is successfully submitted and
 broadcast to all three providers. Verify that each provider receives the
 correct task definition, proposed payment amount, acceptance-period expiry
-time, and maximum prediction time. Confirm that the acceptance-period expiry
-time is 10 minutes after the request is broadcast.
+time, commit deadline, and latest possible reveal deadline. Confirm that the
+commit deadline is 10 minutes after acceptance ends, the latest reveal deadline
+is 30 minutes after the commit deadline, and an actual reveal deadline is
+broadcast when the commit phase ends.
 
 \end{enumerate}
 
@@ -1278,7 +1273,7 @@ A requester has submitted inference request \fixture{REQ-01} for \fixture{TASK-0
 \fixture{REQ-01} without any tokens being transferred.
 \item[2.] The decline from \fixture{PROV-13} is recorded, and no stake is reserved for it.
 \item[3.] The acceptance period, which started when \fixture{REQ-01} was broadcast, ends 2 minutes later, and \fixture{REQ-01} moves
-to its prediction phase with \fixture{PROV-11} and \fixture{PROV-12}.
+to its commit phase with \fixture{PROV-11} and \fixture{PROV-12}.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_AcceptancePeriodStart} starts the acceptance period at broadcast and lets registered providers accept or
@@ -1287,7 +1282,7 @@ provider's stake to be reserved for the request.
 
 How test will be performed: Send the two acceptances and the decline. Query \fixture{REQ-01} and the provider accounts on
 the blockchain, and verify the acceptance period times, the recorded acceptances and decline, and the
-reservations. After the period ends, verify that \fixture{REQ-01} is in its prediction phase.
+reservations. After the period ends, verify that \fixture{REQ-01} is in its commit phase.
 
 \item{ST-ACC-2\\}
 
@@ -1331,7 +1326,7 @@ least 2 accepting providers. A requester has submitted inference request \fixtur
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] \fixture{REQ-04} is cancelled when the acceptance period ends, and does not enter a prediction phase. The \fixture{REQUEST\_PAYMENT} 
+\item[1.] \fixture{REQ-04} is cancelled when the acceptance period ends, and does not enter a commit phase. The \fixture{REQUEST\_PAYMENT} 
 is returned to the requester, and the stake reserved from \fixture{PROV-11} is released.
 \end{itemize}
 
@@ -1378,90 +1373,62 @@ that each acceptance is recorded or rejected as expected.
 
 \begin{enumerate}
 
-\item{ST-PRED-1\\}
+\item{ST-PRED-1: Commit and reveal predictions\\}
 
 \textbf{Control:} Automatic
 
-Initial State: The system is running on a supported blockchain platform. \fixture{TASK-09} has a numerical output schema and a maximum
-prediction time of 5 minutes. \fixture{PROV-18} and \fixture{PROV-19} have accepted inference request \fixture{REQ-09} for \fixture{TASK-09}, and its
-acceptance period has ended.
+\textbf{Initial State:} The system is running on a supported blockchain platform. \fixture{TASK-09} and \fixture{TASK-10} have numerical output schemas. In this test configuration, the protocol-wide \fixture{COMMIT\_PERIOD} and \fixture{REVEAL\_PERIOD} are 5 minutes each. For inference request \fixture{REQ-09}, \fixture{PROV-18} and \fixture{PROV-19} are accepted providers, and its acceptance period has ended. For inference request \fixture{REQ-10}, \fixture{PROV-18} to \fixture{PROV-22} are accepted providers, while \fixture{PROV-23} is registered for \fixture{TASK-10} but did not accept \fixture{REQ-10}.
 
 \textbf{Input:}
 \begin{itemize}
-\item[1.] \fixture{PROV-18} and \fixture{PROV-19} each submit a valid numerical prediction within the first minute of the prediction
-phase.
+\item[1.] For inference request \fixture{REQ-09}, \fixture{PROV-18} and \fixture{PROV-19} each generate and persist a unique 256-bit salt, hash the request ID, provider wallet, prediction, and salt, and submit the commitment during the commit phase. Both reveal their prediction and salt during the reveal phase.
+\item[2.] During the acceptance period for \fixture{REQ-10}, \fixture{PROV-18} attempts to submit a commitment.
+\item[3.] During the commit phase for \fixture{REQ-10}, \fixture{PROV-18} commits to 10.0, \fixture{PROV-19} commits to a valid numerical prediction, \fixture{PROV-20} commits to a string prediction, and \fixture{PROV-21} commits to a valid numerical prediction. \fixture{PROV-22} does not commit, and \fixture{PROV-23} attempts to commit despite not accepting the request.
+\item[4.] After the commit deadline for \fixture{REQ-10}, \fixture{PROV-22} attempts to submit a commitment.
+\item[5.] During the reveal phase for \fixture{REQ-10}, \fixture{PROV-18} reveals 10.0 and then attempts a second reveal of 50.0. \fixture{PROV-19} reveals with a salt that does not match its commitment. \fixture{PROV-20} reveals the string prediction with the matching salt. \fixture{PROV-21} does not reveal before the reveal deadline.
+\item[6.] After the reveal deadline for \fixture{REQ-10}, \fixture{PROV-21} attempts to reveal its prediction and salt.
 \end{itemize}
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] Both predictions are accepted. The prediction phase ends as soon as both predictions are received and
-validated, before the maximum prediction time.
+\item[1.] Both \fixture{REQ-09} commitments and reveals are accepted. The commit phase ends after both providers commit, and the reveal phase ends after both valid reveals, before their deadlines.
+\item[2.] The early commitment from \fixture{PROV-18} is rejected because the commit phase has not started.
+\item[3.] The commitments from \fixture{PROV-18} to \fixture{PROV-21} are accepted. The commitment from \fixture{PROV-23} is rejected because it did not accept \fixture{REQ-10}.
+\item[4.] The late commitment from \fixture{PROV-22} is rejected because the commit phase has ended.
+\item[5.] The first valid reveal from \fixture{PROV-18} is accepted and its second reveal is rejected. The mismatched reveal from \fixture{PROV-19} and non-conforming reveal from \fixture{PROV-20} are rejected and do not count toward the minimum. \fixture{PROV-21} has no reveal recorded before the deadline.
+\item[6.] The late reveal from \fixture{PROV-21} is rejected because the reveal phase has ended.
 \end{itemize}
 
-\textbf{Test Case Derivation:} \rref{FR_PredictionSubmission} allows each accepting provider to submit a prediction during the prediction phase.
-\rref{FR_PredictionPhaseEnd} ends the prediction phase once a prediction from every accepting provider has been received and validated.
+\textbf{Test Case Derivation:} \rref{FR_ProtocolCommitPeriod} and \rref{FR_ProtocolRevealPeriod} set the phase durations for every request. \rref{FR_PredictionSubmission} requires commitments to bind the request ID, provider wallet, prediction, and salt. \rref{FR_PredictionValidation} requires the program to verify the commitment and output schema. \rref{FR_OnePredictionPerProvider} limits each provider to one commitment and one reveal. \rref{FR_PredictionPhaseStart} and \rref{FR_PredictionPhaseEnd} define the phase timing and reject submissions outside their phases.
 
-\textbf{How test will be performed:} Submit both predictions. Verify that each is accepted, and that the end time of the
-prediction phase recorded on-chain is earlier than the maximum prediction time.
-
-\item{ST-PRED-2\\}
-
-\textbf{Control:} Automatic
-
-Initial State: The system is running on a supported blockchain platform. \fixture{PROV-18} to \fixture{PROV-21} have accepted inference request \fixture{REQ-10}
-for \fixture{TASK-09}, and \fixture{PROV-22} is registered for \fixture{TASK-09} but did not accept \fixture{REQ-10}.
-
-\textbf{Input:}
-\begin{itemize}
-\item[1.] During the acceptance period, \fixture{PROV-18} submits a prediction.
-\item[2.] During the prediction phase, \fixture{PROV-18} submits 10.0 and then 50.0.
-\item[3.] During the prediction phase, \fixture{PROV-19} submits a string instead of a number and then submits a valid number.
-\item[4.] During the prediction phase, \fixture{PROV-22} submits a valid number.
-\item[5.] After the maximum prediction time, \fixture{PROV-20} submits a prediction.
-\end{itemize}
-
-\textbf{Output:}
-\begin{itemize}
-\item[1.] The prediction from \fixture{PROV-18} during the acceptance period is rejected.
-\item[2.] The prediction of 10.0 from \fixture{PROV-18} is accepted, and its second prediction is rejected.
-\item[3.] The string from \fixture{PROV-19} is rejected for not matching the output schema, and its second prediction is
-rejected.
-\item[4.] The prediction from \fixture{PROV-22} is rejected because it did not accept \fixture{REQ-10}.
-\item[5.] The late prediction from \fixture{PROV-20} is rejected.
-\end{itemize}
-
-\textbf{Test Case Derivation:} \rref{FR_PredictionPhaseStart} rejects predictions sent before the acceptance period ends and predictions from
-providers that did not accept. \rref{FR_OnePredictionPerProvider} allows one prediction per provider, including one rejected
-under \rref{FR_PredictionValidation} for not matching the output schema. \rref{FR_PredictionPhaseEnd} rejects predictions after the prediction phase ends.
-
-\textbf{How test will be performed:} Send each prediction at the stated time, using the on-chain clock to wait for the
-end of each period. Verify that each is accepted or rejected as expected, and that the recorded prediction of
-\fixture{PROV-18} is 10.0.
+\textbf{How test will be performed:} Run both requests using the on-chain clock. Verify the salts contain at least 256 bits and remain available in the SDK until reveal. Recompute each commitment from the request ID, provider wallet, prediction, and salt, and compare it with the stored commitment. Check the recorded phase end times and verify every acceptance or rejection listed above.
 
 \item{ST-PRED-3\\}
 
 \textbf{Control:} Automatic
 
-Initial State: The system is running on a supported blockchain platform. \fixture{TASK-10} requires 3 valid predictions and allows at most 4
-accepting providers. \fixture{PROV-23} to \fixture{PROV-26} have accepted inference request \fixture{REQ-11} for \fixture{TASK-10}, which has a payment
+Initial State: The system is running on a supported blockchain platform. \fixture{TASK-10} requires 3 valid predictions and allows at most 5
+accepting providers. \fixture{PROV-23} to \fixture{PROV-27} have accepted inference request \fixture{REQ-11} for \fixture{TASK-10}, which has a payment
 of \fixture{REQUEST\_PAYMENT}, and the per-provider compensation is \fixture{MINIMUM\_REQUEST\_PAYMENT}.
 
 \textbf{Input:}
 \begin{itemize}
-\item[1.] \fixture{PROV-23} and \fixture{PROV-24} submit valid predictions.
-\item[2.] \fixture{PROV-25} submits a prediction that does not match the output schema.
-\item[3.] \fixture{PROV-26} does not submit a prediction.
-\item[4.] The maximum prediction time elapses.
+\item[1.] \fixture{PROV-23} and \fixture{PROV-24} submit valid commitments and reveals.
+\item[2.] \fixture{PROV-25} commits to a non-conforming prediction and reveals it with the correct salt.
+\item[3.] \fixture{PROV-26} does not submit a commitment.
+\item[4.] \fixture{PROV-27} submits a commitment but does not reveal.
+\item[5.] The commit and reveal deadlines elapse.
 \end{itemize}
 
 \textbf{Output:}
 \begin{itemize}
 \item[1.] Both predictions are accepted, and once \fixture{REQ-11} is cancelled, \fixture{PROV-23} and \fixture{PROV-24} each receive \fixture{MINIMUM\_REQUEST\_PAYMENT}
 of compensation.
-\item[2.] The prediction from \fixture{PROV-25} is rejected and does not count toward the 3 valid predictions. Its stake is 
+\item[2.] The reveal from \fixture{PROV-25} is rejected and does not count toward the 3 valid predictions. Its stake is 
 slashed by \fixture{SLASH\_FRACTION}, reflected in the remaining reservation.
-\item[3.] The stake of \fixture{PROV-26} is slashed by \fixture{SLASH\_FRACTION} for not submitting a prediction, reflected in the remaining reservation.
-\item[4.] \fixture{REQ-11} is cancelled with no aggregated result, the requester gets the \fixture{REQUEST\_PAYMENT} back, and all remaining
+\item[3.] The stake of \fixture{PROV-26} is slashed by \fixture{SLASH\_FRACTION} under \rref{FR_SlashNoCommit}, including because the request is cancelled.
+\item[4.] The stake of \fixture{PROV-27} is slashed by \fixture{SLASH\_FRACTION} under \rref{FR_SlashNoReveal}, including because the request is cancelled.
+\item[5.] \fixture{REQ-11} is cancelled with no aggregated result, the requester gets the \fixture{REQUEST\_PAYMENT} back, and all remaining
 reservations for \fixture{REQ-11} are released.
 \end{itemize}
 
@@ -1469,8 +1436,8 @@ reservations for \fixture{REQ-11} are released.
 payment, and under \rref{FR_PredictionValidation} the rejected prediction does not count. \rref{FR_CancellationCompensation} pays each provider with a valid prediction
 the per-provider compensation from the providers without one, and \rref{FR_StakeReservationRelease} releases the remaining reservations.
 
-How test will be performed: Send the predictions and wait until the on-chain clock passes the maximum prediction
-time. Verify that \fixture{REQ-11} is cancelled, and compare the wallet balances and reservations on the blockchain with the
+How test will be performed: Send the predictions and wait until the on-chain clock passes the commit and reveal
+deadlines. Verify that \fixture{REQ-11} is cancelled, and compare the wallet balances and reservations on the blockchain with the
 expected outputs.
 
 \end{enumerate}
@@ -1548,7 +1515,7 @@ result is 1.00015, which Appendix A rounds away from zero to 1.0002.
 predictions to be returned to the requester, and \rref{FR_ResultSpread} requires the minimum and
 maximum of the included predictions.
 
-\textbf{How test will be performed:} Run each request until its prediction phase
+\textbf{How test will be performed:} Run each request until its reveal phase
 ends. Read the stored result from the request's on-chain account and the
 result details shown to \fixture{RQ-01} in the application, and compare both with the
 expected outputs. Check that the elapsed time shown is within 1 second of the
@@ -1568,7 +1535,7 @@ time between the request's submission and its result on the blockchain.
 has submitted these requests for \fixture{TASK-11}:
 \begin{itemize}
 \item \fixture{REQ-26}, which is in its acceptance period.
-\item \fixture{REQ-27}, which is in its prediction phase.
+\item \fixture{REQ-27}, which is in its commit phase.
 \item \fixture{REQ-28}, which has finished, with every reward transfer successful.
 \item \fixture{REQ-29}, which was cancelled because too few providers accepted it.
 \item \fixture{REQ-30}, which has a final result, but one provider's reward transfer
@@ -1700,7 +1667,7 @@ request reaches reward distribution.
 \item[2.] \fixture{P2} opens a new token account and retries its reward transfer
 from the provider dashboard before the pending transfer deadline.
 \item[3.] \fixture{P3} does nothing, and the clock is moved past the pending
-transfer deadline (end of the prediction phase plus
+transfer deadline (end of the reveal phase plus
 \fixture{PENDING\_TRANSFER\_PERIOD}).
 \end{itemize}
 
@@ -1753,7 +1720,7 @@ and 10.5).
 (1{,}000{,}000).
 \item[3.] \fixture{P4} submits a prediction that does not match the output schema (a
 string instead of a number).
-\item[4.] \fixture{P5} submits nothing, and the maximum prediction time is allowed
+\item[4.] \fixture{P5} submits nothing, and the protocol-wide COMMIT\_PERIOD and REVEAL\_PERIOD are allowed
 to pass.
 \end{itemize}
 
@@ -1774,14 +1741,14 @@ reputation score is within $[0, 100]$.
 algorithm (\rref{FR_PredictionAggregation}): \fixture{P1}, \fixture{P2}, and \fixture{P3} are included with weights
 0.5, 0.25, and 0.25, and the running total is exactly 0.5 after 10, so the
 result is the average of 10 and 10.5. \rref{FR_SlashInvalidPrediction} requires slashing and a reputation
-decrease for a rejected prediction, and \rref{FR_SlashNoShow} requires the same for a provider that
+decrease for a rejected prediction, and \rref{FR_SlashNoCommit}, \rref{FR_SlashNoReveal} requires the same for a provider that
 accepted but did not submit. \rref{FR_InferenceProviderSlashing} allows slashing only in those two cases, so the
 valid prediction from \fixture{P3} must cost reputation and not stake.
 \rref{FR_ReputationPenaltyCap} caps the reputation decrease from a single request, which the distant
 prediction from \fixture{P3} checks. \rref{FR_ReputationRange} keeps scores within $[0, 100]$, which
 \fixture{P1} checks at the top of the range.
 
-\textbf{How test will be performed:} Use a task with a short maximum prediction time.
+\textbf{How test will be performed:} Use a test protocol configuration with short COMMIT\_PERIOD and REVEAL\_PERIOD values.
 Record each provider's stake and reputation, run the request until it
 completes, and read the values again from the on-chain stake and reputation
 accounts. Assert the expected values for each provider.
@@ -1930,7 +1897,7 @@ accounts directly, without going through the application's backend.
 \item[1.] Requester \fixture{R1} submits request \fixture{REQ-A} whose input contains
 the marker value \fixture{271828.1828}. \fixture{P1} and \fixture{P2} accept it;
 \fixture{P3} does not.
-\item[2.] During the prediction phase:
+\item[2.] During the commit and reveal phases:
 \begin{itemize}
 \item \fixture{R1} opens \fixture{REQ-A} in the web client.
 \item \fixture{P1}, \fixture{P2}, and \fixture{P3} each call the provider SDK's
@@ -2087,13 +2054,14 @@ and reputation scores, including values at the edges of their declared ranges
 (reputation 0 and 100, the largest and smallest allowed predictions and token
 amounts) and the worked examples from the SRS.
 \item[2.] Mix in failure scenarios: too few providers accept, too few valid
-predictions, providers that do not submit, invalid predictions, dropped or
-delayed RPC responses, and a backend restart during the prediction phase.
+predictions, providers that do not commit or reveal, mismatched commitments, invalid revealed predictions, dropped or
+delayed RPC responses, and a backend restart during the commit and reveal phases.
 \item[3.] Run the requests at 1, 5, 10, 20, and \fixture{MAX\_CONCURRENT\_REQUESTS}
 at the same time. Mock providers reply immediately, so only the system's own
 processing time is measured.
-\item[4.] During each prediction phase, try to read submitted predictions as
-another provider, as the requester, and from the raw on-chain data.
+\item[4.] During each commit phase, try to read any individual prediction from on-chain and backend data as
+another provider, as the requester, and from the raw on-chain data; include the backend database and logs.
+\item[5.] Generate a salt for each mock provider. Inspect the SDK-generated salt length and persistence before and after a simulated restart, then use the same salt for reveal.
 \end{itemize}
 
 \textbf{Output:}
@@ -2104,7 +2072,8 @@ The test reports the number of mismatches (expected: 0).
 transaction to fail with no change to on-chain state.
 \item[3.] Every request reaches a final state before its final deadline, and its
 escrow is empty afterwards.
-\item[4.] No prediction can be read before its prediction phase ends.
+\item[4.] No individual prediction can be read from on-chain or backend data before the commit phase ends.
+\item[5.] Each salt contains at least 256 bits, is generated by a cryptographically secure random generator, and remains available in the SDK after restart until reveal completes.
 \item[5.] A table and graph of the median and 95th-percentile processing time at
 each concurrency level. The test passes if the median at
 \fixture{MAX\_CONCURRENT\_REQUESTS} is no more than
@@ -2115,7 +2084,7 @@ each concurrency level. The test passes if the median at
 match the Appendix A algorithm. \nfrref{NFR_AggregationArithmeticErrors} forbids overflow and requires an
 overflowing transaction to leave no change. \nfrref{NFR_FinalState} requires every request to
 reach a final state and settle its escrow before the final deadline. \nfrref{NFR_PredictionsHidden}
-requires predictions to stay hidden until the phase ends. \nfrref{NFR_ConcurrentRequests} requires
+requires predictions to stay hidden until the commit phase ends. \nfrref{NFR_CommitSalt} requires a cryptographically secure 256-bit salt to persist until reveal. \nfrref{NFR_ConcurrentRequests} requires
 concurrent requests without a drop in performance.
 
 \textbf{How test will be performed:} The harness runs the requests and then reads each
@@ -2306,7 +2275,7 @@ ST-AUTH-EXT-1 & \rref{FR_WalletAuthentication}\\
 ST-AUTH-EXT-2 & \rref{FR_WalletAuthentication}\\
 ST-AUTH-EMB-1 & \rref{FR_WalletAuthentication}, \rref{FR_EmbeddedWalletCreation}\\
 ST-AUTH-EMB-2 & \rref{FR_WalletAuthentication}\\
-ST-TASK-CREATE-1 & \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_TaskMaxPredictionTime}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \nfrref{NFR_TransactionConfirmation}\\
+ST-TASK-CREATE-1 & \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \nfrref{NFR_TransactionConfirmation}\\
 ST-TASK-BROWSE-1 & \rref{FR_PublicAccess}, \rref{FR_TaskBrowsing}, \rref{FR_InferenceTaskCreation}, \rref{FR_RequestSubmission}\\
 ST-PROV-1 & \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \nfrref{NFR_TransactionConfirmation}\\
 ST-PROV-2 & \rref{FR_InferenceTaskRegistration}, \rref{FR_InferenceTaskRegistrationStaking}\\
@@ -2316,24 +2285,24 @@ ST-PROV-5 & \rref{FR_ProviderDashboard}\\
 ST-REQ-1 & \rref{FR_RequestSubmission}\\
 ST-REQ-2 & \rref{FR_RequestValidation}, \rref{FR_RequestSubmission}\\
 ST-REQ-3 & \rref{FR_RequestPayment}, \rref{FR_TransactionAuthorization}\\
-ST-REQ-4 & \rref{FR_RequestBroadcast}\\
+ST-REQ-4 & \rref{FR_ProtocolCommitPeriod}, \rref{FR_ProtocolRevealPeriod}, \rref{FR_RequestBroadcast}\\
 ST-ACC-1 & \rref{FR_AcceptancePeriodStart}, \rref{FR_TransactionAuthorization}, \rref{FR_StakeReservation}, \rref{FR_TaskAcceptancePeriod}\\
 ST-ACC-2 & \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_TaskMinimumProviders}\\
 ST-ACC-3 & \rref{FR_MinimumAcceptance}, \rref{FR_StakeReservationRelease}\\
 ST-ACC-4 & \rref{FR_StakeReservation}, \rref{FR_StakeReservationRelease}\\
-ST-PRED-1 & \rref{FR_PredictionSubmission}, \rref{FR_PredictionPhaseEnd}\\
+ST-PRED-1 & \rref{FR_PredictionSubmission}, \rref{FR_PredictionPhaseEnd}, \nfrref{NFR_CommitSalt}\\
 ST-PRED-2 & \rref{FR_PredictionPhaseStart}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_PredictionPhaseEnd}\\
 ST-PRED-3 & \rref{FR_MinimumPredictions}, \rref{FR_CancellationCompensation}, \rref{FR_StakeReservationRelease}\\
 ST-AGG-1 & \rref{FR_PredictionAggregation}, \rref{FR_PredictionValidation}, \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread}\\
 ST-AGG-2 & \rref{FR_RequestHistory}, \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread}, \rref{FR_RewardTransferFailure}, \rref{FR_RequestCompletion}, \rref{FR_MinimumAcceptance}\\
 ST-REP-1 & \rref{FR_UpdateProviderReputations}, \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, \rref{FR_ReputationDecrease}, \rref{FR_DistributeRewards}, \rref{FR_RequestCompletion}, \saref{SA_RewardValidation}, \saref{SA_ProviderStatusCheck}\\
 ST-REP-2 & \rref{FR_RewardTransferFailure}, \rref{FR_PendingTransferNotice}, \rref{FR_PendingTransferRetry}, \rref{FR_PendingTransferDeadline}, \rref{FR_RequestCompletion}\\
-ST-PEN-1 & \rref{FR_InferenceProviderSlashing}, \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoShow}, \rref{FR_ReputationPenaltyCap}, \rref{FR_ReputationRange}\\
+ST-PEN-1 & \rref{FR_InferenceProviderSlashing}, \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoCommit}, \rref{FR_SlashNoReveal}, \rref{FR_ReputationPenaltyCap}, \rref{FR_ReputationRange}\\
 ST-PEN-2 & \rref{FR_ProviderWillingUnregistration}, \rref{FR_ProviderMinimumStakeUnregistration}, \rref{FR_SlashRepeatedOffenses}, \rref{FR_ProviderForcedUnregistration}, \rref{FR_ProviderUnregistrationStakeReturn}\\
 ST-TRANS-1 & \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \rref{FR_OnChainRecords}, \saref{SA_BalanceCheck}, \saref{SA_ChargeEqualsAuthorized}\\
 ST-DATA-1 & \rref{FR_RequestInputDistribution}, \rref{FR_InputAccessRestriction}, \rref{FR_InputNotOnChain}, \rref{FR_InputDeletion}\\
 ST-SAFE-1 & \saref{SA_NoDuplicateSubmission}, \saref{SA_OnChainFundsCheck}, \saref{SA_TransactionSimulation}, \saref{SA_ExpiryCheck}, \saref{SA_SignedTransactionsOnly}, \saref{SA_FailureRetry}\\
-NFR-SIM-1 & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_PredictionsHidden}, \nfrref{NFR_FinalState}, \nfrref{NFR_ConcurrentRequests}\\
+NFR-SIM-1 & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_PredictionsHidden}, \nfrref{NFR_CommitSalt}, \nfrref{NFR_FinalState}, \nfrref{NFR_ConcurrentRequests}\\
 NFR-USE-1 & \nfrref{NFR_Learnability}, \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_EmbeddedWalletAccess}, \saref{SA_ErrorMessageTime}\\
 NFR-SEC-1 & \nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess}, \nfrref{NFR_PublicPagesPrivacy}, \saref{SA_WalletSigning}, \saref{SA_TLS}\\
 NFR-RELEASE-1 & \nfrref{NFR_CodingStandards}, \nfrref{NFR_BrowserSupport}, \nfrref{NFR_NoExtraSoftware}, \saref{SA_DependencyScan}\\
@@ -2484,9 +2453,12 @@ Their values are defined in this section for easy maintenance.
 
 The constants used by the system itself (\fixture{MINIMUM\_PROVIDER\_STAKE},
 \fixture{MAX\_REPUTATION\_PENALTY}, \fixture{SLASH\_FRACTION},
-\fixture{REPEAT\_OFFENSE\_COUNT}, \fixture{REPEAT\_OFFENSE\_WINDOW}, and
-\fixture{USABILITY\_COMPLETION\_RATE}) are defined in Appendix C of the
-\href{../SRS/SRS.pdf}{SRS}. The constants below are only used by the tests in
+\fixture{REPEAT\_OFFENSE\_COUNT}, \fixture{REPEAT\_OFFENSE\_WINDOW},
+\fixture{USABILITY\_COMPLETION\_RATE}, \fixture{COMMIT\_PERIOD}, and
+\fixture{REVEAL\_PERIOD}) are defined in Appendix C of the
+\href{../SRS/SRS.pdf}{SRS}. A test deployment uses one value for each protocol
+constant across all requests in that deployment; isolated test runs may set
+different values. The constants below are only used by the tests in
 this document.
 
 \begin{itemize}

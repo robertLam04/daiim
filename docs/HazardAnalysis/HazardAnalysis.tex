@@ -143,10 +143,10 @@ hold DAIIM's authoritative state and all of its tokens. They are responsible
 for:
 \begin{itemize}
   \item the registry of inference tasks and their parameters (minimum
-  providers, reputation tolerance, acceptance period, maximum prediction time);
+  providers, reputation tolerance, acceptance period, protocol-wide commit period, protocol-wide reveal period);
   \item provider registration and the escrow of provider stakes;
   \item escrow of requester payments and the lifecycle of each inference
-  request (acceptance period, prediction phase, cancellation and refunds);
+  request (acceptance period, commit phase, reveal phase, cancellation and refunds);
   \item recording predictions, aggregating them into the final result, and
   updating provider reputations;
   \item distributing rewards, and slashing or burning provider stakes.
@@ -404,9 +404,9 @@ this potential failure mode.}
 & H5.2
 & Providers accept the request, but fewer than the minimum number submit a prediction
 &
-& Accepted providers are unavailable, fail, or do not submit before the end of the prediction phase
-& Cancel the request and refund the requester in full. Slash the stake of each provider that accepted but did not submit, and decrease their reputation.
-& \rref{FR_SlashNoShow}, \rref{FR_MinimumPredictions} \\[1em]
+& Accepted providers are unavailable, fail, do not commit, or do not reveal before their respective phase deadlines
+& Cancel the request and refund the requester in full. Slash accepted providers that did not commit and committed providers that did not reveal, even when cancellation follows, and decrease their reputation.
+& \rref{FR_SlashNoCommit}, \rref{FR_SlashNoReveal}, \rref{FR_MinimumPredictions} \\[1em]
 
 \rule{0pt}{2.5em} & & & & & & \\
 \rule{0pt}{2.5em} & & & & & & \\
