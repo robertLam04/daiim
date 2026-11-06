@@ -26,6 +26,7 @@
 \documentclass[12pt]{article}
 
 \usepackage{amsmath, mathtools}
+\usepackage{alltt}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
@@ -672,7 +673,7 @@ Authenticated user
 \item The new inference task is created in the on-chain program
 \end{itemize}
 
-\textbf{Related Requirements:} \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \ref{SA_BalanceCheck}, \ref{SA_SignedTransactionsOnly}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_TwoClickAccess}.
+\textbf{Related Requirements:} \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TaskAcceptancePeriod}, \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \ref{SA_BalanceCheck}, \ref{SA_SignedTransactionsOnly}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_TransactionConfirmation}, \nfrref{NFR_TwoClickAccess}.
 
 \refstepcounter{ucnum} \label{UC_ProviderRegistration}
 \subsection{\ucref{UC_ProviderRegistration}: Register as an inference provider for a task}
@@ -894,9 +895,8 @@ System
 prediction by comparing it to the final inference result produced using the
 weighted-median algorithm in Appendix~A (\nameref{App_WeightedMedian}).
 \item The on-chain program calculates and applies the reputation score update
-for each provider whose valid prediction was included in the aggregate, using
-the reputation update rules in \rref{FR_ReputationIncrease},
-\rref{FR_ReputationUnchanged}, and \rref{FR_ReputationDecrease}.
+for each provider whose valid prediction was included in the aggregate, as
+specified in \rref{FR_UpdateProviderReputations}.
 \end{enumerate}
 
 \textbf{Alternative Flows}
@@ -911,7 +911,7 @@ the reputation update rules in \rref{FR_ReputationIncrease},
 \item Provider reputations are updated based on the accuracy of their predictions, and any providers with reputations below the minimum threshold are unregistered from the task.
 \end{itemize}
 
-\textbf{Related Requirements:} \rref{FR_PredictionPhaseEnd}, \rref{FR_UpdateProviderReputations}, \rref{FR_ReputationIncrease}, \rref{FR_ReputationUnchanged}, \rref{FR_ReputationDecrease}, \rref{FR_ReputationPenaltyCap}, \rref{FR_SlashInvalidPrediction}, \rref{FR_ProviderForcedUnregistration}, \rref{FR_OnChainRecords}, \ref{SA_ProviderStatusCheck}, \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors}.
+\textbf{Related Requirements:} \rref{FR_PredictionPhaseEnd}, \rref{FR_UpdateProviderReputations}, \rref{FR_SlashInvalidPrediction}, \rref{FR_ProviderForcedUnregistration}, \rref{FR_OnChainRecords}, \ref{SA_ProviderStatusCheck}, \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors}.
 
 \refstepcounter{ucnum} \label{UC_DistributeRewards}
 \subsection{\ucref{UC_DistributeRewards}: Distribute rewards to inference providers}
@@ -1112,7 +1112,6 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_MinimumProvidersFloor}:] The system shall reject inference task definitions that specify a minimum number of participating providers less than 2.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskReputationTolerance}:] Each inference task definition shall specify a reputation tolerance $T$, in the units of the task's output, used to determine when a provider's reputation decreases.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_TaskAcceptancePeriod}:] Each inference task definition shall specify the length of the acceptance period for the task's inference requests. The acceptance period for each request shall end this length of time after the request is broadcast.
 
@@ -1205,17 +1204,9 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \noindent \begin{itemize}
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:] After the final aggregated result for an inference request is computed, the on-chain program shall calculate and apply the reputation update for each provider whose valid prediction was included in the aggregate under \rref{FR_PredictionAggregation}. For each such provider $i$, the on-chain program shall compute $d_i$, the absolute difference between the provider's prediction and the final aggregated result, and $\bar{d}$, the average of $d_j$ over all providers whose valid predictions were included in the aggregate.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_UpdateProviderReputations}:] After the final aggregated result for an inference request is computed, the on-chain program shall update the reputation of every provider whose valid prediction was included in the aggregate under \rref{FR_PredictionAggregation}, using the \nameref{App_ConfidenceBasedReputationUpdate} algorithm in Appendix~A. The algorithm shall use the reputation scores at the end of the reveal phase, before any reputation updates for that request.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationRange}:] The system shall maintain each provider's reputation score within the inclusive range $[0,100]$
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationIncrease}:] The system shall increase the reputation score of a provider whose distance $d_i$ is less than or equal to the average distance $\bar{d}$.
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationUnchanged}:] The system shall leave unchanged the reputation score of a provider whose distance $d_i$ is greater than $\bar{d}$ but less than or equal to $\bar{d} + T$, where $T$ is the task's reputation tolerance.
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationDecrease}:] The system shall decrease the reputation score of a provider whose distance $d_i$ is greater than $\bar{d} + T$, where $T$ is the task's reputation tolerance.
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ReputationPenaltyCap}:] The system shall limit the reputation decrease a provider receives for a single inference request to at most MAX\_REPUTATION\_PENALTY, regardless of how far the provider's prediction is from the final aggregated result.
-
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_DistributeRewards}:] The on-chain program shall calculate and automatically distribute the inference request's reward among all providers whose predictions contributed to the final aggregated result and whose reputation did not decrease as a result of the request, in proportion to each provider's reputation score.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_RewardTransferFailure}:] If a reward transfer to a provider fails because the provider's wallet is invalid or cannot receive tokens, the system shall keep that provider's reward in escrow, record the transfer as unresolved, and set the request's status to Pending Transfer. Transfers to other providers and the requester's access to the final aggregated result shall not be affected.
@@ -1580,13 +1571,13 @@ documents.}
 Stakeholder Req & Use Case & Functional Req \\
 \midrule
 \srref{SR_DefineTask} & \ucref{UC_CreateTask}
-  & \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TaskReputationTolerance}, \rref{FR_TaskAcceptancePeriod} \\[0.5em]
+  & \rref{FR_InferenceTaskCreation}, \rref{FR_InferenceTaskDefinition}, \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_TaskAcceptancePeriod} \\[0.5em]
 
 \srref{SR_RequestInference} & \ucref{UC_SubmitRequest}, \ucref{UC_AggregateResult}
   & \rref{FR_RequestSubmission}, \rref{FR_RequestValidation}, \rref{FR_RequestPayment}, \rref{FR_RequestBroadcast}, \rref{FR_FinalResultDelivery}, \rref{FR_RequestHistory}, \ref{SA_ChargeEqualsAuthorized} \\[0.5em]
 
 \srref{SR_ReliableInference} & \ucref{UC_AggregateResult}, \ucref{UC_UpdateReputation}, \ucref{UC_CancelRequest}, \ucref{UC_SubmitPrediction}
-  & \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_MinimumAcceptance}, \rref{FR_PredictionSubmission}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_PredictionPhaseEnd}, \rref{FR_MinimumPredictions}, \rref{FR_PredictionAggregation}, \rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} \\[0.5em]
+  & \rref{FR_TaskMinimumProviders}, \rref{FR_MinimumProvidersFloor}, \rref{FR_MinimumAcceptance}, \rref{FR_PredictionSubmission}, \rref{FR_OnePredictionPerProvider}, \rref{FR_PredictionValidation}, \rref{FR_PredictionPhaseEnd}, \rref{FR_MinimumPredictions}, \rref{FR_PredictionAggregation}, \rref{FR_UpdateProviderReputations}, \rref{FR_ReputationRange} \\[0.5em]
 
 \srref{SR_ResilientService} & \ucref{UC_AcceptRequest}, \ucref{UC_SubmitPrediction}, \ucref{UC_CancelRequest}
   & \rref{FR_AcceptancePeriodStart}, \rref{FR_AcceptancePeriodEnd}, \rref{FR_MaximumAcceptance}, \rref{FR_MinimumAcceptance}, \rref{FR_ProtocolCommitPeriod}, \rref{FR_ProtocolRevealPeriod}, \rref{FR_PredictionPhaseEnd}, \rref{FR_MinimumPredictions}, \ref{SA_ExpiryCheck}, \ref{SA_FailureRetry} \\[0.5em]
@@ -1653,7 +1644,7 @@ Functional Req & Nonfunctional Req \\
 \rref{FR_MinimumPredictions} & \nfrref{NFR_FinalState} \\
 \rref{FR_PredictionAggregation} & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors} \\
 \rref{FR_RequestHistory} & \nfrref{NFR_ProgressStatus}, \nfrref{NFR_TwoClickAccess} \\
-\rref{FR_UpdateProviderReputations}--\rref{FR_ReputationPenaltyCap} & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors} \\
+\rref{FR_UpdateProviderReputations}, \rref{FR_ReputationRange} & \nfrref{NFR_ReputationWeightedAggregate}, \nfrref{NFR_AggregationArithmeticErrors} \\
 \rref{FR_DistributeRewards} & \nfrref{NFR_AggregationArithmeticErrors}, \nfrref{NFR_FinalState} \\
 \rref{FR_RewardTransferFailure}--\rref{FR_RequestCompletion} & \nfrref{NFR_FinalState} \\
 \rref{FR_InferenceProviderSlashing}--\rref{FR_ProviderForcedUnregistration} & \nfrref{NFR_FinalState}, \nfrref{NFR_AggregationArithmeticErrors} \\
@@ -1789,16 +1780,6 @@ that a task is not a good fit and exit without excessive financial loss, while
 making reputation resets through repeated unregistration and re-registration
 costly enough to discourage continued abuse.
 
-\subsection{Reputation Tolerance}
-
-Each task specifies a reputation tolerance $T$ (\rref{FR_TaskReputationTolerance}),
-and a provider's reputation only decreases when their distance from the final
-aggregated result exceeds the average distance by more than $T$
-(\rref{FR_ReputationDecrease}). Without this margin, roughly half of the
-providers would lose reputation on every request, even when all predictions are
-close together. $T$ is set per task because an acceptable margin depends on the
-units and scale of the task's output.
-
 \subsection{Unresolved Reward Transfers}
 
 A reward transfer can fail if a provider's wallet can no longer receive tokens.
@@ -1915,7 +1896,7 @@ Algorithm WeightedMedian
 Input:  Valid predictions p[1..n] from providers with non-zero reputation,
         and corresponding normalized weights w[1..n] where each w[i] > 0
         and sum(w[i]) = 1
-Output: The weighted median rounded to 4 decimal places
+Output: The weighted median
 
 1.  Create a list L of pairs (p[i], w[i]) for i = 1 to n.
 2.  Sort L in nondecreasing order by prediction value.
@@ -1929,7 +1910,7 @@ Output: The weighted median rounded to 4 decimal places
 10.             result <- (previousPrediction + value) / 2.
 11.         Else:
 12.             result <- value.
-13.         Return result rounded to 4 decimal places.
+13.         Return result.
 14.     Set previousPrediction <- value.
 15. Return an aggregation error.
 \end{verbatim}
@@ -1937,9 +1918,35 @@ Output: The weighted median rounded to 4 decimal places
 Read the predictions in increasing order, adding their weights as you go. The
 result is the prediction where the running total first goes above 0.5. If the
 running total was exactly 0.5 just before that prediction, use the average of
-that prediction and the preceding prediction instead. Round the result to four
-decimal places; if the value is exactly halfway between two possible rounded
-values, round away from zero.
+that prediction and the preceding prediction instead.
+
+\subsubsection{Confidence-Based Reputation Update Algorithm}
+\label{App_ConfidenceBasedReputationUpdate}
+
+The reputation snapshot used by this algorithm is the score of each included
+provider at the end of the reveal phase, before any reputation updates for the
+request. The final aggregated prediction $F$ is the weighted median used as
+the center of the reputation-weighted variance $\sigma^2$ of the included
+predictions. If
+$\sigma^2=0$, every included prediction equals $F$; in this case each provider's
+reputation change is defined to be zero to avoid division by zero.
+
+\begin{alltt}
+Algorithm ConfidenceBasedReputationUpdate
+Input:  Predictions p[1..n] from providers with corresponding
+        non-zero reputations r[1..n], and final aggregated prediction F
+Output: Updated reputations for all included providers
+
+1.  For each provider i, calculate d[i] <- abs(F - p[i]).
+2.  Calculate \ensuremath{\sigma^2} <- sum(r[i] * (p[i] - F)^2) / sum(r[i]).
+3.  Set lambda <- 1.0.
+4.  If \ensuremath{\sigma^2} = 0, set delta[i] <- 0 for every provider and go to step 6.
+5.  For each provider i, calculate delta[i] <- lambda * (1 - d[i] / \ensuremath{\sigma^2}).
+6.  For each provider i, set r\_new[i] <- min(100, max(0, r[i] + delta[i])).
+\end{alltt}
+
+The existing reputation range requirement in \rref{FR_ReputationRange} applies
+to the resulting reputation scores.
 
 \subsection{Appendix B: Development Plan}
 
@@ -1965,7 +1972,6 @@ Their values are defined in this section for easy maintenance.}
 \begin{itemize}
 \item USABILITY\_COMPLETION\_RATE: the minimum fraction of usability test participants who must complete each task without assistance (\nfrref{NFR_Usability}). To be determined.
 \item MINIMUM\_PROVIDER\_STAKE: the minimum stake a provider must maintain for an inference task to remain registered for that task (\rref{FR_ProviderMinimumStakeUnregistration}, \rref{FR_StakeReservation}). To be determined.
-\item MAX\_REPUTATION\_PENALTY: the maximum reputation decrease a provider can receive for a single inference request (\rref{FR_ReputationPenaltyCap}). To be determined.
 \item SLASH\_FRACTION: the fraction of a provider's stake slashed for an invalid prediction or for not submitting a prediction (\rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoCommit}, \rref{FR_SlashNoReveal}). To be determined.
 \item REPEAT\_OFFENSE\_COUNT: the number of slashing offences that causes a provider to be unregistered (\rref{FR_SlashRepeatedOffenses}). To be determined.
 \item COMMIT\_PERIOD: the protocol-wide maximum time for accepted providers to submit commitments after the acceptance period ends (\rref{FR_ProtocolCommitPeriod}). To be determined.
