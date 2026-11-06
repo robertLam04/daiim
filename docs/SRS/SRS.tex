@@ -1047,7 +1047,7 @@ User (requester or provider)
 \textbf{Related Requirements:} \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \rref{FR_RequestHistory}, \rref{FR_ProviderDashboard}, \rref{FR_OnChainRecords}, \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_ProgressStatus}.
 
 \refstepcounter{ucnum} \label{UC_ReadDocumentation}
-\subsection{\ucref{UC_ReadDocumentation}: Read documentation and learn how to use the system}
+\subsection{\ucref{UC_ReadDocumentation}: Use in-app guidance to learn the system}
 
 \textbf{Primary Actor}
 User (authenticated or unauthenticated)
@@ -1059,19 +1059,19 @@ User (authenticated or unauthenticated)
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item User navigates to the "Documentation" section of the DAIIM web application.
-\item System displays the available documentation, including user guides, tutorials, and FAQs.
-\item User selects the desired documentation to read and follows the instructions provided.
+\item User opens a feature or begins a task in the DAIIM application.
+\item System displays concise instructions and optional tooltips relevant to the current screen and task.
+\item User follows the in-app guidance to complete the task.
 \end{enumerate}
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item 2a. System fails to display documentation due to server error: System displays an error message indicating that the documentation could not be retrieved and to try again later.
+\item 2a. User dismisses a tooltip: the tooltip closes and the user continues using the application.
 \end{itemize}
 
 \textbf{Postconditions}
 \begin{itemize}
-\item User has successfully read the documentation and learned how to use the system.
+\item User has completed the task with the help of clear in-app instructions and tooltips.
 \end{itemize}
 
 \textbf{Related Requirements:} \nfrref{NFR_Learnability}, \nfrref{NFR_TwoClickAccess}, \nfrref{NFR_ErrorVisibility}, \nfrref{NFR_BrowserSupport}.
@@ -1449,7 +1449,7 @@ be covered in the Verification and Validation document.}
 
 \noindent \begin{itemize}
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Learnability}:] The system shall be learnable and documentation should be accessible such that a user with experience using a browser but no experience using a blockchain or knowledge about ML concepts can learn how to use the system within 5 minutes, verified through usability testing.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Learnability}:] A new requester with experience using a web browser but no prior knowledge of blockchain or machine learning shall be able to browse tasks, submit an inference request, and find its status within 5 minutes using clear in-app instructions and tooltips, verified through usability testing.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_TwoClickAccess}:] All features on the web application shall be accessible within 2 clicks from the home page, verified through usability testing.
 
