@@ -1584,11 +1584,9 @@ providers would go through on the real system: completing a request, having a
 reward transfer fail, misbehaving during a request, and leaving a task. The
 tests run on a local validator for the public blockchain network or the public blockchain network, with mock inference
 providers that submit preset predictions, so that the expected results can be
-worked out by hand before the test is run. Boundary cases for each rule (such
-as a distance exactly equal to $\bar{d}$) are covered by the unit tests.
+worked out by hand before the test is run.
 
-The values of \fixture{SLASH\_FRACTION}, \fixture{MAX\_REPUTATION\_PENALTY},
-\fixture{MINIMUM\_PROVIDER\_STAKE}, \fixture{REPEAT\_OFFENSE\_COUNT},
+The values of \fixture{SLASH\_FRACTION}, \fixture{MINIMUM\_PROVIDER\_STAKE}, \fixture{REPEAT\_OFFENSE\_COUNT},
 \fixture{REPEAT\_OFFENSE\_WINDOW}, and \fixture{PENDING\_TRANSFER\_PERIOD} are
 defined in the SRS. The tests read them from the deployed program's
 configuration, so they do not need to change if the values change.
@@ -1614,28 +1612,17 @@ request runs to completion.
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] The final aggregated result is 12. The distances from the result are
-$d = (3.5, 1, 0, 1, 8)$, so $\bar{d} = 2.7$ and $\bar{d} + T = 4.7$.
-\item[2.] \fixture{P2}, \fixture{P3}, and \fixture{P4} ($d_i \le 2.7$) have their
-reputation increased. \fixture{P1} ($2.7 < 3.5 \le 4.7$) has an unchanged
-reputation. \fixture{P5} ($8 > 4.7$) has its reputation decreased.
-\item[3.] \fixture{P5} receives no reward. \fixture{P1} to \fixture{P4} receive
-reward transfers from the request's escrow address of 200, 300, 250, and 250
-tokens, in proportion to their reputation scores (40, 60, 50, 50).
-\item[4.] The reward transfers add up to no more than 1000 tokens, the request's
-status is Completed, and the backend log has a provider status check for each
-provider recorded before that provider's reward transfer.
+\item[1.] The new reputations of \fixture{P1} to \fixture{P5} are approximately
+40.769737, 60.934211, 51, 50.934211, and 50.473684, respectively. Their reward
+transfers are approximately 160.440129, 239.792880, 200.699029, 200.440129,
+and 198.627832 tokens, respectively, subject to at most one token base unit of
+allocation difference.
 \end{itemize}
 
-\textbf{Test Case Derivation:} \rref{FR_UpdateProviderReputations} defines the
-reputation update for every included provider, and \rref{FR_DistributeRewards} limits
-rewards to providers whose reputation did not decrease, split by reputation, so
-\fixture{P1} still qualifies and \fixture{P5} does not. \rref{FR_RequestCompletion} allows the
-request to be Completed once every reward transfer has succeeded. \saref{SA_RewardValidation} forbids paying out
-more than the reward, and \saref{SA_ProviderStatusCheck} requires each provider's status to be
-checked before a reward is sent. The expected reward shares use the reputation
-snapshot taken for aggregation (\rref{FR_PredictionAggregation}); if the design uses the scores after the
-update instead, the expected shares will be recomputed from those scores.
+\textbf{Test Case Derivation:} \rref{FR_UpdateProviderReputations} gives
+$\sigma^2=15.2$ and the post-update reputations above. Under
+\rref{FR_DistributeRewards}, each reward is $1000r_i^{new}/\sum_j r_j^{new}$.
+The pre-update scores produce different reward shares and fail this test.
 
 \textbf{How test will be performed:} Record each provider's reputation and token
 balance, run the request, and read the result, the reputation scores, and the
@@ -1666,24 +1653,32 @@ transfer deadline (end of the reveal phase plus
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] \fixture{P1} and \fixture{P4} receive their rewards (200 and 250
-tokens). The 300 tokens for \fixture{P2} and the 250 tokens for \fixture{P3} stay
+\item[1.] \fixture{P1}, \fixture{P4}, and \fixture{P5} receive their expected
+rewards (approximately 160.440129, 200.440129, and 198.627832 tokens,
+respectively). Approximately 239.792880 tokens for \fixture{P2} and
+200.699029 tokens for \fixture{P3} stay
 in the request's escrow, both transfers are recorded as unresolved, and the
 request's status is Pending Transfer. The requester can still see the final
 aggregated result.
 \item[2.] \fixture{P2} and \fixture{P3} each receive a notification, and each of
 their dashboards shows the held reward amount and the pending transfer
 deadline.
-\item[3.] After the retry, \fixture{P2}'s new token account holds the 300 tokens
-and \fixture{P2}'s transfer is recorded as resolved. The request stays in
+\item[3.] After the retry, \fixture{P2}'s new token account holds its expected
+approximately 239.792880-token reward, and \fixture{P2}'s transfer is recorded as resolved.
+The request stays in
 Pending Transfer because \fixture{P3}'s transfer is still unresolved.
-\item[4.] After the deadline, \fixture{P3}'s 250 tokens are burned (the total
-burned supply increases by 250), \fixture{P3}'s transfer is recorded as
+\item[4.] After the deadline, \fixture{P3}'s approximately 200.699029-token reward is burned
+(the total burned supply increases by that amount), \fixture{P3}'s transfer is recorded as
 forfeited, and the request's status changes to Completed.
 \end{itemize}
 
-\textbf{Test Case Derivation:} \rref{FR_RewardTransferFailure} requires a failed transfer to be held in escrow and
-recorded as unresolved, with the request set to Pending Transfer, while other
+\textbf{Test Case Derivation:} This case inherits the pinned reward amounts and
+post-update reputation snapshot from ST-REP-1 under
+\rref{FR_UpdateProviderReputations} and \rref{FR_DistributeRewards}; the
+provider accounts that cannot receive tokens affect transfer status, not the
+calculated shares. \rref{FR_RewardTransferFailure} requires a failed transfer
+to be held in escrow and recorded as unresolved, with the request set to
+Pending Transfer, while other
 transfers and the result are not affected. \rref{FR_PendingTransferNotice} requires a notification and the
 dashboard details. \rref{FR_PendingTransferRetry} allows the provider to retry before the deadline, and
 \rref{FR_PendingTransferDeadline} requires the held reward to be burned at the deadline. \rref{FR_RequestCompletion} only
@@ -2288,7 +2283,7 @@ ST-PRED-3 & \rref{FR_MinimumPredictions}, \rref{FR_CancellationCompensation}, \r
 ST-AGG-1 & \rref{FR_PredictionAggregation}, \rref{FR_PredictionValidation}, \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread}\\
 ST-AGG-2 & \rref{FR_RequestHistory}, \rref{FR_FinalResultDelivery}, \rref{FR_ResultSpread}, \rref{FR_RewardTransferFailure}, \rref{FR_RequestCompletion}, \rref{FR_MinimumAcceptance}\\
 ST-REP-1 & \rref{FR_UpdateProviderReputations}, \rref{FR_DistributeRewards}, \rref{FR_RequestCompletion}, \saref{SA_RewardValidation}, \saref{SA_ProviderStatusCheck}\\
-ST-REP-2 & \rref{FR_RewardTransferFailure}, \rref{FR_PendingTransferNotice}, \rref{FR_PendingTransferRetry}, \rref{FR_PendingTransferDeadline}, \rref{FR_RequestCompletion}\\
+ST-REP-2 & \rref{FR_UpdateProviderReputations}, \rref{FR_DistributeRewards}, \rref{FR_RewardTransferFailure}, \rref{FR_PendingTransferNotice}, \rref{FR_PendingTransferRetry}, \rref{FR_PendingTransferDeadline}, \rref{FR_RequestCompletion}\\
 ST-PEN-1 & \rref{FR_InferenceProviderSlashing}, \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoCommit}, \rref{FR_SlashNoReveal}, \rref{FR_ReputationRange}\\
 ST-PEN-2 & \rref{FR_ProviderWillingUnregistration}, \rref{FR_ProviderMinimumStakeUnregistration}, \rref{FR_SlashRepeatedOffenses}, \rref{FR_ProviderForcedUnregistration}, \rref{FR_ProviderUnregistrationStakeReturn}\\
 ST-TRANS-1 & \rref{FR_TransactionAuthorization}, \rref{FR_TransactionPreview}, \rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}, \rref{FR_OnChainRecords}, \saref{SA_BalanceCheck}, \saref{SA_ChargeEqualsAuthorized}\\
