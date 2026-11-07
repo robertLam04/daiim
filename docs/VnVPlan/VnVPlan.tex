@@ -1193,45 +1193,56 @@ escrow.
 
 \textbf{Control:} Automatic
 
-\textbf{Initial State:} The system is running in a test environment. An existing
-inference task, \fixture{TASK-04}, has three registered providers:
+\textbf{Initial State:} The system is running on a local validator whose clock
+the test can advance. An existing inference task, \fixture{TASK-04}, requires
+at least two and at most three participating providers and has three
+registered providers:
 \fixture{PROV-01}, \fixture{PROV-02}, and \fixture{PROV-03}. All three providers
 are available to receive inference requests. The task has a configured
-acceptance period of 10 minutes. The test protocol sets COMMIT\_PERIOD and
-REVEAL\_PERIOD to 30 minutes each.
+acceptance period of 10 seconds. The test protocol sets COMMIT\_PERIOD and
+REVEAL\_PERIOD to 20 seconds each.
 
 \textbf{Input:}
 \begin{itemize}
-\item[1.] Submit a valid inference request for \fixture{TASK-04}.
-\item[2.] Set the proposed payment amount to a number of tokens.
+\item[1.] Submit a valid inference request for \fixture{TASK-04} with a
+specified proposed payment amount.
+\item[2.] Have \fixture{PROV-01} and \fixture{PROV-02} accept the request.
+Advance the test clock to the acceptance-period expiry and begin the commit
+phase.
+\item[3.] Have both accepted providers submit commitments, ending the commit
+phase early.
 \end{itemize}
 
 \textbf{Output:}
 \begin{itemize}
 \item[1.] The system successfully submits the inference request and broadcasts
 it to all three registered providers.
-\item[2.] Each provider receives the proposed payment amount, task definition,
-acceptance-period expiry time, commit deadline, and latest possible reveal deadline. At commit-phase end, the actual reveal deadline is also broadcast. The broadcast
-information is consistent across all three providers and matches the submitted
-request and task definition.
+\item[2.] Each registered provider receives the proposed payment amount, task
+definition, acceptance-period expiry time, commit deadline, and latest possible
+reveal deadline. The broadcast information is consistent across all three
+providers and matches the submitted request and task definition.
+\item[3.] At commit-phase end, \fixture{PROV-01} and \fixture{PROV-02} receive
+the actual reveal deadline. \fixture{PROV-03}, which did not accept, does not
+receive this accepted-provider notification.
 \end{itemize}
 
-\textbf{Test Case Derivation:} \rref{FR_RequestBroadcast} requires the system to broadcast
-the task definition, proposed payment amount, acceptance-period expiry time,
-and the calculated commit and reveal deadlines to all providers registered for the task after
-an inference request is submitted.
+\textbf{Test Case Derivation:} \rref{FR_RequestBroadcast} requires the system to
+broadcast the task definition, proposed payment amount, acceptance-period
+expiry time, and calculated commit and latest possible reveal deadlines to all
+providers registered for the task after an inference request is submitted. It
+also requires the actual reveal deadline to be broadcast to accepted providers
+when the commit phase ends.
 
-\textbf{How test will be performed:} Configure the test protocol with COMMIT\_PERIOD and REVEAL\_PERIOD set to
-30 minutes each. Configure \fixture{TASK-04} with the three specified registered
-providers and a 10-minute acceptance period. Submit a valid inference request with
-the specified payment amount. Monitor the messages or notifications received
-by each provider. Verify that the request is successfully submitted and
-broadcast to all three providers. Verify that each provider receives the
-correct task definition, proposed payment amount, acceptance-period expiry
-time, commit deadline, and latest possible reveal deadline. Confirm that the
-commit deadline is 10 minutes after acceptance ends, the latest reveal deadline
-is 30 minutes after the commit deadline, and an actual reveal deadline is
-broadcast when the commit phase ends.
+\textbf{How test will be performed:} Submit the request and capture the
+broadcast received by each registered provider. Check that the acceptance
+expiry is 10 seconds after broadcast, the commit deadline is 20 seconds after
+acceptance expiry, and the latest possible reveal deadline is 20 seconds after
+the commit deadline. Advance the validator clock to acceptance expiry and
+trigger the phase transition. Have the two accepted providers commit, then
+verify that each receives an actual reveal deadline 20 seconds after the
+early commit-phase end. Compare the messages with the request's on-chain
+timestamps and confirm that the unaccepted provider receives no actual reveal
+deadline notification. No real-time wait for these periods is required.
 
 \end{enumerate}
 
@@ -1397,7 +1408,7 @@ that each acceptance is recorded or rejected as expected.
 
 \textbf{How test will be performed:} Run both requests using the on-chain clock. Verify the salts contain at least 256 bits and remain available in the SDK until reveal. Recompute each commitment from the request ID, provider wallet, prediction, and salt, and compare it with the stored commitment. Check the recorded phase end times and verify every acceptance or rejection listed above.
 
-\item{ST-PRED-3\\}
+\item{ST-PRED-2\\}
 
 \textbf{Control:} Automatic
 
@@ -1420,8 +1431,8 @@ of \fixture{REQUEST\_PAYMENT}, and the per-provider compensation is \fixture{MIN
 of compensation.
 \item[2.] The reveal from \fixture{PROV-25} is rejected and does not count toward the 3 valid predictions. Its stake is 
 slashed by \fixture{SLASH\_FRACTION}, reflected in the remaining reservation.
-\item[3.] The stake of \fixture{PROV-26} is slashed by \fixture{SLASH\_FRACTION} under \rref{FR_SlashNoCommit}, including because the request is cancelled.
-\item[4.] The stake of \fixture{PROV-27} is slashed by \fixture{SLASH\_FRACTION} under \rref{FR_SlashNoReveal}, including because the request is cancelled.
+\item[3.] The stake of \fixture{PROV-26} is slashed by \fixture{SLASH\_FRACTION} under \rref{FR_SlashNoCommit}.
+\item[4.] The stake of \fixture{PROV-27} is slashed by \fixture{SLASH\_FRACTION} under \rref{FR_SlashNoReveal}.
 \item[5.] \fixture{REQ-11} is cancelled with no aggregated result, the requester gets the \fixture{REQUEST\_PAYMENT} back, and all remaining
 reservations for \fixture{REQ-11} are released.
 \end{itemize}
