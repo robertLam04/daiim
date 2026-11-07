@@ -1227,11 +1227,11 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceProviderSlashing}:] The system shall slash a provider's stake only under the conditions specified in \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoCommit}, and \rref{FR_SlashNoReveal}, and shall burn a provider's remaining stake only under the conditions specified in \rref{FR_SlashRepeatedOffenses}, \rref{FR_ProviderForcedUnregistration}, and \rref{FR_ProviderUnregistrationStakeReturn}.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashInvalidPrediction}:] When the system rejects a provider's reveal for a commitment mismatch or a non-conforming prediction under \rref{FR_PredictionValidation}, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashInvalidPrediction}:] When the system rejects a provider's reveal for a commitment mismatch or a non-conforming prediction under \rref{FR_PredictionValidation}, the system shall slash SLASH\_FRACTION of the provider's stake for the task.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoCommit}:] When an accepted provider has not committed by the end of the commit phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoCommit}:] When an accepted provider has not committed by the end of the commit phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoReveal}:] When a committed provider has not revealed by the end of the reveal phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoReveal}:] When a committed provider has not revealed by the end of the reveal phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderMinimumStakeUnregistration}:] Whenever a provider's stake for an inference task falls below MINIMUM\_PROVIDER\_STAKE, the system shall automatically unregister the provider from that task.
 
@@ -1359,7 +1359,7 @@ Inference Request & Request ID & Identifier & Unique request identifier\\
  & Requester wallet & Address & Wallet of the requester\\
  & Input data & JSON & Data submitted for inference\\
  & Cost & Number & Offered payment\\
- & Status & Status & Current request state and phase. Phase statuses include Acceptance, Commit, Reveal, and finalization. Final states are Completed, Failed, and Cancelled. Pending Transfer means at least one reward transfer is unresolved\\
+ & Status & Status & Current request state and phase. Phase statuses include Acceptance, Commit, Reveal, and Finalization. Final states are Completed, Failed, and Cancelled. Pending Transfer means at least one reward transfer is unresolved\\
  & Unresolved transfers & List & Provider wallets and reward amounts held in escrow until transferred or burned\\
  & Provider commitments & Provider-to-hash list & Commitment digest submitted by each accepted provider\\
  & Commit times & Provider-to-timestamp list & Time each commitment was recorded\\
@@ -1475,7 +1475,7 @@ be covered in the Verification and Validation document.}
 
 \noindent \begin{itemize}
 
-\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_FinalState}:] An inference request shall reach a final state (completed, failed, cancelled) and all escrowed tokens shall be deposited, slashed, or burned before the final deadline for the request has elapsed, verified through simulation. The final deadline is the request's pending transfer deadline (\rref{FR_PendingTransferDeadline}); its latest possible time is the acceptance-period expiry plus COMMIT\_PERIOD, REVEAL\_PERIOD, and PENDING\_TRANSFER\_PERIOD.
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_FinalState}:] An inference request shall reach a final state (Completed, Failed, Cancelled) and all escrowed tokens shall be deposited, slashed, or burned before the final deadline for the request has elapsed, verified through simulation. The final deadline is the request's pending transfer deadline (\rref{FR_PendingTransferDeadline}); its latest possible time is the acceptance-period expiry plus COMMIT\_PERIOD, REVEAL\_PERIOD, and PENDING\_TRANSFER\_PERIOD.
 
 \end{itemize}
 
@@ -1546,7 +1546,7 @@ predictions and aggregated results.
 
 \subsection{Known Limitations}
 
-Commit-reveal prevents copying from visible earlier submissions, but does not prevent providers from colluding or sharing predictions off protocol. Commit-reveal does not prevent providers from colluding or sharing predictions off protocol. The system aggregates provider predictions but does not independently verify
+Commit-reveal prevents copying from visible earlier submissions, but does not prevent providers from colluding or sharing predictions off protocol. The system aggregates provider predictions but does not independently verify
 that the final result is correct. Decentralization, provider reputation, and
 staking are intended to encourage reliable predictions, but the system cannot
 guarantee that a result is accurate or suitable for its intended use.
@@ -1689,7 +1689,7 @@ distribution are all executed and / or stored on the public blockchain.
 (\rref{FR_RequestSubmission}, \rref{FR_InferenceTaskRegistration},
 \rref{FR_PredictionAggregation}, \rref{FR_UpdateProviderReputations},
 \rref{FR_DistributeRewards}, and \rref{FR_OnChainRecords}). The backend is used for encrypted input delivery, transaction handling, validating transactions, user
-notifications and several other imporant functionalities, but it is not trusted to decide any state changes to the
+notifications and several other important functionalities, but it is not trusted to decide any state changes to the
 marketplace.
 
 This boundary is necessary for decentralization, verifiability and the trustlessness of the system.
@@ -1697,7 +1697,7 @@ If a backend controlled state changes, it could refuse to aggregate a request, o
 prediction, delay a reputation update, or withhold a reward. Unlike a conventional piece of software, which
 runs on servers controlled by one organization, an on-chain program runs on a public blockchain 
 network. No single entity can stop it, change its rules, or decide who may use it. Therefore, within DAIIM, any user can 
-start an inference a request, and the program itself checks that the required conditions are
+start an inference request, and the program itself checks that the required conditions are
 met, so the outcome does not depend on any central authority.
 
 \subsection{Provider Staking}
@@ -1928,8 +1928,7 @@ The reputation snapshot used by this algorithm is the score of each included
 provider at the end of the reveal phase, before any reputation updates for the
 request. The final aggregated prediction $F$ is the weighted median used as
 the center of the reputation-weighted variance $\sigma^2$ of the included
-predictions. If
-$\sigma^2=0$, every included prediction equals $F$; in this case each provider's
+predictions. If $\sigma^2=0$, every included prediction equals $F$; in this case each provider's
 reputation change is defined to be zero to avoid division by zero.
 
 \begin{alltt}
@@ -1940,9 +1939,10 @@ Output: Updated reputations for all included providers
 
 1.  For each provider i, calculate d[i] <- abs(F - p[i]).
 2.  Calculate \ensuremath{\sigma^2} <- sum(r[i] * (p[i] - F)^2) / sum(r[i]).
-3.  If \ensuremath{\sigma^2} = 0, set delta[i] <- 0 for every provider and go to step 5.
-4.  For each provider i, calculate delta[i] <- REPUTATION\_ADJUSTMENT\_FACTOR * (1 - d[i] / \ensuremath{\sigma^2}).
-5.  For each provider i, set r\_new[i] <- min(100, max(0, r[i] + delta[i])).
+3.  If \ensuremath{\sigma^2} = 0, set delta[i] <- 0 for every provider and go to step 6.
+4.  Calculate \ensuremath{\sigma} <- sqrt(\ensuremath{\sigma^2}).
+5.  For each provider i, calculate delta[i] <- REPUTATION\_ADJUSTMENT\_FACTOR * (1 - d[i] / \ensuremath{\sigma}).
+6.  For each provider i, set r\_new[i] <- min(100, max(0, r[i] + delta[i])).
 \end{alltt}
 
 The existing reputation range requirement in \rref{FR_ReputationRange} applies
