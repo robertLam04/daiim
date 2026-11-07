@@ -1928,8 +1928,7 @@ The reputation snapshot used by this algorithm is the score of each included
 provider at the end of the reveal phase, before any reputation updates for the
 request. The final aggregated prediction $F$ is the weighted median used as
 the center of the reputation-weighted variance $\sigma^2$ of the included
-predictions. If
-$\sigma^2=0$, every included prediction equals $F$; in this case each provider's
+predictions. If $\sigma^2=0$, every included prediction equals $F$; in this case each provider's
 reputation change is defined to be zero to avoid division by zero.
 
 \begin{alltt}
@@ -1940,9 +1939,10 @@ Output: Updated reputations for all included providers
 
 1.  For each provider i, calculate d[i] <- abs(F - p[i]).
 2.  Calculate \ensuremath{\sigma^2} <- sum(r[i] * (p[i] - F)^2) / sum(r[i]).
-3.  If \ensuremath{\sigma^2} = 0, set delta[i] <- 0 for every provider and go to step 5.
-4.  For each provider i, calculate delta[i] <- REPUTATION\_ADJUSTMENT\_FACTOR * (1 - d[i] / \ensuremath{\sigma^2}).
-5.  For each provider i, set r\_new[i] <- min(100, max(0, r[i] + delta[i])).
+3.  If \ensuremath{\sigma^2} = 0, set delta[i] <- 0 for every provider and go to step 6.
+4.  Calculate \ensuremath{\sigma} <- sqrt(\ensuremath{\sigma^2}).
+5.  For each provider i, calculate delta[i] <- REPUTATION\_ADJUSTMENT\_FACTOR * (1 - d[i] / \ensuremath{\sigma}).
+6.  For each provider i, set r\_new[i] <- min(100, max(0, r[i] + delta[i])).
 \end{alltt}
 
 The existing reputation range requirement in \rref{FR_ReputationRange} applies

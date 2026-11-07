@@ -1613,16 +1613,19 @@ request runs to completion.
 \textbf{Output:}
 \begin{itemize}
 \item[1.] The new reputations of \fixture{P1} to \fixture{P5} are approximately
-40.769737, 60.934211, 51, 50.934211, and 50.473684, respectively. Their reward
-transfers are approximately 160.440129, 239.792880, 200.699029, 200.440129,
-and 198.627832 tokens, respectively, subject to at most one token base unit of
-allocation difference.
+40.102269, 60.743505, 51, 50.743505, and 48.948043, respectively.
+\fixture{P5}'s reputation decreases, so it receives no reward. The reward
+transfers to \fixture{P1} through \fixture{P4} are approximately 197.948623,
+299.835734, 251.740862, and 250.474781 tokens, respectively, subject to at
+most one token base unit of allocation difference.
 \end{itemize}
 
 \textbf{Test Case Derivation:} \rref{FR_UpdateProviderReputations} gives
-$\sigma^2=15.2$ and the post-update reputations above. Under
-\rref{FR_DistributeRewards}, each reward is $1000r_i^{new}/\sum_j r_j^{new}$.
-The pre-update scores produce different reward shares and fail this test.
+$\sigma^2=15.2$, so $\sigma=\sqrt{15.2}$, giving the post-update reputations
+above. Under \rref{FR_DistributeRewards}, only \fixture{P1} through
+\fixture{P4} are eligible, and each receives
+$1000r_i^{new}/\sum_{j\in E}r_j^{new}$, where $E$ is the set of eligible
+providers. The pre-update scores or a payment to \fixture{P5} fail this test.
 
 \textbf{How test will be performed:} Record each provider's reputation and token
 balance, run the request, and read the result, the reputation scores, and the
@@ -1653,10 +1656,11 @@ transfer deadline (end of the reveal phase plus
 
 \textbf{Output:}
 \begin{itemize}
-\item[1.] \fixture{P1}, \fixture{P4}, and \fixture{P5} receive their expected
-rewards (approximately 160.440129, 200.440129, and 198.627832 tokens,
-respectively). Approximately 239.792880 tokens for \fixture{P2} and
-200.699029 tokens for \fixture{P3} stay
+\item[1.] \fixture{P1} and \fixture{P4} receive their expected rewards
+(approximately 197.948623 and 250.474781 tokens, respectively).
+\fixture{P5} receives no reward because its reputation decreased.
+Approximately 299.835734 tokens for \fixture{P2} and
+251.740862 tokens for \fixture{P3} stay
 in the request's escrow, both transfers are recorded as unresolved, and the
 request's status is Pending Transfer. The requester can still see the final
 aggregated result.
@@ -1664,10 +1668,10 @@ aggregated result.
 their dashboards shows the held reward amount and the pending transfer
 deadline.
 \item[3.] After the retry, \fixture{P2}'s new token account holds its expected
-approximately 239.792880-token reward, and \fixture{P2}'s transfer is recorded as resolved.
+approximately 299.835734-token reward, and \fixture{P2}'s transfer is recorded as resolved.
 The request stays in
 Pending Transfer because \fixture{P3}'s transfer is still unresolved.
-\item[4.] After the deadline, \fixture{P3}'s approximately 200.699029-token reward is burned
+\item[4.] After the deadline, \fixture{P3}'s approximately 251.740862-token reward is burned
 (the total burned supply increases by that amount), \fixture{P3}'s transfer is recorded as
 forfeited, and the request's status changes to Completed.
 \end{itemize}
@@ -1716,8 +1720,8 @@ to pass.
 \begin{itemize}
 \item[1.] The final aggregated result is 10.25. \fixture{P1}'s reputation stays at
 100, and \fixture{P2}'s reputation increases.
-\item[2.] \fixture{P3}'s reputation decreases by no more than
-\fixture{MAX\_REPUTATION\_PENALTY}, and its stake stays at 100 tokens.
+\item[2.] \fixture{P3}'s reputation decreases from 50 to approximately 49,
+and its stake stays at 100 tokens.
 \item[3.] \fixture{P4}'s prediction is rejected. \fixture{P4} and \fixture{P5} each
 have their stake reduced to $100 \times (1 - \fixture{SLASH\_FRACTION})$ tokens
 and their reputation remains at 50.
@@ -1733,7 +1737,7 @@ requires slashing for a rejected prediction, and \rref{FR_SlashNoCommit}
 and \rref{FR_SlashNoReveal} require slashing for providers that accepted
 but did not commit or reveal. \rref{FR_InferenceProviderSlashing} leaves
 \fixture{P4}'s and \fixture{P5}'s reputations unchanged by those offenses.
-The valid prediction from \fixture{P3} can lower its reputation under
+The valid prediction from \fixture{P3} lowers its reputation under
 \rref{FR_UpdateProviderReputations}, but does not trigger slashing.
 \rref{FR_ReputationRange} keeps scores within $[0, 100]$, which
 \fixture{P1} checks at the top of the range.
