@@ -1227,11 +1227,11 @@ The functional requirements are grouped by the area of DAIIM they describe.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_InferenceProviderSlashing}:] The system shall slash a provider's stake only under the conditions specified in \rref{FR_SlashInvalidPrediction}, \rref{FR_SlashNoCommit}, and \rref{FR_SlashNoReveal}, and shall burn a provider's remaining stake only under the conditions specified in \rref{FR_SlashRepeatedOffenses}, \rref{FR_ProviderForcedUnregistration}, and \rref{FR_ProviderUnregistrationStakeReturn}.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashInvalidPrediction}:] When the system rejects a provider's reveal for a commitment mismatch or a non-conforming prediction under \rref{FR_PredictionValidation}, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashInvalidPrediction}:] When the system rejects a provider's reveal for a commitment mismatch or a non-conforming prediction under \rref{FR_PredictionValidation}, the system shall slash SLASH\_FRACTION of the provider's stake for the task.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoCommit}:] When an accepted provider has not committed by the end of the commit phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoCommit}:] When an accepted provider has not committed by the end of the commit phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task.
 
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoReveal}:] When a committed provider has not revealed by the end of the reveal phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task and decrease the provider's reputation score.
+\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_SlashNoReveal}:] When a committed provider has not revealed by the end of the reveal phase, the system shall slash SLASH\_FRACTION of the provider's stake for the task.
 
 \item[FR\refstepcounter{reqnum}\thereqnum \label{FR_ProviderMinimumStakeUnregistration}:] Whenever a provider's stake for an inference task falls below MINIMUM\_PROVIDER\_STAKE, the system shall automatically unregister the provider from that task.
 

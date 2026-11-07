@@ -1720,7 +1720,7 @@ to pass.
 \fixture{MAX\_REPUTATION\_PENALTY}, and its stake stays at 100 tokens.
 \item[3.] \fixture{P4}'s prediction is rejected. \fixture{P4} and \fixture{P5} each
 have their stake reduced to $100 \times (1 - \fixture{SLASH\_FRACTION})$ tokens
-and their reputation decreased.
+and their reputation remains at 50.
 \item[4.] \fixture{P1}'s and \fixture{P2}'s stakes are unchanged, and every
 reputation score is within $[0, 100]$.
 \end{itemize}
@@ -1728,10 +1728,13 @@ reputation score is within $[0, 100]$.
 \textbf{Test Case Derivation:} The result of 10.25 follows from the weighted-median
 algorithm (\rref{FR_PredictionAggregation}): \fixture{P1}, \fixture{P2}, and \fixture{P3} are included with weights
 0.5, 0.25, and 0.25, and the running total is exactly 0.5 after 10, so the
-result is the average of 10 and 10.5. \rref{FR_SlashInvalidPrediction} requires slashing and a reputation
-decrease for a rejected prediction, and \rref{FR_SlashNoCommit}, \rref{FR_SlashNoReveal} requires the same for a provider that
-accepted but did not submit. \rref{FR_InferenceProviderSlashing} allows slashing only in those two cases, so the
-valid prediction from \fixture{P3} must cost reputation and not stake.
+result is the average of 10 and 10.5. \rref{FR_SlashInvalidPrediction}
+requires slashing for a rejected prediction, and \rref{FR_SlashNoCommit}
+and \rref{FR_SlashNoReveal} require slashing for providers that accepted
+but did not commit or reveal. \rref{FR_InferenceProviderSlashing} leaves
+\fixture{P4}'s and \fixture{P5}'s reputations unchanged by those offenses.
+The valid prediction from \fixture{P3} can lower its reputation under
+\rref{FR_UpdateProviderReputations}, but does not trigger slashing.
 \rref{FR_ReputationRange} keeps scores within $[0, 100]$, which
 \fixture{P1} checks at the top of the range.
 
