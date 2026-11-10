@@ -9,7 +9,10 @@ pub struct Params {
     pub repeat_offense_window: usize,
     pub minimum_stake: u64,
     pub baseline_reputation: u64,
-    pub reputation_threshold: u64,
+    pub exit_reputation_threshold_ratio: f64,
+    pub acceptance_period: u64,
+    pub commit_period: u64,
+    pub reveal_period: u64,
 }
 
 impl Default for Params {
@@ -21,30 +24,16 @@ impl Default for Params {
             repeat_offense_window: 10,
             minimum_stake: 50,
             baseline_reputation: 10,
-            reputation_threshold: 5 //Should be relative to baseline later
+            exit_reputation_threshold_ratio: 0.5,
+            acceptance_period: 60,
+            commit_period: 60,
+            reveal_period: 60,
         }
     }
 }
 
 impl Params {
-    pub fn validate(&self) -> Result<(), &'static str> {
-        if !self.reputation_adjustment_factor.is_finite()
-            || self.reputation_adjustment_factor <= 0.0
-        {
-            return Err("reputation_adjustment_factor must be finite and > 0");
-        }
-        if !(0.0..=1.0).contains(&self.slash_fraction) {
-            return Err("slash_fraction must be between 0 and 1");
-        }
-        if self.repeat_offense_window == 0 {
-            return Err("repeat_offense_window must be >= 1");
-        }
-        if self.repeat_offense_count == 0 {
-            return Err("repeat_offense_count must be >= 1");
-        }
-        if self.repeat_offense_count > self.repeat_offense_window {
-            return Err("repeat_offense_count must be <= repeat_offense_window");
-        }
-        Ok(())
+    pub fn exit_threshold(&self) -> f64 {
+        self.baseline_reputation as f64 * self.exit_reputation_threshold_ratio
     }
 }

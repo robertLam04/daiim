@@ -1,4 +1,4 @@
-mod internal; // private: aggregate, reputation, rewards, penalties
+mod internal;
 
 pub mod error;
 pub mod instructions;
