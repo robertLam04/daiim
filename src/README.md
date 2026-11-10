@@ -9,7 +9,7 @@
 
 ### Installing Rust on macOS and Linux
 
-Install Rust and Cargo with [rustup](https://rust-lang.org/install/):
+Install Rust and Cargo with [rustup](https://rust-lang.org/tools/install/):
 
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
