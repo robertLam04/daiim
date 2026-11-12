@@ -7,6 +7,7 @@
 \usepackage{tabularx}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{xr}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks,
@@ -15,6 +16,8 @@
     linkcolor=red,
     urlcolor=blue
 }
+
+  \externaldocument{../../SRS/SRS}
 
 \input{../../Comments.text}
 \input{../../Common.text}
@@ -30,6 +33,7 @@
 \newcounter{mnum}
 \newcommand{\mthemnum}{M\themnum}
 \newcommand{\mref}[1]{M\ref{#1}}
+\newcommand{\lcref}[1]{LC\ref{#1}}
 
 \begin{document}
 
@@ -92,152 +96,159 @@ This section records information for easy reference.
 
 \section{Introduction}
 
-Decomposing a system into modules is a commonly accepted approach to developing
-software.  A module is a work assignment for a programmer or programming
-team~\citep{ParnasEtAl1984}.  We advocate a decomposition
-based on the principle of information hiding~\citep{Parnas1972a}.  This
-principle supports design for change, because the ``secrets'' that each module
-hides represent likely future changes.  Design for change is valuable in SC,
-where modifications are frequent, especially during initial development as the
-solution space is explored.  
-
-Our design follows the rules layed out by \citet{ParnasEtAl1984}, as follows:
+Decomposing a system into modules is a commonly accepted approach to developing software. A module is a work assignment for a programmer or programming team~\citep{ParnasEtAl1984}. We advocate a decomposition based on the principle of information hiding~\citep{Parnas1972a}. This principle supports design for change, because the ``secrets'' that each module hides represent likely future changes. Design for change is particularly valuable in software development, where modifications are frequent, especially during initial development as the solution space is explored.
+The system described in this document is the Decentralized AI Inference Marketplace (DAIIM), a web-based platform that allows users to submit inference requests and receive aggregated results from participating inference providers. The system uses blockchain-based programs to manage marketplace operations, including request lifecycles, provider participation, prediction aggregation, and token-based settlement. Supporting off-chain components provide services such as user interaction, transaction management, request input handling, and communication with inference providers.
+Our design follows the rules laid out by \citet{ParnasEtAl1984}, as follows:
 \begin{itemize}
-\item System details that are likely to change independently should be the
-  secrets of separate modules.
+\item System details that are likely to change independently should be the secrets of separate modules.
 \item Each data structure is implemented in only one module.
-\item Any other program that requires information stored in a module's data
-  structures must obtain it by calling access programs belonging to that module.
+\item Any other program that requires information stored in a module's data structures must obtain it by calling access programs belonging to that module.
 \end{itemize}
-
-After completing the first stage of the design, the Software Requirements
-Specification (SRS), the Module Guide (MG) is developed~\citep{ParnasEtAl1984}. The MG
-specifies the modular structure of the system and is intended to allow both
-designers and maintainers to easily identify the parts of the software.  The
-potential readers of this document are as follows:
-
+After completing the first stage of the design, the Software Requirements Specification (SRS), the Module Guide (MG) is developed~\citep{ParnasEtAl1984}. The MG specifies the modular structure of the system and is intended to allow both designers and maintainers to easily identify the parts of the software. The potential readers of this document are as follows:
 \begin{itemize}
-\item New project members: This document can be a guide for a new project member
-  to easily understand the overall structure and quickly find the
-  relevant modules they are searching for.
-\item Maintainers: The hierarchical structure of the module guide improves the
-  maintainers' understanding when they need to make changes to the system. It is
-  important for a maintainer to update the relevant sections of the document
-  after changes have been made.
-\item Designers: Once the module guide has been written, it can be used to
-  check for consistency, feasibility, and flexibility. Designers can verify the
-  system in various ways, such as consistency among modules, feasibility of the
-  decomposition, and flexibility of the design.
+\item New project members: This document provides an overview of the system's modular structure, allowing new members to understand the overall design and quickly locate the modules relevant to their work.
+\item Maintainers: The hierarchical structure of the module guide helps maintainers understand the responsibilities and relationships between modules when modifications are required. Maintainers should update the relevant sections of this document when changes are made to the system.
+\item Designers: The module guide can be used to evaluate the consistency, feasibility, and flexibility of the system's decomposition. Designers can use it to verify that module responsibilities are appropriately separated and that anticipated changes can be accommodated without requiring unnecessary modifications to other modules.
 \end{itemize}
-
-The rest of the document is organized as follows. Section
-\ref{SecChange} lists the anticipated and unlikely changes of the software
-requirements. Section \ref{SecMH} summarizes the module decomposition that
-was constructed according to the likely changes. Section \ref{SecConnection}
-specifies the connections between the software requirements and the
-modules. Section \ref{SecMD} gives a detailed description of the
-modules. Section \ref{SecTM} includes two traceability matrices. One checks
-the completeness of the design against the requirements provided in the SRS. The
-other shows the relation between anticipated changes and the modules. Section
-\ref{SecUse} describes the use relation between modules.
+The rest of the document is organized as follows. Section \ref{SecChange} lists the anticipated and unlikely changes to the system. Section \ref{SecMH} summarizes the module decomposition constructed according to the information-hiding principle. Section \ref{SecConnection} specifies the connections between the software requirements and the modules. Section \ref{SecMD} gives a detailed description of the modules. Section \ref{SecTM} includes two traceability matrices. One checks the completeness of the design against the requirements provided in the SRS. The other shows the relationship between anticipated changes and the modules. Section \ref{SecUse} describes the use relations between modules.
 
 \section{Anticipated and Unlikely Changes} \label{SecChange}
 
-This section lists possible changes to the system. According to the likeliness
-of the change, the possible changes are classified into two
-categories. Anticipated changes are listed in Section \ref{SecAchange}, and
-unlikely changes are listed in Section \ref{SecUchange}.
+This section identifies possible changes to DAIIM and classifies them according to their likelihood. Anticipated changes are listed in Section \ref{SecAchange}, while unlikely changes are listed in Section \ref{SecUchange}.
 
 \subsection{Anticipated Changes} \label{SecAchange}
 
-Anticipated changes are the source of the information that is to be hidden
-inside the modules. Ideally, changing one of the anticipated changes will only
-require changing the one module that hides the associated decision. The approach
-adapted here is called design for
-change.
+Anticipated changes are design or implementation decisions that may reasonably need to be modified as the system develops. These decisions should be hidden within the modules responsible for them so that a change can be made with minimal impact on the rest of the system.
 
 \begin{description}
-\item[\refstepcounter{acnum} \actheacnum \label{acHardware}:] The specific
-  hardware on which the software is running.
-\item[\refstepcounter{acnum} \actheacnum \label{acInput}:] The format of the
-  initial input data.
-\item ...
-\end{description}
 
-\wss{Anticipated changes relate to changes that would be made in requirements,
-design or implementation choices.  They are not related to changes that are made
-at run-time, like the values of parameters.}
+\item[\refstepcounter{acnum} \actheacnum \label{acInferenceModels}:] The types of AI inference tasks supported by DAIIM. The initial system focuses on regression tasks with numerical outputs, but support for additional inference types may be introduced in the future. The inference processing and aggregation components may need to be adapted to accommodate these additional types.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acAggregation}:] The algorithms used to aggregate provider predictions, update provider reputations, and calculate rewards. These mechanisms may be swapped out as the system is evaluated to improve prediction reliability, incentive fairness, and resistance to inaccurate or malicious providers.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acUserInterface}:] The layout and presentation of the web-based user interface. The interface may change based on user feedback and usability testing, particularly regarding task creation, provider information, transaction status, and the presentation of aggregated results and prediction quality.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acInfrastructure}:] The implementation of off-chain supporting services and their communication mechanisms. The backend, database, and provider SDK may need to be updated or replaced as the system evolves to improve scalability, maintainability, or compatibility with external services.
+
+
+\end{description}
 
 \subsection{Unlikely Changes} \label{SecUchange}
 
-The module design should be as general as possible. However, a general system is
-more complex. Sometimes this complexity is not necessary. Fixing some design
-decisions at the system architecture stage can simplify the software design. If
-these decision should later need to be changed, then many parts of the design
-will potentially need to be modified. Hence, it is not intended that these
-decisions will be changed.
+Although the system should accommodate anticipated changes, certain fundamental design decisions are not expected to change during the scope of the project. These decisions establish the core architecture and purpose of DAIIM, and changing them would likely require modifications across multiple parts of the system.
 
 \begin{description}
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Input/Output devices
-  (Input: File and/or Keyboard, Output: File, Memory, and/or Screen).
-\item ...
+
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucCorePurpose}:] The fundamental purpose of DAIIM as a decentralized marketplace for requesting AI inferences from multiple independent providers and combining their predictions into an aggregated result. The system is not intended to become a centralized inference service controlled by a single provider.
+
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucBlockchainArchitecture}:] The use of a public blockchain as an essential part of the system architecture. Marketplace operations such as request management, provider registration, prediction aggregation, reputation updates, and token settlement will continue to rely on on-chain execution and records rather than being controlled entirely by the off-chain backend.
+
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucWebPlatform}:] The system's intended form as a web-based application. Task requesters and inference providers will continue to interact with DAIIM through a web interface or its provider-facing SDK, rather than requiring DAIIM to become a standalone desktop or mobile application.
+
 \end{description}
+
 
 \section{Module Hierarchy} \label{SecMH}
 
-This section provides an overview of the module design. Modules are summarized
-in a hierarchy decomposed by secrets in Table \ref{TblMH}. The modules listed
-below, which are leaves in the hierarchy tree, are the modules that will
-actually be implemented.
+This section provides an overview of the module design.
+Modules are summarized in a hierarchy decomposed by secrets in Table \ref{TblMH}.
+The modules listed below, which are leaves in the hierarchy tree, are the modules that will actually be implemented.
 
 \begin{description}
-\item [\refstepcounter{mnum} \mthemnum \label{mHH}:] Hardware-Hiding Module
-\item ...
-\end{description}
 
+\item [\refstepcounter{mnum} \mthemnum \label{mWallet}:] Wallet Manager
+
+\item [\refstepcounter{mnum} \mthemnum \label{mChain}:] Chain Observer
+
+\item [\refstepcounter{mnum} \mthemnum \label{mInput}:] Request Input Manager
+
+\item [\refstepcounter{mnum} \mthemnum \label{mUI}:] User Interface
+
+\item [\refstepcounter{mnum} \mthemnum \label{mUserInfo}:] User Information
+
+\item [\refstepcounter{mnum} \mthemnum \label{mProviderSetup}:] Provider Setup
+
+\item [\refstepcounter{mnum} \mthemnum \label{mListener}:] Request Listener
+
+\item [\refstepcounter{mnum} \mthemnum \label{mParticipation}:] Participation Client
+
+\item [\refstepcounter{mnum} \mthemnum \label{mRegistry}:] Provider Registry
+
+\item [\refstepcounter{mnum} \mthemnum \label{mLifecycle}:] Request Lifecycle
+
+\item [\refstepcounter{mnum} \mthemnum \label{mSettlement}:] Settlement
+
+\item [\refstepcounter{mnum} \mthemnum \label{mToken}:] Token Manager
+
+\item [\refstepcounter{mnum} \mthemnum \label{mTransaction}:] Transaction Manager
+
+\end{description}
 
 \begin{table}[h!]
 \centering
+\caption{Module Hierarchy}
+\label{TblMH}
 \begin{tabular}{p{0.3\textwidth} p{0.6\textwidth}}
 \toprule
 \textbf{Level 1} & \textbf{Level 2}\\
 \midrule
 
-{Hardware-Hiding Module} & ~ \\
+\multirow{5}{0.3\textwidth}{Behaviour-Hiding Module}
+& \mref{mWallet}: Wallet Manager \\
+& \mref{mChain}: Chain Observer \\
+& \mref{mInput}: Request Input Manager \\
+& \mref{mUI}: User Interface \\
+& \mref{mUserInfo}: User Information \\
+& \mref{mProviderSetup}: Provider Setup \\
+& \mref{mListener}: Request Listener \\
+& \mref{mParticipation}: Participation Client \\
 \midrule
 
-\multirow{7}{0.3\textwidth}{Behaviour-Hiding Module} & ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\ 
-& ?\\
-\midrule
+\multirow{5}{0.3\textwidth}{Software Decision Module}
+& \mref{mRegistry}: Provider Registry \\
+& \mref{mLifecycle}: Request Lifecycle \\
+& \mref{mSettlement}: Settlement \\
+& \mref{mToken}: Token Manager \\
+& \mref{mTransaction}: Transaction Manager \\
 
-\multirow{3}{0.3\textwidth}{Software Decision Module} & {?}\\
-& ?\\
-& ?\\
 \bottomrule
-
 \end{tabular}
-\caption{Module Hierarchy}
-\label{TblMH}
 \end{table}
 
 \section{Connection Between Requirements and Design} \label{SecConnection}
 
-The design of the system is intended to satisfy the requirements developed in
-the SRS. In this stage, the system is decomposed into modules. The connection
-between requirements and modules is listed in Table~\ref{TblRT}.
+The design of DAIIM is intended to satisfy the functional requirements developed in the SRS. The following key design decisions were made to address specific requirements:
 
-\wss{The intention of this section is to document decisions that are made
-  ``between'' the requirements and the design.  To satisfy some requirements,
-  design decisions need to be made.  Rather than make these decisions implicit,
-  they are explicitly recorded here.  For instance, if a program has security
-  requirements, a specific design decision may be made to satisfy those
-  requirements with a password.}
+\begin{itemize}
+
+    \item \textbf{Wallet Manager (\mref{mWallet}):} To satisfy FR\ref{FR_WalletAuthentication} and FR\ref{FR_TransactionAuthorization}, wallet authentication and transaction signing are handled through a dedicated wallet module. This module verifies ownership of wallet addresses and provides the interface for users to authorize transactions without exposing their private keys to DAIIM.
+
+    \item \textbf{Chain Observer (\mref{mChain}):} To satisfy FR\ref{FR_OnChainRecords}, FR\ref{FR_TransactionStatus}, and FR\ref{FR_TransactionVerification}, a dedicated module monitors blockchain activity and retrieves transaction and account information. This separates reading and interpreting blockchain data from the modules responsible for initiating transactions and managing marketplace operations.
+
+    \item \textbf{Request Input Manager (\mref{mInput}):} To satisfy FR\ref{FR_RequestInputDistribution}, FR\ref{FR_InputAccessRestriction}, FR\ref{FR_InputNotOnChain}, and FR\ref{FR_InputDeletion}, a dedicated module manages the secure storage, encryption, access, and deletion of inference request inputs. Input data is kept off-chain and made available only to the requester and providers that accepted the corresponding request.
+
+    \item \textbf{User Interface (\mref{mUI}):} To satisfy FR\ref{FR_PublicAccess}, FR\ref{FR_TaskBrowsing}, FR\ref{FR_InferenceTaskCreation}, and FR\ref{FR_FinalResultDelivery}, the web interface provides users with access to marketplace information, task creation, inference requests, and aggregated results. It also presents transaction information and marketplace activity in a way that does not require users to interact directly with the blockchain.
+
+    \item \textbf{User Information (\mref{mUserInfo}):} To support FR\ref{FR_WalletAuthentication} and FR\ref{FR_ProviderDashboard}, a dedicated module manages user profile information associated with verified wallet addresses. This allows user-specific information, such as provider activity and preferences, to be maintained separately from the underlying blockchain records.
+
+    \item \textbf{Provider Setup (\mref{mProviderSetup}):} To support FR\ref{FR_InferenceTaskRegistrationStaking} and FR\ref{FR_ProviderDashboard}, a dedicated module handles the provider's initial connection to the blockchain and retrieves the provider's registration information for available tasks. This separates provider initialization and configuration from the ongoing handling of inference requests.
+
+    \item \textbf{Request Listener (\mref{mListener}):} To satisfy FR\ref{FR_RequestBroadcast} and FR\ref{FR_AcceptancePeriodStart}, a dedicated module monitors inference requests that are relevant to a provider's registered tasks. It identifies new requests and communicates their details, payment information, and applicable deadlines to the provider.
+
+    \item \textbf{Participation Client (\mref{mParticipation}):} To satisfy FR\ref{FR_RequestInputDistribution}, FR\ref{FR_PredictionSubmission}, FR\ref{FR_OnePredictionPerProvider}, and FR\ref{FR_PredictionValidation}, a dedicated client module handles the provider's participation in inference requests. It retrieves authorized input data, generates the prediction commitment using a cryptographically secure salt, and submits commitments and reveals directly to the on-chain program.
+
+    \item \textbf{Provider Registry (\mref{mRegistry}):} To satisfy FR\ref{FR_InferenceTaskRegistrationStaking}, FR\ref{FR_ProviderWillingUnregistration}, and FR\ref{FR_ProviderMinimumStakeUnregistration}, a dedicated module manages provider registration for individual inference tasks. It maintains provider eligibility, registration status, and task-specific staking requirements so that only eligible providers can participate in requests.
+
+    \item \textbf{Request Lifecycle (\mref{mLifecycle}):} To satisfy FR\ref{FR_RequestSubmission} through FR\ref{FR_MinimumPredictions}, a dedicated module manages the state and progression of inference requests. The request lifecycle is implemented as a state machine that controls the acceptance, commit, and reveal phases, enforces their deadlines, validates provider participation, and determines whether a request can proceed or must be cancelled.
+
+    \item \textbf{Settlement (\mref{mSettlement}):} To satisfy FR\ref{FR_PredictionAggregation}, FR\ref{FR_UpdateProviderReputations}, FR\ref{FR_ReputationRange}, and FR\ref{FR_DistributeRewards}, a dedicated module handles the finalization of inference requests. It calculates the aggregated result using the reputation-weighted median algorithm, updates provider reputations using the confidence-based reputation algorithm, and determines the distribution of rewards based on the resulting provider reputations.
+
+    \item \textbf{Token Manager (\mref{mToken}):} To satisfy FR\ref{FR_RequestPayment}, FR\ref{FR_StakeReservation}, FR\ref{FR_StakeReservationRelease}, and FR\ref{FR_InferenceProviderSlashing}, a dedicated module manages token-related operations. These include transferring payments into escrow, managing provider stakes, releasing reserved funds, distributing tokens, and applying penalties such as slashing or burning when required.
+
+    \item \textbf{Transaction Manager (\mref{mTransaction}):} To satisfy FR\ref{FR_TransactionPreview}, FR\ref{FR_TransactionStatus}, and FR\ref{FR_TransactionVerification}, a dedicated module coordinates the preparation and submission of user-authorized transactions. It validates transaction parameters, checks available balances, simulates transactions before submission, and tracks their status to prevent duplicate submissions or incorrect reporting of transaction outcomes.
+
+\end{itemize}
+
 
 \section{Module Decomposition} \label{SecMD}
 
@@ -309,79 +320,224 @@ to be implemented.
 
 \section{Traceability Matrix} \label{SecTM}
 
-This section shows two traceability matrices: between the modules and the
-requirements and between the modules and the anticipated changes.
+This section shows the traceability between the system modules and the
+requirements, as well as between the modules and the likely and unlikely
+changes anticipated for DAIIM. These matrices demonstrate which modules
+are responsible for satisfying the requirements and which modules may
+need to be modified if the system evolves.
 
-% the table should use mref, the requirements should be named, use something
-% like fref
 \begin{table}[H]
 \centering
-\begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
-\toprule
-\textbf{Req.} & \textbf{Modules}\\
-\midrule
-R1 & \mref{mHH}, \mref{mInput}, \mref{mParams}, \mref{mControl}\\
-R2 & \mref{mInput}, \mref{mParams}\\
-R3 & \mref{mVerify}\\
-R4 & \mref{mOutput}, \mref{mControl}\\
-R5 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R6 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R7 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R8 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R9 & \mref{mVerifyOut}\\
-R10 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}\\
-R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
-\bottomrule
-\end{tabular}
 \caption{Trace Between Requirements and Modules}
 \label{TblRT}
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+\textbf{Requirement(s)} & \textbf{Modules}\\
+\hline
+
+FR\ref{FR_WalletAuthentication}, FR\ref{FR_EmbeddedWalletCreation},
+FR\ref{FR_TransactionAuthorization}
+& \mref{mWallet}, \mref{mUserInfo}, \mref{mUI}, \mref{mTransaction} \\
+\hline
+
+FR\ref{FR_PublicAccess}, FR\ref{FR_TaskBrowsing}
+& \mref{mUI}, \mref{mRegistry}, \mref{mUserInfo} \\
+\hline
+
+FR\ref{FR_InferenceTaskCreation}--FR\ref{FR_TaskAcceptancePeriod}
+& \mref{mUI}, \mref{mLifecycle}, \mref{mTransaction}, \mref{mToken} \\
+\hline
+
+FR\ref{FR_InferenceTaskRegistration},
+FR\ref{FR_InferenceTaskRegistrationStaking},
+FR\ref{FR_ProviderWillingUnregistration},
+FR\ref{FR_ProviderMinimumStakeUnregistration}
+& \mref{mRegistry}, \mref{mToken}, \mref{mTransaction},
+\mref{mWallet}, \mref{mProviderSetup} \\
+\hline
+
+FR\ref{FR_ProviderDashboard}
+& \mref{mUI}, \mref{mUserInfo}, \mref{mRegistry},
+\mref{mChain} \\
+\hline
+
+FR\ref{FR_RequestSubmission}, FR\ref{FR_RequestValidation},
+FR\ref{FR_RequestPayment}, FR\ref{FR_RequestBroadcast}
+& \mref{mUI}, \mref{mLifecycle}, \mref{mInput},
+\mref{mToken}, \mref{mTransaction}, \mref{mListener} \\
+\hline
+
+FR\ref{FR_AcceptancePeriodStart}--FR\ref{FR_MaximumAcceptance},
+FR\ref{FR_MinimumAcceptance}
+& \mref{mLifecycle}, \mref{mRegistry}, \mref{mListener},
+\mref{mToken} \\
+\hline
+
+FR\ref{FR_RequestInputDistribution},
+FR\ref{FR_InputAccessRestriction},
+FR\ref{FR_InputNotOnChain},
+FR\ref{FR_InputDeletion}
+& \mref{mInput}, \mref{mParticipation}, \mref{mLifecycle} \\
+\hline
+
+FR\ref{FR_PredictionPhaseStart},
+FR\ref{FR_ProtocolCommitPeriod}--FR\ref{FR_ProtocolRevealPeriod},
+FR\ref{FR_PredictionSubmission}--FR\ref{FR_PredictionValidation}
+& \mref{mLifecycle}, \mref{mParticipation},
+\mref{mInput}, \mref{mListener} \\
+\hline
+
+FR\ref{FR_PredictionPhaseEnd},
+FR\ref{FR_MinimumPredictions},
+FR\ref{FR_StakeReservation}
+& \mref{mLifecycle}, \mref{mRegistry}, \mref{mToken},
+\mref{mParticipation} \\
+\hline
+
+FR\ref{FR_PredictionAggregation},
+FR\ref{FR_FinalResultDelivery},
+FR\ref{FR_ResultSpread},
+FR\ref{FR_RequestHistory}
+& \mref{mSettlement}, \mref{mLifecycle}, \mref{mUI},
+\mref{mChain} \\
+\hline
+
+FR\ref{FR_UpdateProviderReputations},
+FR\ref{FR_ReputationRange},
+FR\ref{FR_DistributeRewards}
+& \mref{mSettlement}, \mref{mRegistry}, \mref{mToken} \\
+\hline
+
+FR\ref{FR_RewardTransferFailure}--FR\ref{FR_RequestCompletion},
+FR\ref{FR_CancellationCompensation}
+& \mref{mSettlement}, \mref{mLifecycle}, \mref{mToken} \\
+\hline
+
+FR\ref{FR_InferenceProviderSlashing}--FR\ref{FR_ProviderForcedUnregistration}
+& \mref{mRegistry}, \mref{mSettlement}, \mref{mToken},
+\mref{mLifecycle} \\
+\hline
+
+FR\ref{FR_TransactionPreview},
+FR\ref{FR_TransactionStatus},
+FR\ref{FR_TransactionVerification},
+FR\ref{FR_OnChainRecords}
+& \mref{mTransaction}, \mref{mWallet}, \mref{mChain},
+\mref{mUI}, \mref{mToken} \\
+\hline
+
+SA\ref{SA_NoDuplicateSubmission}--SA\ref{SA_FailureRetry},
+SA\ref{SA_TransactionSimulation},
+SA\ref{SA_ChargeEqualsAuthorized},
+SA\ref{SA_RewardValidation}
+& \mref{mTransaction}, \mref{mWallet}, \mref{mToken},
+\mref{mUI}, \mref{mSettlement} \\
+\hline
+
+NFR\ref{NFR_DataEncryption},
+NFR\ref{NFR_InputDataAccess}
+& \mref{mInput}, \mref{mParticipation} \\
+\hline
+
+NFR\ref{NFR_PredictionsHidden},
+NFR\ref{NFR_CommitSalt}
+& \mref{mParticipation}, \mref{mLifecycle} \\
+\hline
+
+NFR\ref{NFR_ReputationWeightedAggregate},
+NFR\ref{NFR_AggregationArithmeticErrors}
+& \mref{mSettlement}, \mref{mToken} \\
+\hline
+
+NFR\ref{NFR_FinalState},
+NFR\ref{NFR_ConcurrentRequests}
+& \mref{mLifecycle}, \mref{mSettlement}, \mref{mRegistry},
+\mref{mToken} \\
+\hline
+
+NFR\ref{NFR_ProgressStatus},
+NFR\ref{NFR_TransactionConfirmation},
+NFR\ref{NFR_ErrorVisibility}
+& \mref{mUI}, \mref{mTransaction}, \mref{mChain} \\
+\hline
+
+NFR\ref{NFR_TwoClickAccess},
+NFR\ref{NFR_PublicPagesPrivacy},
+NFR\ref{NFR_Learnability},
+NFR\ref{NFR_BrowserSupport}
+& \mref{mUI}, \mref{mWallet}, \mref{mUserInfo} \\
+\hline
+
+\end{tabularx}
 \end{table}
+
 
 \begin{table}[H]
 \centering
-\begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
-\toprule
-\textbf{AC} & \textbf{Modules}\\
-\midrule
-\acref{acHardware} & \mref{mHH}\\
-\acref{acInput} & \mref{mInput}\\
-\acref{acParams} & \mref{mParams}\\
-\acref{acVerify} & \mref{mVerify}\\
-\acref{acOutput} & \mref{mOutput}\\
-\acref{acVerifyOut} & \mref{mVerifyOut}\\
-\acref{acODEs} & \mref{mODEs}\\
-\acref{acEnergy} & \mref{mEnergy}\\
-\acref{acControl} & \mref{mControl}\\
-\acref{acSeqDS} & \mref{mSeqDS}\\
-\acref{acSolver} & \mref{mSolver}\\
-\acref{acPlot} & \mref{mPlot}\\
-\bottomrule
-\end{tabular}
-\caption{Trace Between Anticipated Changes and Modules}
-\label{TblACT}
+\caption{Trace Between Likely Changes and Modules}
+\label{TblLCT}
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+\textbf{Likely Change (LC)} & \textbf{Modules}\\
+\hline
+
+\lcref{LC_inferenceModels}
+& \mref{mProviderSetup}, \mref{mParticipation},
+\mref{mLifecycle}, \mref{mSettlement} \\
+\hline
+
+\lcref{LC_providerParticipation}
+& \mref{mRegistry}, \mref{mLifecycle}, \mref{mSettlement},
+\mref{mToken}, \mref{mListener} \\
+\hline
+
+\lcref{LC_aggregation}
+& \mref{mSettlement}, \mref{mRegistry}, \mref{mToken} \\
+\hline
+
+\lcref{LC_randomInvitations}
+& \mref{mListener}, \mref{mRegistry}, \mref{mLifecycle} \\
+\hline
+
+\lcref{LC_userRequirements}
+& \mref{mUI}, \mref{mUserInfo} \\
+\hline
+
+\end{tabularx}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\caption{Trace Between Unlikely Changes and Modules}
+\label{TblUCT}
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+\textbf{Unlikely Change (LC)} & \textbf{Modules}\\
+\hline
+
+\lcref{LC_corePurpose}
+& \mref{mUI}, \mref{mRegistry}, \mref{mLifecycle},
+\mref{mSettlement}, \mref{mParticipation} \\
+\hline
+
+\lcref{LC_softwarePlatform}
+& \mref{mUI}, \mref{mWallet}, \mref{mProviderSetup} \\
+\hline
+
+\end{tabularx}
 \end{table}
 
 \section{Use Hierarchy Between Modules} \label{SecUse}
 
-In this section, the uses hierarchy between modules is
-provided. \citet{Parnas1978} said of two programs A and B that A {\em uses} B if
-correct execution of B may be necessary for A to complete the task described in
-its specification. That is, A {\em uses} B if there exist situations in which
-the correct functioning of A depends upon the availability of a correct
-implementation of B.  Figure \ref{FigUH} illustrates the use relation between
-the modules. It can be seen that the graph is a directed acyclic graph
-(DAG). Each level of the hierarchy offers a testable and usable subset of the
-system, and modules in the higher level of the hierarchy are essentially simpler
-because they use modules from the lower levels.
-
-\wss{The uses relation is not a data flow diagram.  In the code there will often
-be an import statement in module A when it directly uses module B.  Module B
-provides the services that module A needs.  The code for module A needs to be
-able to see these services (hence the import statement).  Since the uses
-relation is transitive, there is a use relation without an import, but the
-arrows in the diagram typically correspond to the presence of import statement.}
-
-\wss{If module A uses module B, the arrow is directed from A to B.}
+In this section, the uses hierarchy between modules is provided.
+A module A uses a module B if the correct execution of A depends upon the availability of a correct implementation of B. The arrows in the uses hierarchy are directed from the module that requires a service to the module that provides that service.
+For DAIIM, the uses hierarchy is organized around the User Interface, the provider-side SDK modules, the supporting off-chain modules, and the core on-chain modules.
+The User Interface (\mref{mUI}) depends on the Wallet Manager (\mref{mWallet}), User Information (\mref{mUserInfo}), Transaction Manager (\mref{mTransaction}), and Chain Observer (\mref{mChain}) to support wallet authentication, user information retrieval, transaction submission, and the display of blockchain state.
+On the provider side, the Provider Setup module (\mref{mProviderSetup}) uses the Wallet Manager (\mref{mWallet}), User Information (\mref{mUserInfo}), and Chain Observer (\mref{mChain}) to establish provider identity and retrieve registration information. The Request Listener (\mref{mListener}) uses the Chain Observer (\mref{mChain}) to monitor relevant requests and blockchain events. The Participation Client (\mref{mParticipation}) uses the Provider Setup module (\mref{mProviderSetup}), Request Input Manager (\mref{mInput}), and Transaction Manager (\mref{mTransaction}) to retrieve authorized request inputs and participate in inference tasks.
+The Transaction Manager (\mref{mTransaction}) uses the Wallet Manager (\mref{mWallet}) and Chain Observer (\mref{mChain}) to prepare, authorize, and verify transactions.
+The core on-chain modules provide the functionality required to operate the marketplace. The Request Lifecycle module (\mref{mLifecycle}) uses the Provider Registry (\mref{mRegistry}) and Token Manager (\mref{mToken}) to manage provider eligibility and request-related token operations. The Settlement module (\mref{mSettlement}) uses the Request Lifecycle module (\mref{mLifecycle}), Provider Registry (\mref{mRegistry}), and Token Manager (\mref{mToken}) to calculate final results, update provider reputations, and distribute rewards or penalties.
+Figure \ref{FigUH} illustrates the uses relationships between the modules. The resulting hierarchy is a directed acyclic graph (DAG), with higher-level modules depending on lower-level modules that provide the services they require.
 
 \begin{figure}[H]
 \centering
