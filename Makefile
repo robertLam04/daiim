@@ -46,6 +46,7 @@ all: $(patsubst %.tex, %.pdf, $(wildcard **/*.tex))
 # compiled, including on a clean CI runner.
 docs/VnVPlan/VnVPlan.pdf: docs/SRS/SRS.pdf
 docs/HazardAnalysis/HazardAnalysis.pdf: docs/SRS/SRS.pdf
+docs/Design/SoftArchitecture/MG.pdf: docs/SRS/SRS.pdf
 
 # Clean generated files
 clean:

@@ -50,8 +50,7 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+November 13, 2026 & 0.1 & Updated the system overview, likely and unlikely changes, and module decomposition sections\\
 \bottomrule
 \end{tabularx}
 
@@ -97,7 +96,7 @@ This section records information for easy reference.
 \section{Introduction}
 
 Decomposing a system into modules is a commonly accepted approach to developing software. A module is a work assignment for a programmer or programming team~\citep{ParnasEtAl1984}. We advocate a decomposition based on the principle of information hiding~\citep{Parnas1972a}. This principle supports design for change, because the ``secrets'' that each module hides represent likely future changes. Design for change is particularly valuable in software development, where modifications are frequent, especially during initial development as the solution space is explored.
-The system described in this document is the Decentralized AI Inference Marketplace (DAIIM), a web-based platform that allows users to submit inference requests and receive aggregated results from participating inference providers. The system uses blockchain-based programs to manage marketplace operations, including request lifecycles, provider participation, prediction aggregation, and token-based settlement. Supporting off-chain components provide services such as user interaction, transaction management, request input handling, and communication with inference providers.
+The system described in this document is the Decentralized Artificial Intelligence Inference Marketplace (DAIIM), a web-based platform where users define inference tasks, submit requests, and receive results aggregated from independent providers. An on-chain program records tasks and provider registrations, governs each request’s acceptance and commit–reveal phases, and applies the rules for aggregation, stakes, penalties, reputation, and rewards. Off-chain components support user and provider interactions by managing profiles and wallets, preparing transactions, storing and protecting request inputs, and reading on-chain state.
 Our design follows the rules laid out by \citet{ParnasEtAl1984}, as follows:
 \begin{itemize}
 \item System details that are likely to change independently should be the secrets of separate modules.
@@ -114,22 +113,50 @@ The rest of the document is organized as follows. Section \ref{SecChange} lists 
 
 \section{Anticipated and Unlikely Changes} \label{SecChange}
 
-This section identifies possible changes to DAIIM and classifies them according to their likelihood. Anticipated changes are listed in Section \ref{SecAchange}, while unlikely changes are listed in Section \ref{SecUchange}.
+This section identifies design decisions that may change as DAIIM develops and assumptions that are expected to remain the same. Anticipated changes are listed in Section \ref{SecAchange}, and unlikely changes are listed in Section \ref{SecUchange}.
 
 \subsection{Anticipated Changes} \label{SecAchange}
 
-Anticipated changes are design or implementation decisions that may reasonably need to be modified as the system develops. These decisions should be hidden within the modules responsible for them so that a change can be made with minimal impact on the rest of the system.
+Anticipated changes are changes to requirements, design decisions, or implementation choices that the modules are intended to accommodate. Each decision should be hidden by the module responsible for it so that changing the decision has limited impact on other modules. Changes to values during operation, such as a provider joining a task or a request entering a new phase, are not anticipated changes in this sense.
 
 \begin{description}
+\item[\refstepcounter{acnum} \actheacnum \label{acProviderRegistry}:] The on-chain representation and validity rules for task definitions and the token-curated provider registry, including per-task reputation and how providers qualify for and remain listed under each task, may change.
 
-\item[\refstepcounter{acnum} \actheacnum \label{acInferenceModels}:] The types of AI inference tasks supported by DAIIM. The initial system focuses on regression tasks with numerical outputs, but support for additional inference types may be introduced in the future. The inference processing and aggregation components may need to be adapted to accommodate these additional types.
+\item[\refstepcounter{acnum} \actheacnum \label{acActionPreflight}:] The preliminary checks and error feedback for proposed marketplace actions, such as creating tasks or requests and registering providers, may change.
 
-\item[\refstepcounter{acnum} \actheacnum \label{acAggregation}:] The algorithms used to aggregate provider predictions, update provider reputations, and calculate rewards. These mechanisms may be swapped out as the system is evaluated to improve prediction reliability, incentive fairness, and resistance to inaccurate or malicious providers.
+\item[\refstepcounter{acnum} \actheacnum \label{acRequestLifecycle}:] The lifecycle and control flow of an inference request, including the phases, deadlines, commitment-reveal rules, and cancellation conditions may be revised.
 
-\item[\refstepcounter{acnum} \actheacnum \label{acUserInterface}:] The layout and presentation of the web-based user interface. The interface may change based on user feedback and usability testing, particularly regarding task creation, provider information, transaction status, and the presentation of aggregated results and prediction quality.
+\item[\refstepcounter{acnum} \actheacnum \label{acAggregation}:] The algorithm used to combine provider predictions may change.
 
-\item[\refstepcounter{acnum} \actheacnum \label{acInfrastructure}:] The implementation of off-chain supporting services and their communication mechanisms. The backend, database, and provider SDK may need to be updated or replaced as the system evolves to improve scalability, maintainability, or compatibility with external services.
+\item[\refstepcounter{acnum} \actheacnum \label{acRewards}:] The decision making process for reward eligibility and the calculation of each eligible provider's share of rewards for an inference request may change.
 
+\item[\refstepcounter{acnum} \actheacnum \label{acPenalties}:] The conditions and amounts for slashing provider stake may change as the system's incentives are evaluated.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acReputation}:] The formula for deciding how much a provider's reputation should change after an inference request may be updated.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acTokenOperations}:] The mechanisms used for token transfers, minting, and burning may change.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acWalletIntegration}:] Supported cryptographic wallet implementations and the methods used to connect wallets, verify ownership, and request signatures may change.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acUserInformation}:] The storage and retrieval of user profiles including verified wallet addresses, preferences, and user history may change.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acChainObservation}:] The mechanism for reading on-chain blockchain data and detecting their changes may change.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acTransactions}:] The way blockchain transactions are constructed, simulated, checked for sufficient funds, sent, and confirmed may change.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acRequestInputs}:] The storage, encryption, access control, and deletion mechanisms for off-chain request input data may change.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acRequestListening}:] The method by which provider clients parse the blockchain data for relevant information such as new inference requests may change.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acProviderSetup}:] The procedure for establishing a provider client's blockchain connection and access to the provider's wallet may change.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acParticipation}:] The way provider-owned models are invoked and their predictions are prepared and submitted to the on-chain program may change.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acModel}:] The implementation of a provider-owned inference model may change while it continues to accept the required task input and produce a conforming prediction.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acRequesterInterface}:] The user interface through which requesters create tasks, submit inference requests, and inspect request status, results, and history may change.
+
+\item[\refstepcounter{acnum} \actheacnum \label{acProviderInterface}:] The user interface through which providers register for tasks, inspect their registrations, reputation, stakes, and rewards may change.
 
 \end{description}
 
@@ -139,85 +166,105 @@ Although the system should accommodate anticipated changes, certain fundamental 
 
 \begin{description}
 
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucCorePurpose}:] The fundamental purpose of DAIIM as a decentralized marketplace for requesting AI inferences from multiple independent providers and combining their predictions into an aggregated result. The system is not intended to become a centralized inference service controlled by a single provider.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucBlockchainArchitecture}:] DAIIM uses Solana as the underlying public blockchain. It is used to execute marketplace rules and maintain authoritative records of the protocol's state. Replacing this with a different blockchain network or an off-chain authority would require a very different protocol architecture.
 
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucBlockchainArchitecture}:] The use of a public blockchain as an essential part of the system architecture. Marketplace operations such as request management, provider registration, prediction aggregation, reputation updates, and token settlement will continue to rely on on-chain execution and records rather than being controlled entirely by the off-chain backend.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucTaskBasedMarketplace}:] Inference requests refer to defined tasks, and providers participate on a per-task basis. Removing tasks or making provider participation independent of tasks would change the registry, request protocol, and user workflows.
 
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucWebPlatform}:] The system's intended form as a web-based application. Task requesters and inference providers will continue to interact with DAIIM through a web interface or its provider-facing SDK, rather than requiring DAIIM to become a standalone desktop or mobile application.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucMultipleProviders}:] Each successful inference result is based on predictions from multiple independent providers. A single-provider service would change the purpose of aggregation, reputation, and provider incentives.
+
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucTokenEconomy}:] Requester payments, provider stakes, penalties, and rewards remain token-based. Removing tokens would change the marketplace's participation and settlement mechanisms.
 
 \end{description}
 
 
 \section{Module Hierarchy} \label{SecMH}
 
-This section provides an overview of the module design.
-Modules are summarized in a hierarchy decomposed by secrets in Table \ref{TblMH}.
-The modules listed below, which are leaves in the hierarchy tree, are the modules that will actually be implemented.
+This section provides an overview of the module design. Table \ref{TblMH}
+groups the leaf modules by the decisions they hide. The Model is implemented
+by inference providers rather than by DAIIM.
 
 \begin{description}
 
-\item [\refstepcounter{mnum} \mthemnum \label{mWallet}:] Wallet Manager
+\item [\refstepcounter{mnum} \mthemnum \label{mRegistry}:] Provider Registry
 
-\item [\refstepcounter{mnum} \mthemnum \label{mChain}:] Chain Observer
+\item [\refstepcounter{mnum} \mthemnum \label{mActionPreflight}:] Marketplace Action Preflight
+
+\item [\refstepcounter{mnum} \mthemnum \label{mLifecycle}:] Request Lifecycle
+
+\item [\refstepcounter{mnum} \mthemnum \label{mAggregator}:] Prediction Aggregator
+
+\item [\refstepcounter{mnum} \mthemnum \label{mRewards}:] Rewards Calculator
+
+\item [\refstepcounter{mnum} \mthemnum \label{mPenalty}:] Penalty Enforcer
+
+\item [\refstepcounter{mnum} \mthemnum \label{mReputation}:] Reputation Handler
 
 \item [\refstepcounter{mnum} \mthemnum \label{mInput}:] Request Input Manager
 
-\item [\refstepcounter{mnum} \mthemnum \label{mUI}:] User Interface
+\item [\refstepcounter{mnum} \mthemnum \label{mRequesterUI}:] Requester Interface
 
-\item [\refstepcounter{mnum} \mthemnum \label{mUserInfo}:] User Information
-
-\item [\refstepcounter{mnum} \mthemnum \label{mProviderSetup}:] Provider Setup
+\item [\refstepcounter{mnum} \mthemnum \label{mProviderUI}:] Provider Interface
 
 \item [\refstepcounter{mnum} \mthemnum \label{mListener}:] Request Listener
 
 \item [\refstepcounter{mnum} \mthemnum \label{mParticipation}:] Participation Client
 
-\item [\refstepcounter{mnum} \mthemnum \label{mRegistry}:] Provider Registry
-
-\item [\refstepcounter{mnum} \mthemnum \label{mLifecycle}:] Request Lifecycle
-
-\item [\refstepcounter{mnum} \mthemnum \label{mSettlement}:] Settlement
+\item [\refstepcounter{mnum} \mthemnum \label{mModel}:] Model (provided externally)
 
 \item [\refstepcounter{mnum} \mthemnum \label{mToken}:] Token Manager
 
+\item [\refstepcounter{mnum} \mthemnum \label{mWallet}:] Wallet Service
+
+\item [\refstepcounter{mnum} \mthemnum \label{mUserInfo}:] User Information
+
+\item [\refstepcounter{mnum} \mthemnum \label{mChain}:] Chain Observer
+
 \item [\refstepcounter{mnum} \mthemnum \label{mTransaction}:] Transaction Manager
+
+\item [\refstepcounter{mnum} \mthemnum \label{mProviderSetup}:] Provider Setup
 
 \end{description}
 
-\begin{table}[h!]
+\begin{table}[ht!]
 \centering
 \caption{Module Hierarchy}
 \label{TblMH}
-\begin{tabular}{p{0.3\textwidth} p{0.6\textwidth}}
+\small
+\begin{tabularx}{\textwidth}{p{0.28\textwidth}X}
 \toprule
-\textbf{Level 1} & \textbf{Level 2}\\
+\textbf{Category} & \textbf{Module}\\
 \midrule
-
-\multirow{5}{0.3\textwidth}{Behaviour-Hiding Module}
-& \mref{mWallet}: Wallet Manager \\
-& \mref{mChain}: Chain Observer \\
+Hardware-Hiding & No project-specific hardware-hiding module \\
+\midrule
+Behaviour-Hiding & \mref{mRegistry}: Provider Registry \\
+& \mref{mActionPreflight}: Marketplace Action Preflight \\
+& \mref{mLifecycle}: Request Lifecycle \\
+& \mref{mAggregator}: Prediction Aggregator \\
+& \mref{mRewards}: Rewards Calculator \\
+& \mref{mPenalty}: Penalty Enforcer \\
+& \mref{mReputation}: Reputation Handler \\
 & \mref{mInput}: Request Input Manager \\
-& \mref{mUI}: User Interface \\
+& \mref{mRequesterUI}: Requester Interface \\
+& \mref{mProviderUI}: Provider Interface \\
+\midrule
+Software Decision & \mref{mToken}: Token Manager \\
+& \mref{mWallet}: Wallet Service \\
 & \mref{mUserInfo}: User Information \\
+& \mref{mChain}: Chain Observer \\
+& \mref{mTransaction}: Transaction Manager \\
 & \mref{mProviderSetup}: Provider Setup \\
 & \mref{mListener}: Request Listener \\
 & \mref{mParticipation}: Participation Client \\
-\midrule
-
-\multirow{5}{0.3\textwidth}{Software Decision Module}
-& \mref{mRegistry}: Provider Registry \\
-& \mref{mLifecycle}: Request Lifecycle \\
-& \mref{mSettlement}: Settlement \\
-& \mref{mToken}: Token Manager \\
-& \mref{mTransaction}: Transaction Manager \\
-
+& \mref{mModel}: Model (provided externally) \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \section{Connection Between Requirements and Design} \label{SecConnection}
 
-The design of DAIIM is intended to satisfy the functional requirements developed in the SRS. The following key design decisions were made to address specific requirements:
+The design of DAIIM is intended to satisfy the requirements developed in
+the SRS. In this stage, the system is decomposed into modules. The connection
+between requirements and modules is listed in Table~\ref{TblRT}.
 
 \begin{itemize}
 
@@ -266,7 +313,7 @@ Only the leaf modules in the hierarchy have to be implemented. If a dash
 (\emph{--}) is shown, this means that the module is not a leaf and will not have
 to be implemented.
 
-\subsection{Hardware Hiding Modules (\mref{mHH})}
+\subsection{Hardware Hiding Modules}
 
 \begin{description}
 \item[Secrets:]The data structure and algorithm used to implement the virtual
@@ -289,18 +336,43 @@ to be implemented.
 \item[Implemented By:] --
 \end{description}
 
-\subsubsection{Input Format Module (\mref{mInput})}
+\subsubsection{Provider Registry (\mref{mRegistry})}
 
 \begin{description}
-\item[Secrets:]The format and structure of the input data.
-\item[Services:]Converts the input data into the data structure used by the
-  input parameters module.
-\item[Implemented By:] [Your Program Name Here]
-\item[Type of Module:] [Record, Library, Abstract Object, or Abstract Data Type]
-  [Information to include for leaf modules in the decomposition by secrets tree.]
+\item[Secrets:] The representation of inference tasks and the token-curated provider registry for each task.
+  Owns the on-chain validity rules for task definitions and the rules for
+  admitting, ordering, and removing providers from the registry.
+\item[Services:] Records and retrieves on-chain task definitions and per-task
+  provider registrations, reputation, and stake. Rejects task definitions that
+  violate protocol constraints and determines whether a provider is eligible
+  to join or remain in a task's registry.
+\item[Implemented By:] \progname{} on-chain program
+\item[Type of Module:] Abstract Object
 \end{description}
 
-\subsubsection{Etc.}
+\subsubsection{Marketplace Action Preflight (\mref{mActionPreflight})}
+
+\begin{description}
+\item[Secrets:] Which preliminary checks are performed before
+  transaction submission and how errors are reported to users.
+\item[Services:] Checks proposed tasks, requests, and provider actions and reports actionable errors before
+  invoking the on-chain program. The on-chain program is authoritative on protocol-critical rules.
+\item[Implemented By:] \progname{} off-chain application
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{Request Lifecycle (\mref{mLifecycle})}
+
+\begin{description}
+\item[Secrets:] The representation of inference requests and accepted-provider
+  records, the request state machine and deadlines, and the commitment and
+  reveal validation rules.
+\item[Services:] Creates inference requests, records provider acceptances, commitments,
+  and reveals, advances request phases, rejects invalid participation, and
+  determines when a request must be cancelled.
+\item[Implemented By:] \progname{} on-chain program
+\item[Type of Module:] Abstract Data Type
+\end{description}
 
 
 \subsection{Software Decision Module}
@@ -316,7 +388,17 @@ to be implemented.
 \item[Implemented By:] --
 \end{description}
 
-\subsubsection{Etc.}
+\subsubsection{Transaction Manager (\mref{mTransaction})}
+
+\begin{description}
+\item[Secrets:] How blockchain transactions are constructed, simulated,
+  checked for sufficient funds, submitted, and confirmed.
+\item[Services:] Constructs transactions for marketplace actions, simulates
+  them, checks balances and fees, obtains wallet authorization, submits signed
+  transactions, and tracks their status to avoid duplicate submissions.
+\item[Implemented By:] \progname{} off-chain application
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \section{Traceability Matrix} \label{SecTM}
 
@@ -536,6 +618,7 @@ For DAIIM, the uses hierarchy is organized around the User Interface, the provid
 The User Interface (\mref{mUI}) depends on the Wallet Manager (\mref{mWallet}), User Information (\mref{mUserInfo}), Transaction Manager (\mref{mTransaction}), and Chain Observer (\mref{mChain}) to support wallet authentication, user information retrieval, transaction submission, and the display of blockchain state.
 On the provider side, the Provider Setup module (\mref{mProviderSetup}) uses the Wallet Manager (\mref{mWallet}), User Information (\mref{mUserInfo}), and Chain Observer (\mref{mChain}) to establish provider identity and retrieve registration information. The Request Listener (\mref{mListener}) uses the Chain Observer (\mref{mChain}) to monitor relevant requests and blockchain events. The Participation Client (\mref{mParticipation}) uses the Provider Setup module (\mref{mProviderSetup}), Request Input Manager (\mref{mInput}), and Transaction Manager (\mref{mTransaction}) to retrieve authorized request inputs and participate in inference tasks.
 The Transaction Manager (\mref{mTransaction}) uses the Wallet Manager (\mref{mWallet}) and Chain Observer (\mref{mChain}) to prepare, authorize, and verify transactions.
+Marketplace Action Preflight (\mref{mActionPreflight}) uses the Transaction Manager (\mref{mTransaction}) when a preliminary check requires transaction simulation.
 The core on-chain modules provide the functionality required to operate the marketplace. The Request Lifecycle module (\mref{mLifecycle}) uses the Provider Registry (\mref{mRegistry}) and Token Manager (\mref{mToken}) to manage provider eligibility and request-related token operations. The Settlement module (\mref{mSettlement}) uses the Request Lifecycle module (\mref{mLifecycle}), Provider Registry (\mref{mRegistry}), and Token Manager (\mref{mToken}) to calculate final results, update provider reputations, and distribute rewards or penalties.
 Figure \ref{FigUH} illustrates the uses relationships between the modules. The resulting hierarchy is a directed acyclic graph (DAG), with higher-level modules depending on lower-level modules that provide the services they require.
 
