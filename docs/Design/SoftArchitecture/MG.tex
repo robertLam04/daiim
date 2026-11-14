@@ -5,6 +5,7 @@
 \usepackage{multirow}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{xr}
@@ -29,10 +30,13 @@
 \newcounter{ucnum}
 \newcommand{\uctheucnum}{UC\theucnum}
 \newcommand{\uref}[1]{UC\ref{#1}}
+\newcommand{\ucref}[1]{UC\ref{#1}}
 
 \newcounter{mnum}
 \newcommand{\mthemnum}{M\themnum}
 \newcommand{\mref}[1]{M\ref{#1}}
+\newcommand{\rref}[1]{FR\ref{#1}}
+\newcommand{\nfrref}[1]{NFR\ref{#1}}
 \newcommand{\lcref}[1]{LC\ref{#1}}
 
 \begin{document}
@@ -263,38 +267,207 @@ Software Decision & \mref{mToken}: Token Manager \\
 \section{Connection Between Requirements and Design} \label{SecConnection}
 
 The design of DAIIM is intended to satisfy the requirements developed in
-the SRS. In this stage, the system is decomposed into modules. The connection
-between requirements and modules is listed in Table~\ref{TblRT}.
+the SRS. The system is decomposed into modules, each responsible for a
+specific part of the system's functionality. The connection between
+requirements and modules is described below, and the corresponding
+traceability relationships are summarized in Table~\ref{TblRT}.
 
 \begin{itemize}
 
-    \item \textbf{Wallet Manager (\mref{mWallet}):} To satisfy FR\ref{FR_WalletAuthentication} and FR\ref{FR_TransactionAuthorization}, wallet authentication and transaction signing are handled through a dedicated wallet module. This module verifies ownership of wallet addresses and provides the interface for users to authorize transactions without exposing their private keys to DAIIM.
+    \item \textbf{Provider Registry (\mref{mRegistry}):}
+    To satisfy \rref{FR_InferenceTaskRegistrationStaking},
+    \rref{FR_ProviderWillingUnregistration},
+    \rref{FR_ProviderMinimumStakeUnregistration}, and
+    \rref{FR_ProviderForcedUnregistration}, this module manages provider
+    registration for individual inference tasks. It maintains provider
+    eligibility, registration status, and task-specific staking
+    requirements to ensure that only eligible providers can participate
+    in inference requests.
 
-    \item \textbf{Chain Observer (\mref{mChain}):} To satisfy FR\ref{FR_OnChainRecords}, FR\ref{FR_TransactionStatus}, and FR\ref{FR_TransactionVerification}, a dedicated module monitors blockchain activity and retrieves transaction and account information. This separates reading and interpreting blockchain data from the modules responsible for initiating transactions and managing marketplace operations.
 
-    \item \textbf{Request Input Manager (\mref{mInput}):} To satisfy FR\ref{FR_RequestInputDistribution}, FR\ref{FR_InputAccessRestriction}, FR\ref{FR_InputNotOnChain}, and FR\ref{FR_InputDeletion}, a dedicated module manages the secure storage, encryption, access, and deletion of inference request inputs. Input data is kept off-chain and made available only to the requester and providers that accepted the corresponding request.
+    \item \textbf{Marketplace Action Preflight (\mref{mActionPreflight}):}
+    To support \rref{FR_InferenceTaskCreation},
+    \rref{FR_InferenceTaskDefinition},
+    \rref{FR_MinimumProvidersFloor},
+    \rref{FR_RequestValidation},
+    \rref{FR_InferenceTaskRegistration},
+    \ref{SA_BalanceCheck}, and
+    \ref{SA_ProviderStatusCheck}, this module performs preliminary checks
+    on proposed marketplace actions before they proceed to transaction
+    preparation. These checks cover task definitions, inference request
+    inputs, provider eligibility, and relevant account conditions. The
+    module reports actionable errors to users when an action is unlikely
+    to be accepted, allowing problems to be addressed before a transaction
+    is prepared or submitted. The on-chain program remains authoritative
+    for enforcing protocol-critical rules.
 
-    \item \textbf{User Interface (\mref{mUI}):} To satisfy FR\ref{FR_PublicAccess}, FR\ref{FR_TaskBrowsing}, FR\ref{FR_InferenceTaskCreation}, and FR\ref{FR_FinalResultDelivery}, the web interface provides users with access to marketplace information, task creation, inference requests, and aggregated results. It also presents transaction information and marketplace activity in a way that does not require users to interact directly with the blockchain.
 
-    \item \textbf{User Information (\mref{mUserInfo}):} To support FR\ref{FR_WalletAuthentication} and FR\ref{FR_ProviderDashboard}, a dedicated module manages user profile information associated with verified wallet addresses. This allows user-specific information, such as provider activity and preferences, to be maintained separately from the underlying blockchain records.
+    \item \textbf{Request Lifecycle (\mref{mLifecycle}):}
+    To satisfy requirements related to request submission, validation,
+    acceptance, and prediction phases, including
+    \rref{FR_RequestSubmission},
+    \rref{FR_RequestValidation},
+    \rref{FR_AcceptancePeriodStart},
+    \rref{FR_AcceptancePeriodEnd},
+    \rref{FR_MaximumAcceptance},
+    \rref{FR_MinimumAcceptance},
+    \rref{FR_ProtocolCommitPeriod},
+    \rref{FR_ProtocolRevealPeriod},
+    \rref{FR_PredictionPhaseStart},
+    \rref{FR_PredictionPhaseEnd}, and
+    \rref{FR_MinimumPredictions}, this module manages the state and
+    progression of inference requests. It implements the request state
+    machine, enforces phase deadlines, records provider participation,
+    validates commitments and reveals, and determines when a request
+    can proceed or must be cancelled.
 
-    \item \textbf{Provider Setup (\mref{mProviderSetup}):} To support FR\ref{FR_InferenceTaskRegistrationStaking} and FR\ref{FR_ProviderDashboard}, a dedicated module handles the provider's initial connection to the blockchain and retrieves the provider's registration information for available tasks. This separates provider initialization and configuration from the ongoing handling of inference requests.
+    \item \textbf{Prediction Aggregator (\mref{mAggregator}):}
+    To satisfy \rref{FR_PredictionAggregation} and
+    \rref{FR_ResultSpread}, this module combines valid predictions
+    submitted by participating providers into a final result. It
+    encapsulates the aggregation algorithm and calculates the result
+    spread so that the aggregated prediction and the degree of
+    disagreement between providers can be reported.
 
-    \item \textbf{Request Listener (\mref{mListener}):} To satisfy FR\ref{FR_RequestBroadcast} and FR\ref{FR_AcceptancePeriodStart}, a dedicated module monitors inference requests that are relevant to a provider's registered tasks. It identifies new requests and communicates their details, payment information, and applicable deadlines to the provider.
+    \item \textbf{Rewards Calculator (\mref{mRewards}):}
+    To satisfy \rref{FR_DistributeRewards},
+    \rref{FR_RewardTransferFailure}, and
+    \rref{FR_PendingTransferRetry}, this module determines provider
+    reward eligibility and calculates the rewards allocated to
+    participating providers. It applies the reward distribution rules
+    using the relevant prediction and provider performance information.
+    Token transfers themselves are handled by the Token Manager.
 
-    \item \textbf{Participation Client (\mref{mParticipation}):} To satisfy FR\ref{FR_RequestInputDistribution}, FR\ref{FR_PredictionSubmission}, FR\ref{FR_OnePredictionPerProvider}, and FR\ref{FR_PredictionValidation}, a dedicated client module handles the provider's participation in inference requests. It retrieves authorized input data, generates the prediction commitment using a cryptographically secure salt, and submits commitments and reveals directly to the on-chain program.
+    \item \textbf{Penalty Enforcer (\mref{mPenalty}):}
+    To satisfy \rref{FR_InferenceProviderSlashing},
+    \rref{FR_SlashInvalidPrediction},
+    \rref{FR_SlashNoCommit},
+    \rref{FR_SlashNoReveal}, and
+    \rref{FR_SlashRepeatedOffenses}, this module enforces penalties
+    against providers who violate participation rules. It determines
+    when slashing conditions have been met and applies the corresponding
+    penalty rules through the on-chain program.
 
-    \item \textbf{Provider Registry (\mref{mRegistry}):} To satisfy FR\ref{FR_InferenceTaskRegistrationStaking}, FR\ref{FR_ProviderWillingUnregistration}, and FR\ref{FR_ProviderMinimumStakeUnregistration}, a dedicated module manages provider registration for individual inference tasks. It maintains provider eligibility, registration status, and task-specific staking requirements so that only eligible providers can participate in requests.
+    \item \textbf{Reputation Handler (\mref{mReputation}):}
+    To satisfy \rref{FR_UpdateProviderReputations} and
+    \rref{FR_ReputationRange}, this module manages provider reputation
+    values and the rules used to update them. It evaluates provider
+    performance based on the applicable reputation calculation method
+    and ensures that reputation values remain within the specified
+    range.
 
-    \item \textbf{Request Lifecycle (\mref{mLifecycle}):} To satisfy FR\ref{FR_RequestSubmission} through FR\ref{FR_MinimumPredictions}, a dedicated module manages the state and progression of inference requests. The request lifecycle is implemented as a state machine that controls the acceptance, commit, and reveal phases, enforces their deadlines, validates provider participation, and determines whether a request can proceed or must be cancelled.
+    \item \textbf{Request Input Manager (\mref{mInput}):}
+    To satisfy \rref{FR_RequestInputDistribution},
+    \rref{FR_InputAccessRestriction},
+    \rref{FR_InputNotOnChain}, and
+    \rref{FR_InputDeletion}, this module manages the secure storage,
+    encryption, access, and deletion of inference request inputs.
+    Input data is kept off-chain and made available only to the
+    requester and providers authorized to access the corresponding
+    request.
 
-    \item \textbf{Settlement (\mref{mSettlement}):} To satisfy FR\ref{FR_PredictionAggregation}, FR\ref{FR_UpdateProviderReputations}, FR\ref{FR_ReputationRange}, and FR\ref{FR_DistributeRewards}, a dedicated module handles the finalization of inference requests. It calculates the aggregated result using the reputation-weighted median algorithm, updates provider reputations using the confidence-based reputation algorithm, and determines the distribution of rewards based on the resulting provider reputations.
+    \item \textbf{Requester Interface (\mref{mRequesterUI}):}
+    To satisfy \rref{FR_PublicAccess},
+    \rref{FR_TaskBrowsing},
+    \rref{FR_InferenceTaskCreation},
+    \rref{FR_RequestSubmission},
+    \rref{FR_FinalResultDelivery}, and
+    \rref{FR_RequestHistory}, this module provides the web interface
+    through which requesters interact with the marketplace. It allows
+    users to browse available tasks, create tasks, submit inference
+    requests, view their request history, and access completed results.
+    It also presents relevant transaction information and feedback
+    from preliminary action checks.
 
-    \item \textbf{Token Manager (\mref{mToken}):} To satisfy FR\ref{FR_RequestPayment}, FR\ref{FR_StakeReservation}, FR\ref{FR_StakeReservationRelease}, and FR\ref{FR_InferenceProviderSlashing}, a dedicated module manages token-related operations. These include transferring payments into escrow, managing provider stakes, releasing reserved funds, distributing tokens, and applying penalties such as slashing or burning when required.
+    \item \textbf{Provider Interface (\mref{mProviderUI}):}
+    To satisfy \rref{FR_ProviderDashboard} and the requirements related
+    to provider registration and participation, this module provides
+    the web interface through which providers interact with DAIIM.
+    It allows providers to view their registrations, stakes, reputation,
+    rewards, and relevant inference requests, as well as access the
+    functionality needed to manage their participation.
 
-    \item \textbf{Transaction Manager (\mref{mTransaction}):} To satisfy FR\ref{FR_TransactionPreview}, FR\ref{FR_TransactionStatus}, and FR\ref{FR_TransactionVerification}, a dedicated module coordinates the preparation and submission of user-authorized transactions. It validates transaction parameters, checks available balances, simulates transactions before submission, and tracks their status to prevent duplicate submissions or incorrect reporting of transaction outcomes.
+    \item \textbf{Request Listener (\mref{mListener}):}
+    To support \rref{FR_RequestBroadcast} and
+    \rref{FR_AcceptancePeriodStart}, this module monitors blockchain
+    activity for inference requests relevant to a provider's registered
+    tasks. It identifies new requests and makes their relevant details,
+    payment information, and applicable deadlines available to the
+    provider-side software.
+
+    \item \textbf{Participation Client (\mref{mParticipation}):}
+    To satisfy \rref{FR_RequestInputDistribution},
+    \rref{FR_PredictionSubmission},
+    \rref{FR_OnePredictionPerProvider}, and
+    \rref{FR_PredictionValidation}, this module handles a provider's
+    participation in inference requests. It retrieves authorized
+    request inputs, coordinates prediction generation with the
+    provider's externally implemented model, generates the prediction
+    commitment using a cryptographically secure salt, and submits
+    commitments and reveals directly to the on-chain program.
+
+    \item \textbf{Model (\mref{mModel}):}
+    The model is implemented and maintained by inference providers
+    rather than by DAIIM. It performs inference using the input supplied
+    for a request and produces a prediction for submission through the
+    Participation Client. Its implementation is outside the scope of
+    DAIIM.
+
+    \item \textbf{Token Manager (\mref{mToken}):}
+    To satisfy \rref{FR_RequestPayment},
+    \rref{FR_StakeReservation},
+    \rref{FR_StakeReservationRelease},
+    and \rref{FR_InferenceProviderSlashing}, this module manages
+    token-related operations. These include transferring requester
+    payments into escrow, reserving and releasing provider stakes,
+    transferring rewards, and applying token penalties such as
+    slashing or burning when required.
+
+    \item \textbf{Wallet Service (\mref{mWallet}):}
+    To satisfy \rref{FR_WalletAuthentication} and
+    \rref{FR_TransactionAuthorization}, this module handles wallet
+    connectivity, wallet ownership verification, and transaction
+    signing. It provides the interface through which users authorize
+    transactions without exposing their private keys to DAIIM.
+
+    \item \textbf{User Information (\mref{mUserInfo}):}
+    This module manages user profile information associated with
+    verified wallet addresses. It maintains user-specific information,
+    such as provider details and preferences, separately from the
+    underlying blockchain records, supporting the presentation of
+    personalized information through the requester and provider
+    interfaces.
+
+    \item \textbf{Chain Observer (\mref{mChain}):}
+    To support \rref{FR_OnChainRecords},
+    \rref{FR_TransactionStatus}, and
+    \rref{FR_TransactionVerification}, this module monitors blockchain
+    activity and retrieves transaction and account information. It
+    provides the off-chain application with information about on-chain
+    state changes and transaction outcomes without being responsible
+    for initiating transactions.
+
+    \item \textbf{Transaction Manager (\mref{mTransaction}):}
+    To satisfy \rref{FR_TransactionPreview},
+    \rref{FR_TransactionStatus}, and
+    \rref{FR_TransactionVerification}, this module handles the safe
+    preparation and submission of blockchain transactions. It
+    constructs transactions, checks relevant transaction parameters
+    and available balances, simulates transactions where applicable,
+    coordinates wallet signing, submits authorized transactions, and
+    tracks their confirmation status. This module is responsible for
+    the transaction process, while Marketplace Action Preflight
+    performs preliminary checks on the proposed marketplace action
+    before transaction preparation.
 
 \end{itemize}
+
+The Model is included in the requirements-to-design discussion because
+it participates in producing inference predictions, but its
+implementation is external to DAIIM. The traceability matrix should
+therefore distinguish requirements implemented by DAIIM from
+functionality provided by inference providers.
+
 
 
 \section{Module Decomposition} \label{SecMD}
@@ -403,190 +576,337 @@ to be implemented.
 \section{Traceability Matrix} \label{SecTM}
 
 This section shows the traceability between the system modules and the
-requirements, as well as between the modules and the likely and unlikely
-changes anticipated for DAIIM. These matrices demonstrate which modules
-are responsible for satisfying the requirements and which modules may
-need to be modified if the system evolves.
+requirements in the SRS, as well as between the modules and the anticipated
+and unlikely changes listed in Section~\ref{SecChange}. These matrices show
+which modules are responsible for satisfying each requirement and which
+modules may need to be modified if the system evolves.
 
-\begin{table}[H]
-\centering
+Table~\ref{TblRT} traces every functional requirement, non-functional
+requirement, and safety requirement in the SRS to the modules responsible for
+it. The Model module (\mref{mModel}) is supplied by inference providers and is
+not implemented by DAIIM, so it does not satisfy any DAIIM requirement
+directly and appears only in Table~\ref{TblACT}. Table~\ref{TblACT} shows that
+each anticipated change is the secret of exactly one module, and
+Table~\ref{TblUCT} shows which modules would be affected by each unlikely
+change.
+
+\begin{longtable}{|p{0.50\textwidth}|p{0.42\textwidth}|}
 \caption{Trace Between Requirements and Modules}
-\label{TblRT}
-\begin{tabularx}{\textwidth}{|X|X|}
+\label{TblRT} \\
 \hline
-\textbf{Requirement(s)} & \textbf{Modules}\\
+\textbf{Requirement(s)} & \textbf{Modules} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Requirement(s)} & \textbf{Modules} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+% ---------------- Accounts and authorization ----------------
+\rref{FR_WalletAuthentication}, \rref{FR_EmbeddedWalletCreation},
+\nfrref{NFR_EmbeddedWalletAccess}, \nfrref{NFR_NoExtraSoftware}
+& \mref{mWallet}, \mref{mUserInfo}, \mref{mRequesterUI},
+\mref{mProviderUI}, \mref{mProviderSetup} \\
 \hline
 
-FR\ref{FR_WalletAuthentication}, FR\ref{FR_EmbeddedWalletCreation},
-FR\ref{FR_TransactionAuthorization}
-& \mref{mWallet}, \mref{mUserInfo}, \mref{mUI}, \mref{mTransaction} \\
+\rref{FR_TransactionAuthorization}, \ref{SA_SignedTransactionsOnly},
+\ref{SA_WalletSigning}
+& \mref{mWallet}, \mref{mTransaction} \\
 \hline
 
-FR\ref{FR_PublicAccess}, FR\ref{FR_TaskBrowsing}
-& \mref{mUI}, \mref{mRegistry}, \mref{mUserInfo} \\
+\rref{FR_PublicAccess}, \rref{FR_TaskBrowsing}
+& \mref{mRequesterUI}, \mref{mProviderUI}, \mref{mChain},
+\mref{mRegistry} \\
 \hline
 
-FR\ref{FR_InferenceTaskCreation}--FR\ref{FR_TaskAcceptancePeriod}
-& \mref{mUI}, \mref{mLifecycle}, \mref{mTransaction}, \mref{mToken} \\
+\nfrref{NFR_PublicPagesPrivacy}
+& \mref{mRequesterUI}, \mref{mProviderUI}, \mref{mUserInfo} \\
 \hline
 
-FR\ref{FR_InferenceTaskRegistration},
-FR\ref{FR_InferenceTaskRegistrationStaking},
-FR\ref{FR_ProviderWillingUnregistration},
-FR\ref{FR_ProviderMinimumStakeUnregistration}
-& \mref{mRegistry}, \mref{mToken}, \mref{mTransaction},
-\mref{mWallet}, \mref{mProviderSetup} \\
+% ---------------- Inference tasks ----------------
+\rref{FR_InferenceTaskCreation}--\rref{FR_TaskAcceptancePeriod}
+& \mref{mRequesterUI}, \mref{mActionPreflight}, \mref{mRegistry},
+\mref{mLifecycle}, \mref{mTransaction} \\
 \hline
 
-FR\ref{FR_ProviderDashboard}
-& \mref{mUI}, \mref{mUserInfo}, \mref{mRegistry},
-\mref{mChain} \\
+% ---------------- Provider registration and staking ----------------
+\rref{FR_InferenceTaskRegistration},
+\rref{FR_InferenceTaskRegistrationStaking}
+& \mref{mProviderUI}, \mref{mProviderSetup}, \mref{mActionPreflight},
+\mref{mRegistry}, \mref{mToken}, \mref{mTransaction}, \mref{mWallet} \\
 \hline
 
-FR\ref{FR_RequestSubmission}, FR\ref{FR_RequestValidation},
-FR\ref{FR_RequestPayment}, FR\ref{FR_RequestBroadcast}
-& \mref{mUI}, \mref{mLifecycle}, \mref{mInput},
-\mref{mToken}, \mref{mTransaction}, \mref{mListener} \\
+\rref{FR_ProviderWillingUnregistration},
+\rref{FR_ProviderUnregistrationStakeReturn}
+& \mref{mProviderUI}, \mref{mActionPreflight}, \mref{mRegistry},
+\mref{mToken}, \mref{mTransaction} \\
 \hline
 
-FR\ref{FR_AcceptancePeriodStart}--FR\ref{FR_MaximumAcceptance},
-FR\ref{FR_MinimumAcceptance}
-& \mref{mLifecycle}, \mref{mRegistry}, \mref{mListener},
+\rref{FR_ProviderMinimumStakeUnregistration}
+& \mref{mRegistry}, \mref{mPenalty} \\
+\hline
+
+\rref{FR_ProviderDashboard}
+& \mref{mProviderUI}, \mref{mUserInfo}, \mref{mRegistry}, \mref{mChain},
+\mref{mProviderSetup} \\
+\hline
+
+% ---------------- Inference requests ----------------
+\rref{FR_ProtocolCommitPeriod}--\rref{FR_ProtocolRevealPeriod}
+& \mref{mLifecycle} \\
+\hline
+
+\rref{FR_RequestSubmission}, \rref{FR_RequestValidation},
+\rref{FR_RequestPayment}
+& \mref{mRequesterUI}, \mref{mActionPreflight}, \mref{mRegistry},
+\mref{mLifecycle}, \mref{mInput}, \mref{mToken}, \mref{mTransaction},
+\mref{mWallet} \\
+\hline
+
+\rref{FR_RequestBroadcast}
+& \mref{mLifecycle}, \mref{mRegistry}, \mref{mListener} \\
+\hline
+
+% ---------------- Provider acceptance and predictions ----------------
+\rref{FR_AcceptancePeriodStart}--\rref{FR_MaximumAcceptance}
+& \mref{mLifecycle}, \mref{mRegistry}, \mref{mToken}, \mref{mListener} \\
+\hline
+
+\rref{FR_RequestInputDistribution}, \rref{FR_InputAccessRestriction},
+\rref{FR_InputDeletion}
+& \mref{mInput}, \mref{mParticipation}, \mref{mChain} \\
+\hline
+
+\rref{FR_InputNotOnChain}
+& \mref{mInput}, \mref{mLifecycle} \\
+\hline
+
+\rref{FR_PredictionPhaseStart}--\rref{FR_PredictionPhaseEnd}
+& \mref{mLifecycle}, \mref{mParticipation} \\
+\hline
+
+\rref{FR_MinimumPredictions}--\rref{FR_CancellationCompensation}
+& \mref{mLifecycle}, \mref{mRegistry}, \mref{mToken} \\
+\hline
+
+% ---------------- Aggregation and results ----------------
+\rref{FR_PredictionAggregation}
+& \mref{mAggregator}, \mref{mReputation}, \mref{mLifecycle} \\
+\hline
+
+\rref{FR_FinalResultDelivery}
+& \mref{mLifecycle}, \mref{mChain}, \mref{mRequesterUI} \\
+\hline
+
+\rref{FR_ResultSpread}
+& \mref{mAggregator}, \mref{mChain}, \mref{mRequesterUI} \\
+\hline
+
+\rref{FR_RequestHistory}
+& \mref{mRequesterUI}, \mref{mUserInfo}, \mref{mChain}, \mref{mLifecycle} \\
+\hline
+
+% ---------------- Reputation and rewards ----------------
+\rref{FR_UpdateProviderReputations}, \rref{FR_ReputationRange}
+& \mref{mReputation}, \mref{mRegistry}, \mref{mLifecycle} \\
+\hline
+
+\rref{FR_DistributeRewards}
+& \mref{mRewards}, \mref{mReputation}, \mref{mToken}, \mref{mLifecycle} \\
+\hline
+
+\rref{FR_RewardTransferFailure}, \rref{FR_PendingTransferDeadline},
+\rref{FR_RequestCompletion}
+& \mref{mRewards}, \mref{mLifecycle}, \mref{mToken} \\
+\hline
+
+\rref{FR_PendingTransferNotice}, \rref{FR_PendingTransferRetry}
+& \mref{mProviderUI}, \mref{mChain}, \mref{mTransaction}, \mref{mLifecycle},
 \mref{mToken} \\
 \hline
 
-FR\ref{FR_RequestInputDistribution},
-FR\ref{FR_InputAccessRestriction},
-FR\ref{FR_InputNotOnChain},
-FR\ref{FR_InputDeletion}
-& \mref{mInput}, \mref{mParticipation}, \mref{mLifecycle} \\
+% ---------------- Penalties ----------------
+\rref{FR_InferenceProviderSlashing}--\rref{FR_SlashNoReveal}
+& \mref{mPenalty}, \mref{mLifecycle}, \mref{mRegistry}, \mref{mToken} \\
 \hline
 
-FR\ref{FR_PredictionPhaseStart},
-FR\ref{FR_ProtocolCommitPeriod}--FR\ref{FR_ProtocolRevealPeriod},
-FR\ref{FR_PredictionSubmission}--FR\ref{FR_PredictionValidation}
-& \mref{mLifecycle}, \mref{mParticipation},
-\mref{mInput}, \mref{mListener} \\
+\rref{FR_SlashRepeatedOffenses}
+& \mref{mPenalty}, \mref{mRegistry}, \mref{mToken} \\
 \hline
 
-FR\ref{FR_PredictionPhaseEnd},
-FR\ref{FR_MinimumPredictions},
-FR\ref{FR_StakeReservation}
-& \mref{mLifecycle}, \mref{mRegistry}, \mref{mToken},
-\mref{mParticipation} \\
+\rref{FR_ProviderForcedUnregistration}
+& \mref{mReputation}, \mref{mRegistry}, \mref{mPenalty}, \mref{mToken} \\
 \hline
 
-FR\ref{FR_PredictionAggregation},
-FR\ref{FR_FinalResultDelivery},
-FR\ref{FR_ResultSpread},
-FR\ref{FR_RequestHistory}
-& \mref{mSettlement}, \mref{mLifecycle}, \mref{mUI},
-\mref{mChain} \\
+% ---------------- Transparency ----------------
+\rref{FR_TransactionPreview}
+& \mref{mTransaction}, \mref{mRequesterUI}, \mref{mProviderUI} \\
 \hline
 
-FR\ref{FR_UpdateProviderReputations},
-FR\ref{FR_ReputationRange},
-FR\ref{FR_DistributeRewards}
-& \mref{mSettlement}, \mref{mRegistry}, \mref{mToken} \\
+\rref{FR_TransactionStatus}, \rref{FR_TransactionVerification}
+& \mref{mTransaction}, \mref{mChain}, \mref{mRequesterUI},
+\mref{mProviderUI} \\
 \hline
 
-FR\ref{FR_RewardTransferFailure}--FR\ref{FR_RequestCompletion},
-FR\ref{FR_CancellationCompensation}
-& \mref{mSettlement}, \mref{mLifecycle}, \mref{mToken} \\
+\rref{FR_OnChainRecords}
+& \mref{mRegistry}, \mref{mLifecycle}, \mref{mAggregator},
+\mref{mReputation}, \mref{mRewards}, \mref{mPenalty}, \mref{mToken} \\
 \hline
 
-FR\ref{FR_InferenceProviderSlashing}--FR\ref{FR_ProviderForcedUnregistration}
-& \mref{mRegistry}, \mref{mSettlement}, \mref{mToken},
-\mref{mLifecycle} \\
+% ---------------- Safety functional requirements ----------------
+\ref{SA_NoDuplicateSubmission}, \ref{SA_ExpiryCheck}
+& \mref{mTransaction}, \mref{mChain} \\
 \hline
 
-FR\ref{FR_TransactionPreview},
-FR\ref{FR_TransactionStatus},
-FR\ref{FR_TransactionVerification},
-FR\ref{FR_OnChainRecords}
-& \mref{mTransaction}, \mref{mWallet}, \mref{mChain},
-\mref{mUI}, \mref{mToken} \\
+\ref{SA_BalanceCheck}
+& \mref{mTransaction}, \mref{mWallet}, \mref{mChain} \\
 \hline
 
-SA\ref{SA_NoDuplicateSubmission}--SA\ref{SA_FailureRetry},
-SA\ref{SA_TransactionSimulation},
-SA\ref{SA_ChargeEqualsAuthorized},
-SA\ref{SA_RewardValidation}
-& \mref{mTransaction}, \mref{mWallet}, \mref{mToken},
-\mref{mUI}, \mref{mSettlement} \\
+\ref{SA_OnChainFundsCheck}
+& \mref{mToken} \\
 \hline
 
-NFR\ref{NFR_DataEncryption},
-NFR\ref{NFR_InputDataAccess}
+\ref{SA_FailureRetry}
+& \mref{mTransaction}, \mref{mRequesterUI}, \mref{mProviderUI} \\
+\hline
+
+\ref{SA_TransactionSimulation}
+& \mref{mTransaction} \\
+\hline
+
+\ref{SA_ChargeEqualsAuthorized}
+& \mref{mTransaction}, \mref{mToken}, \mref{mLifecycle} \\
+\hline
+
+\ref{SA_RewardValidation}
+& \mref{mRewards} \\
+\hline
+
+\ref{SA_ProviderStatusCheck}
+& \mref{mRegistry}, \mref{mRewards}, \mref{mPenalty} \\
+\hline
+
+% ---------------- Non-functional requirements ----------------
+\nfrref{NFR_ReputationWeightedAggregate}
+& \mref{mAggregator}, \mref{mReputation} \\
+\hline
+
+\nfrref{NFR_AggregationArithmeticErrors}
+& \mref{mAggregator}, \mref{mReputation}, \mref{mRewards}, \mref{mPenalty},
+\mref{mToken} \\
+\hline
+
+\nfrref{NFR_Learnability}, \nfrref{NFR_TwoClickAccess},
+\nfrref{NFR_BrowserSupport}
+& \mref{mRequesterUI}, \mref{mProviderUI} \\
+\hline
+
+\nfrref{NFR_ErrorVisibility}, \ref{SA_ErrorMessageTime}
+& \mref{mActionPreflight}, \mref{mTransaction}, \mref{mRequesterUI},
+\mref{mProviderUI} \\
+\hline
+
+\nfrref{NFR_ProgressStatus}, \nfrref{NFR_TransactionConfirmation}
+& \mref{mTransaction}, \mref{mChain}, \mref{mRequesterUI},
+\mref{mProviderUI} \\
+\hline
+
+\nfrref{NFR_DataEncryption}, \nfrref{NFR_InputDataAccess}
 & \mref{mInput}, \mref{mParticipation} \\
 \hline
 
-NFR\ref{NFR_PredictionsHidden},
-NFR\ref{NFR_CommitSalt}
-& \mref{mParticipation}, \mref{mLifecycle} \\
+\nfrref{NFR_PredictionsHidden}
+& \mref{mLifecycle}, \mref{mParticipation} \\
 \hline
 
-NFR\ref{NFR_ReputationWeightedAggregate},
-NFR\ref{NFR_AggregationArithmeticErrors}
-& \mref{mSettlement}, \mref{mToken} \\
+\nfrref{NFR_CommitSalt}
+& \mref{mParticipation} \\
 \hline
 
-NFR\ref{NFR_FinalState},
-NFR\ref{NFR_ConcurrentRequests}
-& \mref{mLifecycle}, \mref{mSettlement}, \mref{mRegistry},
+\nfrref{NFR_FinalState}
+& \mref{mLifecycle}, \mref{mRegistry}, \mref{mRewards}, \mref{mPenalty},
 \mref{mToken} \\
 \hline
 
-NFR\ref{NFR_ProgressStatus},
-NFR\ref{NFR_TransactionConfirmation},
-NFR\ref{NFR_ErrorVisibility}
-& \mref{mUI}, \mref{mTransaction}, \mref{mChain} \\
+\nfrref{NFR_ConcurrentRequests}
+& \mref{mLifecycle}, \mref{mInput}, \mref{mChain}, \mref{mTransaction},
+\mref{mListener} \\
 \hline
 
-NFR\ref{NFR_TwoClickAccess},
-NFR\ref{NFR_PublicPagesPrivacy},
-NFR\ref{NFR_Learnability},
-NFR\ref{NFR_BrowserSupport}
-& \mref{mUI}, \mref{mWallet}, \mref{mUserInfo} \\
+\ref{SA_TLS}
+& \mref{mInput}, \mref{mTransaction}, \mref{mChain}, \mref{mUserInfo},
+\mref{mListener}, \mref{mProviderSetup}, \mref{mParticipation},
+\mref{mRequesterUI}, \mref{mProviderUI} \\
 \hline
 
-\end{tabularx}
-\end{table}
-
-
-\begin{table}[H]
-\centering
-\caption{Trace Between Likely Changes and Modules}
-\label{TblLCT}
-\begin{tabularx}{\textwidth}{|X|X|}
-\hline
-\textbf{Likely Change (LC)} & \textbf{Modules}\\
+\nfrref{NFR_CodingStandards}, \ref{SA_DependencyScan}
+& All modules \\
 \hline
 
-\lcref{LC_inferenceModels}
-& \mref{mProviderSetup}, \mref{mParticipation},
-\mref{mLifecycle}, \mref{mSettlement} \\
+\end{longtable}
+
+
+\begin{longtable}{|p{0.62\textwidth}|p{0.30\textwidth}|}
+\caption{Trace Between Anticipated Changes and Modules}
+\label{TblACT} \\
+\hline
+\textbf{Anticipated Change (AC)} & \textbf{Module} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Anticipated Change (AC)} & \textbf{Module} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\acref{acProviderRegistry} & \mref{mRegistry} \\
+\hline
+\acref{acActionPreflight} & \mref{mActionPreflight} \\
+\hline
+\acref{acRequestLifecycle} & \mref{mLifecycle} \\
+\hline
+\acref{acAggregation} & \mref{mAggregator} \\
+\hline
+\acref{acRewards} & \mref{mRewards} \\
+\hline
+\acref{acPenalties} & \mref{mPenalty} \\
+\hline
+\acref{acReputation} & \mref{mReputation} \\
+\hline
+\acref{acTokenOperations} & \mref{mToken} \\
+\hline
+\acref{acWalletIntegration} & \mref{mWallet} \\
+\hline
+\acref{acUserInformation} & \mref{mUserInfo} \\
+\hline
+\acref{acChainObservation} & \mref{mChain} \\
+\hline
+\acref{acTransactions} & \mref{mTransaction} \\
+\hline
+\acref{acRequestInputs} & \mref{mInput} \\
+\hline
+\acref{acRequestListening} & \mref{mListener} \\
+\hline
+\acref{acProviderSetup} & \mref{mProviderSetup} \\
+\hline
+\acref{acParticipation} & \mref{mParticipation} \\
+\hline
+\acref{acModel} & \mref{mModel} \\
+\hline
+\acref{acRequesterInterface} & \mref{mRequesterUI} \\
+\hline
+\acref{acProviderInterface} & \mref{mProviderUI} \\
 \hline
 
-\lcref{LC_providerParticipation}
-& \mref{mRegistry}, \mref{mLifecycle}, \mref{mSettlement},
-\mref{mToken}, \mref{mListener} \\
-\hline
+\end{longtable}
 
-\lcref{LC_aggregation}
-& \mref{mSettlement}, \mref{mRegistry}, \mref{mToken} \\
-\hline
-
-\lcref{LC_randomInvitations}
-& \mref{mListener}, \mref{mRegistry}, \mref{mLifecycle} \\
-\hline
-
-\lcref{LC_userRequirements}
-& \mref{mUI}, \mref{mUserInfo} \\
-\hline
-
-\end{tabularx}
-\end{table}
 
 
 \begin{table}[H]
@@ -595,16 +915,30 @@ NFR\ref{NFR_BrowserSupport}
 \label{TblUCT}
 \begin{tabularx}{\textwidth}{|X|X|}
 \hline
-\textbf{Unlikely Change (LC)} & \textbf{Modules}\\
+\textbf{Unlikely Change (UC)} & \textbf{Modules}\\
 \hline
 
-\lcref{LC_corePurpose}
-& \mref{mUI}, \mref{mRegistry}, \mref{mLifecycle},
-\mref{mSettlement}, \mref{mParticipation} \\
+\ucref{ucBlockchainArchitecture}
+& \mref{mChain}, \mref{mTransaction},
+\mref{mWallet}, \mref{mToken} \\
 \hline
 
-\lcref{LC_softwarePlatform}
-& \mref{mUI}, \mref{mWallet}, \mref{mProviderSetup} \\
+\ucref{ucTaskBasedMarketplace}
+& \mref{mRegistry}, \mref{mLifecycle},
+\mref{mActionPreflight}, \mref{mRequesterUI},
+\mref{mProviderUI} \\
+\hline
+
+\ucref{ucMultipleProviders}
+& \mref{mRegistry}, \mref{mLifecycle},
+\mref{mAggregator}, \mref{mReputation},
+\mref{mRewards}, \mref{mPenalty} \\
+\hline
+
+\ucref{ucTokenEconomy}
+& \mref{mToken}, \mref{mRewards},
+\mref{mPenalty}, \mref{mRegistry},
+\mref{mLifecycle} \\
 \hline
 
 \end{tabularx}
@@ -612,19 +946,18 @@ NFR\ref{NFR_BrowserSupport}
 
 \section{Use Hierarchy Between Modules} \label{SecUse}
 
-In this section, the uses hierarchy between modules is provided.
-A module A uses a module B if the correct execution of A depends upon the availability of a correct implementation of B. The arrows in the uses hierarchy are directed from the module that requires a service to the module that provides that service.
-For DAIIM, the uses hierarchy is organized around the User Interface, the provider-side SDK modules, the supporting off-chain modules, and the core on-chain modules.
-The User Interface (\mref{mUI}) depends on the Wallet Manager (\mref{mWallet}), User Information (\mref{mUserInfo}), Transaction Manager (\mref{mTransaction}), and Chain Observer (\mref{mChain}) to support wallet authentication, user information retrieval, transaction submission, and the display of blockchain state.
-On the provider side, the Provider Setup module (\mref{mProviderSetup}) uses the Wallet Manager (\mref{mWallet}), User Information (\mref{mUserInfo}), and Chain Observer (\mref{mChain}) to establish provider identity and retrieve registration information. The Request Listener (\mref{mListener}) uses the Chain Observer (\mref{mChain}) to monitor relevant requests and blockchain events. The Participation Client (\mref{mParticipation}) uses the Provider Setup module (\mref{mProviderSetup}), Request Input Manager (\mref{mInput}), and Transaction Manager (\mref{mTransaction}) to retrieve authorized request inputs and participate in inference tasks.
-The Transaction Manager (\mref{mTransaction}) uses the Wallet Manager (\mref{mWallet}) and Chain Observer (\mref{mChain}) to prepare, authorize, and verify transactions.
-Marketplace Action Preflight (\mref{mActionPreflight}) uses the Transaction Manager (\mref{mTransaction}) when a preliminary check requires transaction simulation.
-The core on-chain modules provide the functionality required to operate the marketplace. The Request Lifecycle module (\mref{mLifecycle}) uses the Provider Registry (\mref{mRegistry}) and Token Manager (\mref{mToken}) to manage provider eligibility and request-related token operations. The Settlement module (\mref{mSettlement}) uses the Request Lifecycle module (\mref{mLifecycle}), Provider Registry (\mref{mRegistry}), and Token Manager (\mref{mToken}) to calculate final results, update provider reputations, and distribute rewards or penalties.
-Figure \ref{FigUH} illustrates the uses relationships between the modules. The resulting hierarchy is a directed acyclic graph (DAG), with higher-level modules depending on lower-level modules that provide the services they require.
+In this section, the uses hierarchy between modules is provided. A module A uses a module B if the correct execution of A depends upon the availability of a correct implementation of B.
+For the current system, runtime dependencies are distributed across the Off-Chain Program, On-Chain Program, and Provider SDK.
+Within the Off-Chain Program, the Requester Interface (\mref{mRequesterUI}) and Provider Interface (\mref{mProviderUI}) depend on the Transaction Manager (\mref{mTransaction}), User Information (\mref{mUserInfo}), and Chain Observer (\mref{mChain}). The Transaction Manager (\mref{mTransaction}) depends on the Wallet Service (\mref{mWallet}) and Marketplace Action Preflight (\mref{mActionPreflight}), while the Requester Interface also depends on the Request Input Manager (\mref{mInput}).
+Within the On-Chain Program, the Request Lifecycle (\mref{mLifecycle}) depends on the Provider Registry (\mref{mRegistry}), Rewards Calculator (\mref{mRewards}), Prediction Aggregator (\mref{mAggregator}), Penalty Enforcer (\mref{mPenalty}), and Reputation Handler (\mref{mReputation}). These modules, along with the Provider Registry, depend on the Token Manager (\mref{mToken}).
+Within the Provider SDK, the Participation Client (\mref{mParticipation}) depends on the Request Input Manager (\mref{mInput}), the external Model (\mref{mModel}), and the Request Listener (\mref{mListener}). The Provider Setup (\mref{mProviderSetup}) depends on User Information (\mref{mUserInfo}).
+
+
+
 
 \begin{figure}[H]
 \centering
-%\includegraphics[width=0.7\textwidth]{UsesHierarchy.png}
+\includegraphics[width=0.9\textwidth]{daiim_uses_hierarchy.png}
 \caption{Use hierarchy among modules}
 \label{FigUH}
 \end{figure}
