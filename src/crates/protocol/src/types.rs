@@ -1,3 +1,6 @@
+use crate::error::ProtocolError;
+use crate::params::{MAX_REPUTATION, MIN_REPUTATION};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RequestStatus {
     Accepting,
@@ -37,7 +40,13 @@ pub struct Task {
 }
 
 impl Task {
-    pub fn new(id: TaskId, description: String, category: Category, evaluation_metric: EvaluationMetric, max_providers: u32) -> Self {
+    pub fn new(
+        id: TaskId,
+        description: String,
+        category: Category,
+        evaluation_metric: EvaluationMetric,
+        max_providers: u32,
+    ) -> Self {
         Self {
             id,
             description,
@@ -61,15 +70,33 @@ impl Task {
     }
 
     pub fn remove_provider(&mut self, address: Address) -> Option<Provider> {
-    let pos = self.registered_providers
-        .iter()
-        .position(|p| p.address == address)?;
+        let pos = self
+            .registered_providers
+            .iter()
+            .position(|p| p.address == address)?;
 
-    Some(self.registered_providers.remove(pos))
-}
+        Some(self.registered_providers.remove(pos))
+    }
 
     pub fn registered_providers(&self) -> &[Provider] {
         &self.registered_providers
+    }
+
+    pub fn set_provider_reputation(
+        &mut self,
+        address: Address,
+        reputation: f64,
+    ) -> Result<(), ProtocolError> {
+        if !reputation.is_finite() || !(MIN_REPUTATION..=MAX_REPUTATION).contains(&reputation) {
+            return Err(ProtocolError::InvalidReputation);
+        }
+        let provider = self
+            .registered_providers
+            .iter_mut()
+            .find(|p| p.address == address)
+            .ok_or(ProtocolError::ProviderNotRegistered)?;
+        provider.reputation = reputation;
+        Ok(())
     }
 }
 
@@ -92,11 +119,15 @@ impl Provider {
     pub fn address(&self) -> Address {
         self.address
     }
+
+    pub fn reputation(&self) -> f64 {
+        self.reputation
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Requester {
-    address: Address
+    address: Address,
 }
 
 impl Requester {
@@ -106,6 +137,67 @@ impl Requester {
 
     pub fn address(&self) -> Address {
         self.address
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct IncludedPrediction {
+    address: Address,
+    value: f64,
+    reputation: f64,
+}
+
+impl IncludedPrediction {
+    pub(crate) fn new(
+        address: Address,
+        value: f64,
+        reputation: f64,
+    ) -> Result<Self, ProtocolError> {
+        if !value.is_finite() {
+            return Err(ProtocolError::InvalidPrediction);
+        }
+        if !reputation.is_finite() || reputation <= MIN_REPUTATION || reputation > MAX_REPUTATION {
+            return Err(ProtocolError::InvalidReputation);
+        }
+        Ok(Self {
+            address,
+            value,
+            reputation,
+        })
+    }
+
+    pub fn address(&self) -> Address {
+        self.address
+    }
+
+    pub fn value(&self) -> f64 {
+        self.value
+    }
+
+    pub fn reputation(&self) -> f64 {
+        self.reputation
+    }
+}
+
+#[cfg(test)]
+mod included_prediction_tests {
+    use super::*;
+
+    #[test]
+    fn rejects_non_finite_predictions_and_non_positive_or_out_of_range_reputation() {
+        let address = Address([1; 32]);
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_eq!(
+                IncludedPrediction::new(address, value, 10.0),
+                Err(ProtocolError::InvalidPrediction)
+            );
+        }
+        for score in [0.0, -1.0, 101.0, f64::INFINITY, f64::NAN] {
+            assert_eq!(
+                IncludedPrediction::new(address, 1.0, score),
+                Err(ProtocolError::InvalidReputation)
+            );
+        }
     }
 }
 
@@ -119,15 +211,22 @@ pub struct Request {
     requester: Address,
     status: RequestStatus,
     payment: u64,
-    accepted_providers: Vec<Provider>,
-    provider_commit: String,
-    provider_prediction: f64,
-    provider_salt: Salt,
-    aggregated_prediction: f64,
+    accepted_providers: Vec<Address>,
+    provider_commits: Vec<(Address, [u8; 32])>,
+    provider_predictions: Vec<(Address, f64)>,
+    provider_salts: Vec<(Address, Salt)>,
+    included_predictions: Vec<IncludedPrediction>,
+    aggregated_prediction: Option<f64>,
 }
 
 impl Request {
-    pub fn new(id: RequestId, task_id: TaskId, input: f64, requester: Address, payment: u64) -> Self {
+    pub fn new(
+        id: RequestId,
+        task_id: TaskId,
+        input: f64,
+        requester: Address,
+        payment: u64,
+    ) -> Self {
         Self {
             id,
             task_id,
@@ -136,11 +235,37 @@ impl Request {
             status: RequestStatus::Accepting,
             payment,
             accepted_providers: Vec::new(),
-            // TODO: Store each provider's commitment and reveal separately.
-            provider_commit: String::new(),
-            provider_prediction: 0.0,
-            provider_salt: [0; 32],
-            aggregated_prediction: 0.0,
+            provider_commits: Vec::new(),
+            provider_predictions: Vec::new(),
+            provider_salts: Vec::new(),
+            included_predictions: Vec::new(),
+            aggregated_prediction: None,
         }
+    }
+
+    pub fn task_id(&self) -> TaskId {
+        self.task_id.clone()
+    }
+
+    pub fn status(&self) -> RequestStatus {
+        self.status
+    }
+
+    pub fn included_predictions(&self) -> &[IncludedPrediction] {
+        &self.included_predictions
+    }
+
+    pub fn aggregated_prediction(&self) -> Option<f64> {
+        self.aggregated_prediction
+    }
+
+    pub fn record_settlement(
+        &mut self,
+        included_predictions: Vec<IncludedPrediction>,
+        aggregate: f64,
+    ) {
+        self.included_predictions = included_predictions;
+        self.aggregated_prediction = Some(aggregate);
+        self.status = RequestStatus::Settled;
     }
 }

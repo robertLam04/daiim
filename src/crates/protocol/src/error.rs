@@ -8,6 +8,14 @@ pub enum ProtocolError {
     MaxProvidersReached,
     ProviderNotRegistered,
     ProviderAlreadyRegistered,
+    TaskMismatch,
+    RequestAlreadyFinalized,
+    DuplicatePrediction,
+    InsufficientPredictions,
+    InvalidPrediction,
+    InvalidReputation,
+    InvalidParameter,
+    ArithmeticError,
 }
 
 impl fmt::Display for ProtocolError {
@@ -19,6 +27,18 @@ impl fmt::Display for ProtocolError {
             Self::MaxProvidersReached => "maximum number of providers reached",
             Self::ProviderNotRegistered => "this provider is not registered for this task",
             Self::ProviderAlreadyRegistered => "this provider is already registered for this task",
+            Self::TaskMismatch => "request belongs to a different task",
+            Self::RequestAlreadyFinalized => "request has already been finalized",
+            Self::DuplicatePrediction => "provider submitted more than one prediction",
+            Self::InsufficientPredictions => "fewer than two eligible predictions",
+            Self::InvalidPrediction => "prediction must be finite",
+            Self::InvalidReputation => {
+                "provider reputation must be finite and within [0, 100], and positive when included in aggregation"
+            }
+            Self::InvalidParameter => {
+                "reputation adjustment factor must be finite and non-negative"
+            }
+            Self::ArithmeticError => "aggregation or reputation arithmetic failed",
         };
         f.write_str(message)
     }

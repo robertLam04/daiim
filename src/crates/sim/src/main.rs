@@ -5,13 +5,13 @@ mod metrics;
 mod scenario;
 mod simulation;
 
-use crate::simulation::Simulation;
-use crate::agents::FixedAgent;
+use crate::agents::HonestAgent;
 use crate::ground_truth::LinearRegression;
+use crate::simulation::Simulation;
+use protocol::instructions::{create_task, register_provider};
 use protocol::ledger::Ledger;
 use protocol::params::Params;
-use protocol::instructions::{create_task, register_provider};
-use protocol::types::{TaskId, Requester, Address, Category, EvaluationMetric};
+use protocol::types::{Address, Category, EvaluationMetric, Requester, TaskId};
 
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
@@ -26,9 +26,9 @@ fn main() {
 
     // TODO: Move agent setup into scenario.rs when running multiple scenarios.
     let agents = vec![
-        FixedAgent { address: Address([1; 32]), slope: 2.0, intercept: 2.0 },
-        FixedAgent { address: Address([2; 32]), slope: 2.0, intercept: 3.0 },
-        FixedAgent { address: Address([3; 32]), slope: 10.0, intercept: 100.0 },
+        HonestAgent::new(Address([1; 32]), 1.56, 3.8),
+        HonestAgent::new(Address([2; 32]), 2.02, 2.94),
+        HonestAgent::new(Address([3; 32]), 2.59, 2.19),
     ];
 
     // Define a task creator and requester
@@ -43,14 +43,16 @@ fn main() {
         Category::Regression,
         EvaluationMetric::Accuracy,
         3,
-    ).expect("Failed to create task");
+    )
+    .expect("Failed to create task");
 
     for agent in &agents {
-        register_provider(&mut ledger, &mut task, agent.address, &params).expect("Failed to register provider");
+        register_provider(&mut ledger, &mut task, agent.address(), &params)
+            .expect("Failed to register provider");
     }
 
     let ground_truth = LinearRegression::new(2.0, 3.0);
-    let mut simulation = Simulation::new(task, params, requester, ledger, rng, ground_truth, agents);
+    let mut simulation =
+        Simulation::new(task, params, requester, ledger, rng, ground_truth, agents);
     simulation.run(15).expect("Failed to run simulation");
-
 }

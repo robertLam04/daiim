@@ -1,9 +1,9 @@
-use crate::agents::FixedAgent;
+use crate::agents::HonestAgent;
 use crate::ground_truth::{GroundTruth, LinearRegression};
 use protocol::error::ProtocolError;
-use protocol::types::{RequestId, Requester, Task};
-use protocol::params::Params;
 use protocol::ledger::Ledger;
+use protocol::params::Params;
+use protocol::types::{RequestId, Requester, Task};
 
 use rand_chacha::ChaCha8Rng;
 
@@ -14,11 +14,19 @@ pub struct Simulation {
     ledger: Ledger,
     rng: ChaCha8Rng,
     ground_truth: LinearRegression,
-    agents: Vec<FixedAgent>,
+    agents: Vec<HonestAgent>,
 }
 
 impl Simulation {
-    pub fn new(task: Task, params: Params, requester: Requester, ledger: Ledger, rng: ChaCha8Rng, ground_truth: LinearRegression, agents: Vec<FixedAgent>) -> Self {
+    pub fn new(
+        task: Task,
+        params: Params,
+        requester: Requester,
+        ledger: Ledger,
+        rng: ChaCha8Rng,
+        ground_truth: LinearRegression,
+        agents: Vec<HonestAgent>,
+    ) -> Self {
         Self {
             task,
             params,
@@ -33,7 +41,7 @@ impl Simulation {
     pub fn run(&mut self, iterations: u32) -> Result<(), ProtocolError> {
         for round in 0..iterations {
             let input = self.ground_truth.generate_input(&mut self.rng);
-            let _request = protocol::instructions::create_request(
+            let mut request = protocol::instructions::create_request(
                 &mut self.ledger,
                 RequestId(round),
                 &self.task,
@@ -42,26 +50,55 @@ impl Simulation {
                 0,
             )?;
 
-            println!("Round {}", round + 1);
-            println!("Input: {input:.2}");
             let mut predictions = Vec::new();
             for provider in self.task.registered_providers() {
-                let agent = self.agents.iter()
-                    .find(|agent| agent.address == provider.address())
+                let agent = self
+                    .agents
+                    .iter()
+                    .find(|agent| agent.address() == provider.address())
                     .expect("registered provider must have a simulation agent");
-                let prediction = agent.predict(input);
-                println!("Provider {} prediction: {prediction:.2}", agent.address.0[0]);
-                predictions.push(prediction);
+                predictions.push((agent.address(), agent.predict(input)));
             }
 
-            assert_eq!(predictions.len(), 3, "first milestone uses three providers");
-            predictions.sort_by(f64::total_cmp);
-            let aggregate = predictions[1];
+            protocol::instructions::settle_request(
+                &mut self.ledger,
+                &mut self.task,
+                &mut request,
+                &self.params,
+                &predictions,
+            )?;
+            let aggregate = request
+                .aggregated_prediction()
+                .expect("settled request has an aggregate");
+            let total_reputation: f64 = request
+                .included_predictions()
+                .iter()
+                .map(|prediction| prediction.reputation())
+                .sum();
 
             let truth = self.ground_truth.truth(&input);
-            println!("Aggregate: {aggregate:.2}");
-            println!("Ground truth: {truth:.2}");
-            println!("Absolute error: {:.2}", (aggregate - truth).abs());
+            println!("Round {} | input {input:.2} | truth {truth:.2}", round + 1);
+            for prediction in request.included_predictions() {
+                let after = self
+                    .task
+                    .registered_providers()
+                    .iter()
+                    .find(|provider| provider.address() == prediction.address())
+                    .expect("included provider remains registered")
+                    .reputation();
+                println!(
+                    "  provider {}: prediction {:.2}, weight {:.3}, reputation {:.3} -> {:.3}",
+                    prediction.address().0[0],
+                    prediction.value(),
+                    prediction.reputation() / total_reputation,
+                    prediction.reputation(),
+                    after,
+                );
+            }
+            println!(
+                "  weighted median {aggregate:.2} | absolute error {:.2}",
+                (aggregate - truth).abs()
+            );
         }
 
         Ok(())
