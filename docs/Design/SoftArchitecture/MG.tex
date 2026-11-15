@@ -54,7 +54,8 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-November 13, 2026 & 0.1 & Updated the system overview, likely and unlikely changes, and module decomposition sections\\
+November 13 & 0.1 & Updated the system overview, likely and unlikely changes, and module decomposition sections\\
+November 14 & 1.0 & Added module decomposition, list of acronyms and gen AI disclosure\\
 \bottomrule
 \end{tabularx}
 
@@ -67,23 +68,39 @@ This section records information for easy reference.
 \subsection{Abbreviations and Acronyms}
 
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{l l} 
-  \toprule		
-  \textbf{symbol} & \textbf{description}\\
-  \midrule 
-  AC & Anticipated Change\\
-  DAG & Directed Acyclic Graph \\
-  M & Module \\
-  MG & Module Guide \\
-  OS & Operating System \\
-  R & Requirement\\
-  SC & Scientific Computing \\
-  SRS & Software Requirements Specification\\
-  \progname & Explanation of program name\\
-  UC & Unlikely Change \\
-  \wss{etc.} & \wss{...}\\
-  \bottomrule
-\end{tabular}\\
+\begin{longtable}{p{0.27\textwidth}p{0.65\textwidth}}
+\toprule
+\textbf{Term} & \textbf{Description}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Term} & \textbf{Description}\\
+\midrule
+\endhead
+AC & Anticipated Change: a decision the modules are designed to accommodate if it changes.\\
+UC & Unlikely Change: an architectural assumption not expected to change during this project.\\
+Abstract data type (ADT) & A module with separately created instances, each with its own state and operations.\\
+Abstract object & A module with one stateful instance and operations.\\
+Library & A module that provides operations but owns no state.\\
+Commit--reveal & A protocol in which a provider commits to a prediction before revealing the prediction and its salt.\\
+DAIIM & Decentralized Artificial Intelligence Inference Marketplace.\\
+Escrow & Tokens held under program control until payment or stake obligations are resolved.\\
+FR & Functional Requirement in the SRS.\\
+M & Module identifier in this guide.\\
+MIS & Module Interface Specification.\\
+NFR & Non-Functional Requirement in the SRS.\\
+Off-chain & Executed or stored outside the blockchain.\\
+On-chain & Executed or stored on the blockchain.\\
+OS & Operating System.\\
+SA & Safety requirement in the SRS.\\
+SDK & Software Development Kit used by providers to facilitate their participation in the marketplace.\\
+Solana & The public blockchain used to execute DAIIM's on-chain program.\\
+SRS & Software Requirements Specification.\\
+Stake & Tokens a provider locks to participate in an inference task.\\
+Token-curated registry & The per-task provider list governed by staking, reputation, and eligibility rules.\\
+Wallet & Software that manages signing credentials for a blockchain address and authorizes transactions.\\
+\bottomrule
+\end{longtable}
 
 \newpage
 
@@ -140,7 +157,7 @@ Anticipated changes are changes to requirements, design decisions, or implementa
 
 \item[\refstepcounter{acnum} \actheacnum \label{acTokenOperations}:] The mechanisms used for token transfers, minting, and burning may change.
 
-\item[\refstepcounter{acnum} \actheacnum \label{acWalletIntegration}:] Supported cryptographic wallet implementations and the methods used to connect wallets, verify ownership, and request signatures may change.
+\item[\refstepcounter{acnum} \actheacnum \label{acWalletIntegration}:] The wallet connection, ownership-verification, and transaction-signing behaviour offered to users, including supported wallet types, may change.
 
 \item[\refstepcounter{acnum} \actheacnum \label{acUserInformation}:] The storage and retrieval of user profiles including verified wallet addresses, preferences, and user history may change.
 
@@ -250,15 +267,15 @@ Behaviour-Hiding & \mref{mRegistry}: Provider Registry \\
 & \mref{mInput}: Request Input Manager \\
 & \mref{mRequesterUI}: Requester Interface \\
 & \mref{mProviderUI}: Provider Interface \\
+& \mref{mWallet}: Wallet Service \\
+& \mref{mParticipation}: Participation Client \\
 \midrule
 Software Decision & \mref{mToken}: Token Manager \\
-& \mref{mWallet}: Wallet Service \\
 & \mref{mUserInfo}: User Information \\
 & \mref{mChain}: Chain Observer \\
 & \mref{mTransaction}: Transaction Manager \\
 & \mref{mProviderSetup}: Provider Setup \\
 & \mref{mListener}: Request Listener \\
-& \mref{mParticipation}: Participation Client \\
 & \mref{mModel}: Model (provided externally) \\
 \bottomrule
 \end{tabularx}
@@ -462,13 +479,9 @@ traceability relationships are summarized in Table~\ref{TblRT}.
 
 \end{itemize}
 
-The Model is included in the requirements-to-design discussion because
-it participates in producing inference predictions, but its
-implementation is external to DAIIM. The traceability matrix should
-therefore distinguish requirements implemented by DAIIM from
-functionality provided by inference providers.
-
-
+The Model module is included in the requirements-to-design discussion because
+it participates in satisfying the requirement of providing inferences, but its
+implementation is external to DAIIM.
 
 \section{Module Decomposition} \label{SecMD}
 
@@ -489,7 +502,7 @@ to be implemented.
 \subsection{Hardware Hiding Modules}
 
 \begin{description}
-\item[Secrets:]The data structure and algorithm used to implement the virtual
+\item[Secrets:] The data structure and algorithm used to implement the virtual
   hardware.
 \item[Services:]Serves as a virtual hardware used by the rest of the
   system. This module provides the interface between the hardware and the
@@ -512,24 +525,21 @@ to be implemented.
 \subsubsection{Provider Registry (\mref{mRegistry})}
 
 \begin{description}
-\item[Secrets:] The representation of inference tasks and the token-curated provider registry for each task.
-  Owns the on-chain validity rules for task definitions and the rules for
-  admitting, ordering, and removing providers from the registry.
-\item[Services:] Records and retrieves on-chain task definitions and per-task
-  provider registrations, reputation, and stake. Rejects task definitions that
-  violate protocol constraints and determines whether a provider is eligible
-  to join or remain in a task's registry.
+\item[Secrets:] The representation and curation rules of the on-chain task
+  and provider registry.
+\item[Services:] Creates and retrieves task definitions. Records per-task
+  provider registrations, reputation, and stake. Determines whether providers may join or remain listed.
 \item[Implemented By:] \progname{} on-chain program
-\item[Type of Module:] Abstract Object
+\item[Type of Module:] Abstract Data Type
 \end{description}
 
 \subsubsection{Marketplace Action Preflight (\mref{mActionPreflight})}
 
 \begin{description}
-\item[Secrets:] Which preliminary checks are performed before
-  transaction submission and how errors are reported to users.
-\item[Services:] Checks proposed tasks, requests, and provider actions and reports actionable errors before
-  invoking the on-chain program. The on-chain program is authoritative on protocol-critical rules.
+\item[Secrets:] The preliminary validation and error feedback for marketplace
+  actions used before submitting blockchain transactions.
+\item[Services:] Validates proposed marketplace actions before
+  transaction preparation including account balances and authorization.
 \item[Implemented By:] \progname{} off-chain application
 \item[Type of Module:] Library
 \end{description}
@@ -537,16 +547,108 @@ to be implemented.
 \subsubsection{Request Lifecycle (\mref{mLifecycle})}
 
 \begin{description}
-\item[Secrets:] The representation of inference requests and accepted-provider
-  records, the request state machine and deadlines, and the commitment and
-  reveal validation rules.
-\item[Services:] Creates inference requests, records provider acceptances, commitments,
-  and reveals, advances request phases, rejects invalid participation, and
-  determines when a request must be cancelled.
+\item[Secrets:] The request records, state machine, deadlines, and rules for
+  commitments and reveals.
+\item[Services:] Creates inference requests. Records provider acceptances,
+  commitments, and reveals. Advances request phases.
 \item[Implemented By:] \progname{} on-chain program
 \item[Type of Module:] Abstract Data Type
 \end{description}
 
+\subsubsection{Prediction Aggregator (\mref{mAggregator})}
+
+\begin{description}
+\item[Secrets:] The prediction aggregation algorithm.
+\item[Services:] Calculates an aggregate prediction from valid predictions
+  and provider reputations.
+\item[Implemented By:] \progname{} on-chain program
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{Rewards Calculator (\mref{mRewards})}
+
+\begin{description}
+\item[Secrets:] The reward calculation algorithm and eligibility criteria.
+\item[Services:] Determines which providers are eligible for a request's
+  rewards. Calculates each eligible provider's share of the rewards.
+\item[Implemented By:] \progname{} on-chain program
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{Penalty Enforcer (\mref{mPenalty})}
+
+\begin{description}
+\item[Secrets:] The conditions and amounts for slashing provider stake.
+\item[Services:] Determines whether a provider's participation or lack thereof warrants a penalty.
+  Calculates the penalty amount.
+\item[Implemented By:] \progname{} on-chain program
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{Reputation Handler (\mref{mReputation})}
+
+\begin{description}
+\item[Secrets:] The provider reputation update formula.
+\item[Services:] Calculates a provider's reputation change from their
+  performance in a request.
+\item[Implemented By:] \progname{} on-chain program
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{Request Input Manager (\mref{mInput})}
+
+\begin{description}
+\item[Secrets:] The management of off-chain request input data.
+\item[Services:] Encrypts and stores the input record for an inference request.
+ Grants access to accepted providers. Deletes the data when the request reaches a final state.
+\item[Implemented By:] \progname{} off-chain application
+\item[Type of Module:] Abstract Data Type
+\end{description}
+
+\subsubsection{Requester Interface (\mref{mRequesterUI})}
+
+\begin{description}
+\item[Secrets:] The view of the user interface presented to requesters.
+\item[Services:] Displays available tasks. Allows requesters to create tasks
+  and submit inference requests. Displays request status, results, and history.
+\item[Implemented By:] \progname{} frontend
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Provider Interface (\mref{mProviderUI})}
+
+\begin{description}
+\item[Secrets:] The view of the user interface presented to providers.
+\item[Services:] Displays available tasks and provider registrations. Allows
+  providers to register for and unregister from tasks. Displays their stake,
+  reputation, and rewards.
+\item[Implemented By:] \progname{} frontend
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Wallet Service (\mref{mWallet})}
+
+\begin{description}
+\item[Secrets:] The wallet access and transaction authorization mechanisms.
+\item[Services:] Maintains the active wallet connection.
+ Verifies control of the wallet address. Requests
+  wallet signatures for authorization.
+\item[Implemented By:] \progname{} off-chain application
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Participation Client (\mref{mParticipation})}
+
+\begin{description}
+\item[Secrets:] The interface between provider-owned models and the request
+  participation protocol.
+\item[Services:] Creates a participation client for a provider's registered
+  task. Obtains authorized inputs for that task's requests. Invokes the
+  provider's model. Generates and retains a cryptographically secure salt and
+  prediction for each active request. Submits commitments and reveals.
+\item[Implemented By:] \progname{} provider SDK
+\item[Type of Module:] Abstract Data Type
+\end{description}
 
 \subsection{Software Decision Module}
 
@@ -556,21 +658,79 @@ to be implemented.
   \emph{not} described in the SRS.
 \item[Services:] Includes data structure and algorithms used in the system that
   do not provide direct interaction with the user. 
-  % Changes in these modules are more likely to be motivated by a desire to
-  % improve performance than by externally imposed changes.
 \item[Implemented By:] --
+\end{description}
+
+\subsubsection{Token Manager (\mref{mToken})}
+
+\begin{description}
+\item[Secrets:] The token transfer, minting, and burning mechanisms.
+\item[Services:] Transfers tokens for payments, stakes, penalties, and
+  rewards. Mints and burns tokens when required.
+\item[Implemented By:] \progname{} on-chain program
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{User Information (\mref{mUserInfo})}
+
+\begin{description}
+\item[Secrets:] The representation of user profiles.
+\item[Services:] Finds or creates a profile for a verified address. Stores
+  and retrieves profile details, preferences, and history.
+\item[Implemented By:] \progname{} off-chain application
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Chain Observer (\mref{mChain})}
+
+\begin{description}
+\item[Secrets:] The method for reading blockchain data and detecting changes.
+\item[Services:] Reads account and transaction information. Maintains
+  subscriptions to relevant accounts. Reports state changes and transaction
+  outcomes.
+\item[Implemented By:] \progname{} off-chain application
+\item[Type of Module:] Abstract Object
 \end{description}
 
 \subsubsection{Transaction Manager (\mref{mTransaction})}
 
 \begin{description}
-\item[Secrets:] How blockchain transactions are constructed, simulated,
-  checked for sufficient funds, submitted, and confirmed.
-\item[Services:] Constructs transactions for marketplace actions, simulates
-  them, checks balances and fees, obtains wallet authorization, submits signed
-  transactions, and tracks their status to avoid duplicate submissions.
+\item[Secrets:] The process for executing blockchain transactions.
+\item[Services:] Constructs transactions for marketplace actions. Checks
+  balances and fees. Simulates transactions. Obtains wallet authorization.
+  Submits signed transactions.
 \item[Implemented By:] \progname{} off-chain application
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{Provider Setup (\mref{mProviderSetup})}
+
+\begin{description}
+\item[Secrets:] The provider client's blockchain and wallet setup procedure.
+\item[Services:] Initializes a provider client with blockchain connectivity
+  and wallet access.
+\item[Implemented By:] \progname{} provider SDK
 \item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Request Listener (\mref{mListener})}
+
+\begin{description}
+\item[Secrets:] The process of detecting and reporting on-chain events
+  relevant to a provider's registered task.
+\item[Services:] Creates a listener for a provider's registered task. Watches
+  that task for relevant requests. Reports payments, phases, and deadlines.
+\item[Implemented By:] \progname{} provider SDK
+\item[Type of Module:] Abstract Data Type
+\end{description}
+
+\subsubsection{Model (\mref{mModel})}
+
+\begin{description}
+\item[Secrets:] The provider's private machine learning model.
+\item[Services:] Generates a prediction for a given request using the input data.
+\item[Implemented By:] Inference provider
+\item[Type of Module:] Abstract Data Type
 \end{description}
 
 \section{Traceability Matrix} \label{SecTM}
@@ -946,18 +1106,14 @@ change.
 
 \section{Use Hierarchy Between Modules} \label{SecUse}
 
-In this section, the uses hierarchy between modules is provided. A module A uses a module B if the correct execution of A depends upon the availability of a correct implementation of B.
-For the current system, runtime dependencies are distributed across the Off-Chain Program, On-Chain Program, and Provider SDK.
-Within the Off-Chain Program, the Requester Interface (\mref{mRequesterUI}) and Provider Interface (\mref{mProviderUI}) depend on the Transaction Manager (\mref{mTransaction}), User Information (\mref{mUserInfo}), and Chain Observer (\mref{mChain}). The Transaction Manager (\mref{mTransaction}) depends on the Wallet Service (\mref{mWallet}) and Marketplace Action Preflight (\mref{mActionPreflight}), while the Requester Interface also depends on the Request Input Manager (\mref{mInput}).
-Within the On-Chain Program, the Request Lifecycle (\mref{mLifecycle}) depends on the Provider Registry (\mref{mRegistry}), Rewards Calculator (\mref{mRewards}), Prediction Aggregator (\mref{mAggregator}), Penalty Enforcer (\mref{mPenalty}), and Reputation Handler (\mref{mReputation}). These modules, along with the Provider Registry, depend on the Token Manager (\mref{mToken}).
-Within the Provider SDK, the Participation Client (\mref{mParticipation}) depends on the Request Input Manager (\mref{mInput}), the external Model (\mref{mModel}), and the Request Listener (\mref{mListener}). The Provider Setup (\mref{mProviderSetup}) depends on User Information (\mref{mUserInfo}).
-
-
-
+Module A uses module B if its correct execution depends on a correct
+implementation of B. In Figure~\ref{FigUH}, an arrow points from the module
+that uses a service to the module that provides it. The diagram groups modules
+by the off-chain program, on-chain program, and provider SDK.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{daiim_uses_hierarchy.png}
+\includegraphics[width=0.9\textwidth]{daiim_uses_hierarchy.pdf}
 \caption{Use hierarchy among modules}
 \label{FigUH}
 \end{figure}
@@ -966,59 +1122,52 @@ Within the Provider SDK, the Participation Client (\mref{mParticipation}) depend
 
 \section{User Interfaces}
 
-\wss{Design of user interface for software and hardware.  Attach an appendix if
-needed. Drawings, Sketches, Figma}
+This section is planned to be completed for Rev 0.
 
 \section{Design of Communication Protocols}
 
-\wss{If there is communication between hardware and software, it may be necessary 
-to explain the design of the communication protocol.  This section should be filled 
-in with NA if it is not appropriate for a given project.}
+NA
 
 \section{Database Design}
 
-\wss{If a database is a significant component of the project, the database
-design should be summarized here.  This section should be filled in with NA if
-it is not appropriate for a given project.}
+NA
 
 \section{Timeline}
 
-\wss{Schedule of tasks and who is responsible}
-
-\wss{You can point to GitHub if this information is included there}
+This section is planned to be completed for Rev 0.
 
 \section{Generative AI Use Disclosure}
 
-\wss{ChatGPT (version 5) was used to brainstorm ideas for the template for this disclose section.}
-
 \subsection{AI Tools Used}
 
-\wss{Give the name of the AI tool(s) used and the version.}
+GPT-6 Sol was used to assist with drafting
+and reviewing this document.
 
 \subsection{How and Where Used}
 
-\wss{Explain what the tool(s) were used for.  Examples include: brainstorming,
-explaining a technical concept, reviewing the document, generating or modifying
-text, generating or modifying diagrams, identifying errors or omissions or
-inconsistencies.}
-
-\wss{For each of the uses, identify which parts of the document were affected.}
-
-\wss{You do not need to report every interaction, but you should disclose the 
-uses that materially contributed to your work}
+\begin{itemize}
+\item \textbf{Anticipated and Unlikely Changes:} Brainstormed possible changes
+  and refined their wording. Provided the AI with a list of module secrets and
+  asked it to check for missing functionalities based on the requirements.
+\item \textbf{Module Hierarchy and Module Decomposition:} Reviewed module
+  boundaries and names, drafted and revised secrets and services. Clarified and
+  discussed module classifications, and why a given module should be classified as library, abstract object, and
+  abstract data type.
+\item \textbf{Connection Between Requirements and Design:} Reviewed the
+  relationship between stated requirements and the proposed modules.
+\item \textbf{Traceability Matrix:} Drafted traceability matrix.
+\item \textbf{Generative AI Use Disclosure:} Drafted and revised this
+  disclosure of AI-assisted work and its verification.
+\end{itemize}
 
 \subsection{Verification of AI-Generated Content}
 
-\wss{\begin{itemize}
-    \item Describe how the team checked AI-generated or AI-assisted material
-    before including it in the document.
-    \item In particular, verify factual claims, technical assertions,
-    requirements, calculations, references, and other information for which an
-    AI system may produce incorrect or fabricated results.
-    \item \textbf{The team is responsible for the accuracy, completeness,
-consistency, and appropriateness of the submitted document, regardless of
-whether material was generated by a human or an AI system.}
-\end{itemize}}
+Every single line of this document was read and reviewed by at least one member of the team.
+AI-assisted work was compared with the SRS and the local MIS
+checklist. The team reviewed and corrected module responsibilities, secrets,
+and classifications during drafting. The \LaTeX{} document was compiled to
+check that the changes rendered correctly. The team remains responsible for the
+accuracy, completeness, and consistency of the submitted document.
 
 \newpage{}
 
