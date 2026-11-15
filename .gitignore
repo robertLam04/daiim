@@ -27,6 +27,9 @@
 ## Exception: committed, CI-generated PDFs kept here for TA review
 !/pdfs/**/*.pdf
 
+## Source figure used by the Module Guide
+!/docs/Design/SoftArchitecture/daiim_uses_hierarchy.pdf
+
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
 *.bcf
