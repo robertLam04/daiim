@@ -49,13 +49,11 @@ aggreated results via the decentalized platform. To interact with the system, it
 a supported browser, but there are no assumptions made about their technical knowledge or capabilities. 
 
 A cognitive walkthrough has been integrated into the development of the system to evaluate the 
-learnability of the web client prototype and highlight areas that require more abstraction or 
+learnability of the web client prototype from the perspective of a new user and highlight areas that require more abstraction or 
 simplification to better support an average expected inference requester.
 
 This document describes the plan, execution, and takeaways of the cognitive walkthrough for the 
 DAIIM web client.
-
-
 
 
 \section{Plan}
@@ -65,21 +63,79 @@ The plan for conducting the cognitive walkthrough is detailed below.
 \subsection{Methodology}
 explain the four questions asked and how answers will be recorded (ie. answer questions from perspective of the persona)
 
+The cognitive walkthrough will be performed by identifying a typical new user persona and important 
+user tasks, then having a usability expert evaulate the learnability of the prototype by answering the 
+following four questions after every action in each task:
+
+\begin{enumerate}
+    \item Will users try to achieve the right result?
+    \item Will users notice that the correct action is available? 
+    \item Will users associate the correct action with the result they're trying to achieve?
+    \item After the action is performed, will users see that progress is made toward the goal?
+\end{enumerate}
 
 \subsection{User Persona}
-describe persona
+The user persona encapsulates the expected capabilities of an average new user and 
+will be used as a guide for how to interpret the web client and answer the four listed questions.
+
+The user persona chosen to represent a DAIIM inference requester is outlined as follows:
+
+\begin{itemize}
+\item Name: Priya Nair
+\item Description: Priya is 41 and coordinates emergency management for a mid-sized town on a flood-prone river, in a region that also has an annual wildfire season. She decides when to issue flood warnings and evacuation orders, and when to pre-position firefighting resources. She currently relies on a single forecasting service, and has to justify every decision to the town council.
+\item Goals: Receive river-level forecasts 24 to 48 hours ahead, and wildfire risk estimates during fire season, that combine predictions from multiple independent sources. See how much the sources agree, so she knows how much to trust each forecast. Keep costs predictable and within the town's budget.
+\item Frustrations: Her current service is a black box: it gives one number with no indication of confidence, and she has no alternative when it is wrong or unavailable. A missed flood forecast the previous spring left the town unprepared. She has no interest in learning about cryptocurrency or managing digital wallets.
+\item Technical Ability: Comfortable with spreadsheets, web dashboards, and mapping tools. No programming experience and no experience with blockchain or Web3 applications.
+\end{itemize}
 
 
 \subsection{Participants and Roles}
-describe participants
-
+Facilitator: Keira Laskoski
+Evaluator: Aidan Lao
+Recorder: Keira Laskoski
 
 \subsection{User Tasks}
-overview of the tasks being tested
+For the purposes of performing the cognitive walkthrough, the following four user tasks have been identified:
+\begin{enumerate}
+\item Log in/sign up (authenticate wallet) and log out;
+\item Add funds to the wallet;
+\item Create a task definition;
+\item Submit and inference request and view the result;
+\item View user profile and transaction history.
+\end{enumerate}
+
+\subsection{Prototype}
+\textbf{Maybe just add where to find the prototype in the project repo, or add the figma drawings to an Appendix}
 
 
 \section{Results}
-answers to questions at all actionable steps
+\subsection{Task}
+task description and action decomp
+
+\subsubsection{Action}: 
+action description
+maybe photo of what the user would see, or point to where it can be found in the Appendix
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & \\
+        \hline
+        Will users notice that the correct action is available? & \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.1: Click ``Sign up / Log in''}
+    \label{tab:cw-step-1-1}
+\end{table}
+
+
 
 
 \section{Planned Changes}
