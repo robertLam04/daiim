@@ -1952,7 +1952,64 @@ to the resulting reputation scores.
 
 \subsection{Appendix B: Development Plan}
 
-The development plan is not included in this SRS; see the separate Development Plan document.
+Table~\ref{tab:dated-implementation} gives the planned order of
+implementation and the target date for each task. The dates follow the
+course milestones in the Development Plan. The following practices apply to
+every task from the start and are not listed as separate tasks: code is
+formatted and linted in CI (\nfrref{NFR_CodingStandards}), dependencies are
+scanned in CI (\ref{SA_DependencyScan}), unit and integration tests are
+written together with the code they test, code is documented with
+\texttt{rustdoc}, and every change is reviewed through a pull request, as
+described in the Development Plan and the V\&V Plan.
+
+\begin{longtable}{|p{0.17\textwidth}|p{0.43\textwidth}|p{0.17\textwidth}|p{0.09\textwidth}|}
+\caption{Dated Implementation Plan} \label{tab:dated-implementation} \\
+\hline
+\textbf{Task} & \textbf{Description / Steps} & \textbf{Deliverable} & \textbf{Due Date} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Task} & \textbf{Description / Steps} & \textbf{Deliverable} & \textbf{Due Date} \\
+\hline
+\endhead
+CI and Code Quality Setup & Set up GitHub Actions to run \texttt{cargo fmt --check}, \texttt{cargo clippy} (warnings as errors), \texttt{cargo test}, \texttt{cargo audit}, and \texttt{cargo llvm-cov} on every pull request and weekly, with branch protection on \texttt{main}. Add Anchor tests, ESLint, \texttt{Prettier --check}, Vitest, \texttt{npm audit}, and automated browser tests as those parts are created. & Design Document & Nov.~16 \\
+\hline
+Wireframe and Cognitive Walkthrough & Build a wireframe prototype of the requester interface and run the cognitive walkthrough on it. Use results to plan the frontend build & Cognitive Walkthrough (Fall CD) & Nov.~16 \\
+\hline
+Complete the off-chain simulation of regression rounds with honest, learning, malicious, and colluding providers. Simulate provider costs, transaction fees, rewards, and penalties by assigning values to the providers. Show that the proof of concept success criteria are met. & Proof of Concept Demonstration & Nov.~23 \\
+\hline
+Design Review and Tuning & Review the simulation results with the supervisor. Revise the aggregation, reputation, and incentive design, or the scope, as set out in the Development Plan's failure response, and set the protocol constants. & Design Document Revision~0 & Dec.~2 \\
+\hline
+Core On-Chain Program & Implement the on-chain logic in Rust with the Anchor framework and use a local validator for testing. The program covers implemented on-chain include task creation, provider registration and staking, requests with escrowed payment, commit-reveal, aggregation, reputation updates, and reward payout. & Module Implementation & Jan.~18 \\
+\hline
+Request Lifecycle and Penalties & Add the acceptance, commit, and reveal periods, request cancellation with refunds, stake reservation, slashing, automatic unregistration, and on-chain checks on funds and reward totals. & Revision~0 Demonstration & Feb.~1 \\
+\hline
+Off-Chain Backend & Build the Node.js backend and off-chain database. Implements request broadcasting, encrypted input storage with access restriction and deletion, and transaction status tracking. Add the fault-injection test build used in system testing. & Revision~0 Demonstration & Feb.~1 \\
+\hline
+Web Application and Wallet Integration & Build the React frontend from the walkthrough findings: sign-in with a Web3 wallet or an embedded wallet, task/provider browsing, task definition, request submission, and transaction status. Deploy the programs to Devnet. & Revision~0 Demonstration & Feb.~1 \\
+\hline
+Provider SDK & Build the provider SDK that listens for, accepts, commits to, and reveals predictions for requests, with simple Python models for integration testing. & Revision~0 Demonstration & Feb.~1 \\
+\hline
+Supervisor Demonstration and Requirements Review & Demonstrate a complete request on Devnet to the supervisor, including at least one failure case. Review the SRS with the supervisor and update the SRS and V\&V Plan. & Supervisor Demonstration & Feb.~8 \\
+\hline
+Usability Study 1 & Run a pilot session, then the usability study (NFR-USE-1) with 5 to 8 new users on Devnet. Record the problems found as issues. & Final Demonstration & Feb.~22 \\
+\hline
+Edge Cases and Usability Fixes & Add retries and deadlines for failed reward transfers, reputation-based stake return, and unregistration of repeat offenders. Fix the problems found in Usability Study~1. & Final Demonstration & Mar.~1 \\
+\hline
+User Documentation & Write the user guide and the instructions for deploying the programs and running a provider. & Final Documentation & Mar.~1 \\
+\hline
+Business Plan & Write the business plan from the proof of concept results: market need, costs, competition, tokenomics, and execution plan. & Business Plan (Winter CD) & Mar.~8 \\
+\hline
+System Testing and Goal Evaluation & Run the large-scale simulation (NFR-SIM-1) against an independent reference implementation of the aggregation algorithm, with fault injection. Measure request completion and accuracy against a baseline, and run the provider improvement experiments from the Problem Statement. Run the security and privacy audit (NFR-SEC-1), the release checks (NFR-RELEASE-1), and Usability Study~2. & V\&V Report & Mar.~8 \\
+System Testing and Goal Evaluation & Run the tests that cannot run on every pull request: the Devnet system tests, the large-scale simulation (NFR-SIM-1) against an independent reference implementation, the security and privacy audit (NFR-SEC-1), the release checks (NFR-RELEASE-1), and Usability Study~2. Measure request completion and accuracy against a baseline, run the provider improvement experiments, and report all results. & V\&V Report & Mar.~8 \\
+\hline
+Final Fixes & Fix the issues found in V\&V testing and in demonstration feedback. & Final Demonstrations & Mar.~15 \\
+\hline
+Expo Preparation & Deploy a stable demo and prepare the poster and materials for the Expo. & Capstone EXPO & Apr.~5 \\
+\hline
+Future Work & Stretch goals: support for inference types beyond regression (LC\ref{LC_inferenceModels}), private inference using trusted execution environments, data provider participation, and random provider invitations (LC\ref{LC_randomInvitations}). & -- & -- \\
+\hline
+\end{longtable}
 
 \plt{This section is optional.  It is used to explain the plan for developing
   the software.  In particular, this section gives a list of the order in which
