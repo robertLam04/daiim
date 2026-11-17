@@ -32,9 +32,12 @@ urlcolor=cyan          % color of external links
 \usepackage{array}
 
 \externaldocument{../../SRS/SRS}
+\externaldocument{../SoftArchitecture/MG}
 
 \input{../../Comments.text}
 \input{../../Common.text}
+
+\newcommand{\mref}[1]{M\ref{#1}}
 
 \begin{document}
 
@@ -226,6 +229,947 @@ The following table is taken directly from the Module Guide document for this pr
   They are not necessarily something that is going to be implemented
   explicitly.  Even if they are implemented, they are not exported; they only
   have local scope.}
+
+% =====================================================================
+\section{MIS of Request Lifecycle (\mref{mLifecycle})} \label{misLifecycle}
+% =====================================================================
+
+\subsection{Module}
+
+Request Lifecycle (\mref{mLifecycle}). An abstract data type whose instances are
+inference requests, each identified by a \texttt{RequestId}. It is implemented
+in the on-chain program.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{Provider Registry (\mref{mRegistry}):}
+  \texttt{getTaskParameters}, \texttt{isRegistered}, \texttt{getReputation},
+  \texttt{setReputation}, \texttt{getStake}, \texttt{getReservedStake},
+  \texttt{reserveStake}, \texttt{releaseStake}, \texttt{deductStake},
+  \texttt{removeProvider}, \texttt{isValidOutput}, \texttt{getSlashHistory},
+  \texttt{recordParticipation}, and the constant
+  \texttt{MINIMUM\_PROVIDER\_STAKE}. (\texttt{TaskParameters} is a record
+  with \texttt{minProviders}, \texttt{maxProviders}, and
+  \texttt{acceptancePeriod}.)
+\item \textbf{Prediction Aggregator (\mref{mAggregator}):}
+  \texttt{weightedMedian}, \texttt{resultSpread}, and \texttt{AggregationError}.
+\item \textbf{Reputation Handler (\mref{mReputation}):}
+  \texttt{updateReputations} and \texttt{forfeitStake}.
+\item \textbf{Rewards Calculator (\mref{mRewards}):}
+  \texttt{escrowPayment}, \texttt{distributeRewards}, \texttt{retryReward},
+  \texttt{forfeitReward}, \texttt{refundPayment}, \texttt{payCompensation},
+  and \texttt{TransferFailedError}.
+\item \textbf{Penalty Enforcer (\mref{mPenalty}):}
+  \texttt{applyPenalty}, \texttt{collectCompensation}, \texttt{PenaltyDecision},
+  and \texttt{ParticipationOutcome}.
+\end{itemize}
+
+This module calls no Token Manager (\mref{mToken}) routine. Every movement of
+tokens for a request happens inside Rewards Calculator, Penalty Enforcer, or
+Reputation Handler.
+
+The routine names above are the interface this MIS assumes from the other
+modules; they must match those modules' MIS.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+\begin{itemize}
+\item \texttt{COMMIT\_PERIOD}: Duration -- maximum length of the commit phase,
+  measured from the end of the acceptance period
+\item \texttt{REVEAL\_PERIOD}: Duration -- maximum length of the reveal phase,
+  measured from the end of the commit phase
+\item \texttt{PENDING\_TRANSFER\_PERIOD}: Duration -- time after the end of the
+  reveal phase during which unresolved reward transfers may be retried
+\item \texttt{MINIMUM\_REQUEST\_PAYMENT}: $\mathbb{N}$ -- the lowest payment a
+  request may offer (payments must exceed it)
+\end{itemize}
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{RequestStatus} = \{Acceptance, Commit, Reveal, Finalization,
+  PendingTransfer, Completed, Failed, Cancelled\}
+\item \texttt{RevealResult} = \{Accepted, Mismatch, NonConforming\}
+\item \texttt{Hash}: fixed-length byte string; \texttt{Salt}: byte string
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{3.3cm} p{4.2cm} p{3.1cm} p{5cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+computeCommitment & RequestId, Address, $\mathbb{R}$, Salt & Hash & - \\
+\hline
+createRequest & TaskId, Address, $\mathbb{N}$ & RequestId &
+  UnknownTaskError, InvalidPaymentError, TransferFailedError \\
+\hline
+acceptRequest & RequestId, Address & - &
+  UnknownRequestError, WrongPhaseError, DeadlinePassedError,
+  NotRegisteredError, AlreadyAcceptedError, InsufficientStakeError \\
+\hline
+submitCommitment & RequestId, Address, Hash & - &
+  UnknownRequestError, WrongPhaseError, DeadlinePassedError,
+  NotAcceptedError, AlreadyCommittedError \\
+\hline
+revealPrediction & RequestId, Address, $\mathbb{R}$, Salt & RevealResult &
+  UnknownRequestError, WrongPhaseError, DeadlinePassedError,
+  NoCommitmentError, AlreadyRevealedError \\
+\hline
+advancePhase & RequestId & RequestStatus &
+  UnknownRequestError, ArithmeticOverflowError \\
+\hline
+retryTransfer & RequestId, Address & - &
+  UnknownRequestError, WrongPhaseError, DeadlinePassedError,
+  NoUnresolvedTransferError, TransferFailedError \\
+\hline
+getStatus & RequestId & RequestStatus & UnknownRequestError \\
+\hline
+getResult & RequestId & $\mathbb{R} \times \mathbb{R} \times \mathbb{R}
+  \times \mathbb{N}$ (result, minimum, maximum, count) &
+  UnknownRequestError, ResultUnavailableError \\
+\hline
+getDeadlines & RequestId & Timestamp $\times$ Timestamp $\times$ Timestamp
+  $\times$ Timestamp & UnknownRequestError \\
+\hline
+getUnresolvedTransfers & RequestId & set of (Address $\times$ $\mathbb{N}$) &
+  UnknownRequestError \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+Each request \texttt{r} has the following state variables.
+
+\begin{itemize}
+\item \texttt{r.taskId}: TaskId; \texttt{r.requester}: Address;
+  \texttt{r.payment}: $\mathbb{N}$ -- the escrowed payment offered for the
+  request
+\item \texttt{r.status}: RequestStatus
+\item \texttt{r.minProviders}, \texttt{r.maxProviders}: $\mathbb{N}$ --
+  copied from the task's parameters when the request is created
+\item \texttt{r.createdAt}, \texttt{r.acceptanceDeadline},
+  \texttt{r.acceptanceEnd}, \texttt{r.commitDeadline}, \texttt{r.commitEnd},
+  \texttt{r.revealDeadline}, \texttt{r.revealEnd},
+  \texttt{r.pendingDeadline}: Timestamp (or $\bot$ until set)
+\item \texttt{r.accepted}: sequence of Address, in order of acceptance
+\item \texttt{r.commitment}: Address $\rightarrow$ Hash $\cup$ \{$\bot$\}
+\item \texttt{r.prediction}: Address $\rightarrow$ $\mathbb{R}$ $\cup$
+  \{$\bot$\} -- set only for valid reveals
+\item \texttt{r.outcome}: Address $\rightarrow$ ParticipationOutcome -- the
+  latest participation outcome of each accepted provider
+\item \texttt{r.snapshot}: Address $\rightarrow$ $\mathbb{R}$ -- each
+  provider's reputation when the reveal phase ends
+\item \texttt{r.result}: $\mathbb{R}$ $\cup$ \{$\bot$\};
+  \texttt{r.lowest}, \texttt{r.highest}: $\mathbb{R}$ $\cup$ \{$\bot$\};
+  \texttt{r.included}: $\mathbb{N}$
+\item \texttt{r.unresolved}: Address $\rightarrow$ $\mathbb{N}$ -- rewards
+  held in escrow because the transfer failed
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item \texttt{ChainClock}: Timestamp -- the blockchain's current time for the
+  executing transaction
+\end{itemize}
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The \texttt{Address} arguments of \texttt{createRequest},
+  \texttt{acceptRequest}, \texttt{submitCommitment}, \texttt{revealPrediction},
+  and \texttt{retryTransfer} are the signers of the transaction, so a caller
+  can act only for its own address.
+\item The on-chain program does not run on its own. \texttt{advancePhase} is
+  invoked by any party, and the request advances only when it is called.
+\item The hash function behind \texttt{computeCommitment} is collision- and
+  preimage-resistant. Salts are at least 256 bits and are generated by the
+  Participation Client (\mref{mParticipation}).
+\item A transaction that raises an exception leaves all state unchanged.
+\item The Provider Registry's recorded stake for a provider and task equals the
+  balance of that provider's stake escrow in the Token Manager. Modules that
+  move stake tokens (Penalty Enforcer, Reputation Handler) leave the Registry's
+  record unchanged, and this module updates the record afterwards.
+\item Refunds to the requester and payments to providers with a valid reveal
+  always succeed, because those wallets were able to pay in or to reveal.
+\item The other modules behave as specified in their own MIS.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{computeCommitment}(id, provider, p, salt):
+\begin{itemize}
+\item output: the hash of the concatenation of \texttt{id}, \texttt{provider},
+  \texttt{p}, and \texttt{salt}, in that order.
+\end{itemize}
+
+\noindent \texttt{createRequest}(taskId, requester, payment):
+\begin{itemize}
+\item transition: Let \texttt{params} := \texttt{getTaskParameters(taskId)}.
+  Allocate the identifier \texttt{id}. Call \texttt{escrowPayment(id,
+  requester, payment)}. Create a request \texttt{r} with \texttt{r.status} :=
+  Acceptance, \texttt{r.createdAt} := \texttt{ChainClock},
+  \texttt{r.acceptanceDeadline} := \texttt{ChainClock} +
+  \texttt{params.acceptancePeriod}, and \texttt{minProviders} and
+  \texttt{maxProviders} copied from \texttt{params}. All other fields start
+  empty.
+\item output: the identifier \texttt{id} of the new request.
+\item exception: \texttt{UnknownTaskError} if the task does not exist.
+  \texttt{InvalidPaymentError} if \texttt{payment} $\le$
+  \texttt{MINIMUM\_REQUEST\_PAYMENT}. \texttt{TransferFailedError} if the
+  requester's wallet cannot cover the payment.
+\end{itemize}
+
+\noindent \texttt{acceptRequest}(id, provider):
+\begin{itemize}
+\item transition: Let \texttt{reservation} := (\texttt{r.minProviders} $-$ 1)
+  $\times$ \texttt{r.payment}. Call \texttt{reserveStake(r.taskId, provider,
+  reservation)}. Append \texttt{provider} to \texttt{r.accepted} and set
+  \texttt{r.outcome[provider]} := NoCommit. If $|\texttt{r.accepted}| =
+  \texttt{r.maxProviders}$, close the acceptance period early:
+  \texttt{r.acceptanceEnd} := \texttt{ChainClock}, \texttt{r.status} := Commit,
+  and \texttt{r.commitDeadline} := \texttt{r.acceptanceEnd} +
+  \texttt{COMMIT\_PERIOD}.
+\item exception: \texttt{WrongPhaseError} if \texttt{r.status} $\neq$
+  Acceptance. \texttt{DeadlinePassedError} if \texttt{ChainClock} $\ge$
+  \texttt{r.acceptanceDeadline}. \texttt{NotRegisteredError} if
+  \texttt{isRegistered(r.taskId, provider)} is false.
+  \texttt{AlreadyAcceptedError} if \texttt{provider} $\in$
+  \texttt{r.accepted}. \texttt{InsufficientStakeError} if
+  \texttt{getStake(r.taskId, provider)} $-$ \texttt{getReservedStake(r.taskId,
+  provider)} $-$ \texttt{reservation} $<$ \texttt{MINIMUM\_PROVIDER\_STAKE}.
+\end{itemize}
+
+\noindent \texttt{submitCommitment}(id, provider, c):
+\begin{itemize}
+\item transition: \texttt{r.commitment[provider]} := \texttt{c} and
+  \texttt{r.outcome[provider]} := NoReveal. If every provider in
+  \texttt{r.accepted} now has a commitment, then \texttt{r.commitEnd} :=
+  \texttt{ChainClock}, \texttt{r.status} := Reveal, and
+  \texttt{r.revealDeadline} := \texttt{r.commitEnd} + \texttt{REVEAL\_PERIOD}.
+\item exception: \texttt{WrongPhaseError} if \texttt{r.status} $\neq$ Commit.
+  \texttt{DeadlinePassedError} if \texttt{ChainClock} $\ge$
+  \texttt{r.commitDeadline}. \texttt{NotAcceptedError} if \texttt{provider}
+  $\notin$ \texttt{r.accepted}. \texttt{AlreadyCommittedError} if
+  \texttt{r.commitment[provider]} $\neq$ $\bot$.
+\end{itemize}
+
+\noindent \texttt{revealPrediction}(id, provider, p, salt):
+\begin{itemize}
+\item transition: Let \texttt{matches} := (\texttt{computeCommitment(id,
+  provider, p, salt)} = \texttt{r.commitment[provider]}) and
+  \texttt{conforms} := \texttt{isValidOutput(r.taskId, p)}.
+  \begin{itemize}
+  \item If \texttt{matches} $\wedge$ \texttt{conforms}:
+    \texttt{r.prediction[provider]} := \texttt{p} and
+    \texttt{r.outcome[provider]} := ValidReveal.
+  \item If $\neg$\texttt{matches}: \texttt{r.outcome[provider]} :=
+    RevealMismatch.
+  \item Otherwise: \texttt{r.outcome[provider]} := RevealNonConforming.
+  \end{itemize}
+  In every case the provider's single reveal is consumed. If every provider
+  with a commitment has now revealed, then \texttt{r.revealEnd} :=
+  \texttt{ChainClock}, \texttt{r.snapshot} := the current reputations of the
+  committed providers, and \texttt{r.status} := Finalization.
+\item output: Accepted, Mismatch, or NonConforming, matching the three cases.
+  A rejected reveal is reported through the output, not an exception, because
+  an exception would roll back the record of the offence. The offence is
+  penalized when the request ends.
+\item exception: \texttt{WrongPhaseError} if \texttt{r.status} $\neq$ Reveal.
+  \texttt{DeadlinePassedError} if \texttt{ChainClock} $\ge$
+  \texttt{r.revealDeadline}. \texttt{NoCommitmentError} if
+  \texttt{r.commitment[provider]} = $\bot$. \texttt{AlreadyRevealedError} if
+  \texttt{r.outcome[provider]} $\neq$ NoReveal.
+\end{itemize}
+
+\noindent \texttt{advancePhase}(id):
+\begin{itemize}
+\item transition: Repeat the first applicable rule below until none applies.
+  \begin{itemize}
+  \item \emph{Acceptance} and \texttt{ChainClock} $\ge$
+    \texttt{r.acceptanceDeadline}: \texttt{r.acceptanceEnd} :=
+    \texttt{r.acceptanceDeadline}. If $|\texttt{r.accepted}| <
+    \texttt{r.minProviders}$, run \texttt{cancel(r)}. Otherwise
+    \texttt{r.status} := Commit and \texttt{r.commitDeadline} :=
+    \texttt{r.acceptanceEnd} + \texttt{COMMIT\_PERIOD}.
+  \item \emph{Commit} and \texttt{ChainClock} $\ge$ \texttt{r.commitDeadline}:
+    \texttt{r.commitEnd} := \texttt{r.commitDeadline}. If no provider has a
+    commitment, then \texttt{r.revealEnd} := \texttt{r.commitEnd},
+    \texttt{r.snapshot} := empty, and \texttt{r.status} := Finalization.
+    Otherwise \texttt{r.status} := Reveal and \texttt{r.revealDeadline} :=
+    \texttt{r.commitEnd} + \texttt{REVEAL\_PERIOD}.
+  \item \emph{Reveal} and \texttt{ChainClock} $\ge$ \texttt{r.revealDeadline}:
+    \texttt{r.revealEnd} := \texttt{r.revealDeadline}, \texttt{r.snapshot} :=
+    the current reputations of the committed providers, and
+    \texttt{r.status} := Finalization.
+  \item \emph{Finalization}: let $I$ be the set of providers whose outcome is
+    ValidReveal and whose snapshot reputation is non-zero. If $|I| <
+    \texttt{r.minProviders}$, run \texttt{cancel(r)}. Otherwise run
+    \texttt{finalize(r, I)}.
+  \item \emph{PendingTransfer} and \texttt{ChainClock} $\ge$
+    \texttt{r.pendingDeadline}: for each unresolved reward, call
+    \texttt{forfeitReward(id, amount)} and discard the entry. Then
+    \texttt{r.status} := Completed.
+  \end{itemize}
+\item output: \texttt{r.status} after the rules have been applied.
+\item exception: \texttt{UnknownRequestError} if \texttt{id} does not exist.
+  \texttt{ArithmeticOverflowError} if an overflow occurs in a called module;
+  the request is then left unchanged.
+\end{itemize}
+
+\noindent \texttt{retryTransfer}(id, provider):
+\begin{itemize}
+\item transition: Call \texttt{retryReward(id, provider,
+  r.unresolved[provider])}, then remove \texttt{provider} from
+  \texttt{r.unresolved}. If \texttt{r.unresolved} is now empty,
+  \texttt{r.status} := Completed.
+\item exception: \texttt{WrongPhaseError} if \texttt{r.status} $\neq$
+  PendingTransfer. \texttt{DeadlinePassedError} if \texttt{ChainClock} $\ge$
+  \texttt{r.pendingDeadline}. \texttt{NoUnresolvedTransferError} if
+  \texttt{provider} $\notin$ \texttt{r.unresolved}.
+  \texttt{TransferFailedError} if the transfer fails again.
+\end{itemize}
+
+\noindent \texttt{getStatus}(id), \texttt{getResult}(id),
+\texttt{getDeadlines}(id), \texttt{getUnresolvedTransfers}(id):
+\begin{itemize}
+\item output: \texttt{r.status}; (\texttt{r.result}, \texttt{r.lowest},
+  \texttt{r.highest}, \texttt{r.included}); the tuple
+  (\texttt{r.acceptanceDeadline}, \texttt{r.commitDeadline},
+  \texttt{r.revealDeadline}, \texttt{r.pendingDeadline}); and
+  \texttt{r.unresolved} as a set of pairs.
+\item exception: \texttt{UnknownRequestError} for every routine.
+  \texttt{ResultUnavailableError} for \texttt{getResult} if \texttt{r.result}
+  = $\bot$.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{releaseReservations(r)}: calls \texttt{releaseStake} for each
+  provider in \texttt{r.accepted}, releasing the reservation made in
+  \texttt{acceptRequest}, less any amount already collected as compensation.
+\item \texttt{applyPenalties(r)}: for each provider \texttt{a} in
+  \texttt{r.accepted} that \texttt{isRegistered(r.taskId, a)}, let
+  \texttt{d} := \texttt{applyPenalty(r.taskId, a, r.outcome[a],
+  getStake(r.taskId, a), getSlashHistory(r.taskId, a))}. This burns the
+  slashed tokens, and also the remaining stake if \texttt{d.burnRemaining}.
+  Then update the Registry's record: if \texttt{d.unregister}, call
+  \texttt{removeProvider(r.taskId, a)}; otherwise, if \texttt{d.slashAmount}
+  $> 0$, call \texttt{deductStake(r.taskId, a, d.slashAmount)}. Finally call
+  \texttt{recordParticipation(r.taskId, a, id, d.slashAmount} $> 0$\texttt{)}.
+\item \texttt{cancel(r)}: let $V$ be the providers whose outcome is
+  ValidReveal and $F$ the remaining providers in \texttt{r.accepted}, in
+  acceptance order. If $V \neq \emptyset$, let $C$ := \texttt{r.payment}
+  $\times |V|$, call \texttt{collectCompensation(r.taskId, id, F, C)}, call
+  \texttt{deductStake(r.taskId, f, share)} for each provider $f$ in $F$ with
+  the share returned for it, and call \texttt{payCompensation(id, V,
+  r.payment)}. After that, call \texttt{refundPayment(id, r.requester,
+  r.payment)}, run \texttt{releaseReservations(r)} and
+  \texttt{applyPenalties(r)}, and set \texttt{r.status} := Cancelled.
+\item \texttt{finalize(r, I)}: let $p$ be the predictions of $I$ and $\rho$
+  their snapshot reputations, in acceptance order.
+  \begin{enumerate}
+  \item Let \texttt{F} := \texttt{weightedMedian(p, $\rho$)} and
+    (\texttt{lowest}, \texttt{highest}) := \texttt{resultSpread(p)}. If
+    \texttt{AggregationError} is raised, call \texttt{refundPayment(id,
+    r.requester, r.payment)}, run \texttt{releaseReservations(r)} and
+    \texttt{applyPenalties(r)}, set \texttt{r.status} := Failed, and stop.
+  \item Let $\rho'$ := \texttt{updateReputations(p, $\rho$, F)} and call
+    \texttt{setReputation} for each provider in $I$ with its new value. For
+    each provider $a$ in $I$ whose new reputation is 0, call
+    \texttt{forfeitStake(r.taskId, a, getStake(r.taskId, a))} and then
+    \texttt{removeProvider(r.taskId, a)}.
+  \item Set \texttt{r.unresolved} := \texttt{distributeRewards(id,
+    r.requester, r.payment, I, $\rho$, $\rho'$)}.
+  \item Set \texttt{r.result} := \texttt{F}, \texttt{r.lowest},
+    \texttt{r.highest}, and \texttt{r.included} := $|I|$. Run
+    \texttt{releaseReservations(r)} and \texttt{applyPenalties(r)}.
+  \item Set \texttt{r.pendingDeadline} := \texttt{r.revealEnd} +
+    \texttt{PENDING\_TRANSFER\_PERIOD}. Set \texttt{r.status} := Completed if
+    \texttt{r.unresolved} is empty, and PendingTransfer otherwise.
+  \end{enumerate}
+\end{itemize}
+
+
+% =====================================================================
+\section{MIS of Prediction Aggregator (\mref{mAggregator})} \label{misAggregator}
+% =====================================================================
+
+\subsection{Module}
+
+Prediction Aggregator (\mref{mAggregator}). A library implemented in the
+on-chain program.
+
+\subsection{Uses}
+
+This module uses no other module.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{4.5cm} p{3cm} p{5cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+weightedMedian & seq of $\mathbb{R}$ (predictions), seq of $\mathbb{R}$
+  (reputations) & $\mathbb{R}$ & EmptyInputError, LengthMismatchError,
+  InvalidReputationError, ArithmeticOverflowError, AggregationError \\
+\hline
+resultSpread & seq of $\mathbb{R}$ (predictions) & $\mathbb{R} \times
+  \mathbb{R}$ & EmptyInputError \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None.
+
+\subsubsection{Environment Variables}
+
+None.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The caller passes only valid revealed predictions, each paired by
+  position with the reputation of its provider at the end of the reveal phase,
+  and only from providers with non-zero reputation.
+\item The caller checks that the number of predictions meets the task's
+  minimum before calling.
+\item Implementations compute with exact integer or fixed-point arithmetic, so
+  the result equals the mathematical definition below whenever no exception is
+  raised.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{weightedMedian}($P$, $R$):
+\begin{itemize}
+\item output: Let $n = |P|$ and let $\pi$ be a permutation that sorts $P$ in
+  nondecreasing order (equal predictions keep their input order). Let $S =
+  \sum_{i} R_i$ and $S_k = \sum_{j=1}^{k} R_{\pi(j)}$, with $S_0 = 0$. Let
+  $k^*$ be the smallest $k$ such that $2 S_k > S$. The output is
+  \[
+  \begin{cases}
+  \dfrac{P_{\pi(k^*-1)} + P_{\pi(k^*)}}{2} & \text{if } 2 S_{k^*-1} = S,\\[1ex]
+  P_{\pi(k^*)} & \text{otherwise.}
+  \end{cases}
+  \]
+  This is the weighted median of Appendix~A of the SRS, where each prediction's
+  weight is $R_i / S$. The comparisons use $2 S_k$ and $S$ directly, so no
+  division is needed.
+\item exception: \texttt{EmptyInputError} if $n = 0$.
+  \texttt{LengthMismatchError} if $|P| \neq |R|$.
+  \texttt{InvalidReputationError} if some $R_i \le 0$.
+  \texttt{ArithmeticOverflowError} if any intermediate value is outside the
+  representable range. \texttt{AggregationError} if no $k^*$ exists, which
+  cannot happen when the assumptions hold.
+\end{itemize}
+
+\noindent \texttt{resultSpread}($P$):
+\begin{itemize}
+\item output: $(\min_i P_i, \max_i P_i)$.
+\item exception: \texttt{EmptyInputError} if $P$ is empty.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{sortedOrder}($P$): the permutation $\pi$ used above.
+\item \texttt{cumulativeReputation}($R$, $\pi$, $k$): the sum $S_k$.
+\end{itemize}
+
+
+% =====================================================================
+\section{MIS of Rewards Calculator (\mref{mRewards})} \label{misRewards}
+% =====================================================================
+
+\subsection{Module}
+
+Rewards Calculator (\mref{mRewards}). A library implemented in the on-chain
+program. It decides who earns a reward and how much, and carries out every
+payment from and refund of a request's reward escrow. The escrow balances
+themselves are held by the Token Manager, so this module has no state of its
+own.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{Token Manager (\mref{mToken}):}
+  \texttt{transfer(source, destination, amount)} with the endpoints
+  \texttt{Wallet(a)}, \texttt{RequestEscrow(id)}, and \texttt{Burn}, and the
+  exception \texttt{TransferFailedError}.
+\end{itemize}
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{3.2cm} p{5.3cm} p{3cm} p{4.1cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+eligibleProviders & seq of $\mathbb{R}$ (reputations before), seq of
+  $\mathbb{R}$ (reputations after) & seq of $\mathbb{B}$ &
+  EmptyInputError, LengthMismatchError \\
+\hline
+calculateRewards & $\mathbb{N}$ (total reward), seq of $\mathbb{R}$
+  (reputations before), seq of $\mathbb{R}$ (reputations after) & seq of
+  $\mathbb{N}$ (shares) $\times$ $\mathbb{N}$ (remainder) & EmptyInputError,
+  LengthMismatchError, NoEligibleProvidersError, ArithmeticOverflowError,
+  RewardValidationError \\
+\hline
+isValidDistribution & $\mathbb{N}$ (total reward), seq of $\mathbb{N}$
+  (shares) & $\mathbb{B}$ & - \\
+\hline
+escrowPayment & RequestId, Address (requester), $\mathbb{N}$ & - &
+  TransferFailedError \\
+\hline
+distributeRewards & RequestId, Address (requester), $\mathbb{N}$ (total
+  reward), seq of Address, seq of $\mathbb{R}$ (reputations before), seq of
+  $\mathbb{R}$ (reputations after) & seq of (Address $\times$ $\mathbb{N}$)
+  (unresolved rewards) & the exceptions of calculateRewards \\
+\hline
+retryReward & RequestId, Address, $\mathbb{N}$ & - & TransferFailedError \\
+\hline
+forfeitReward & RequestId, $\mathbb{N}$ & - & TransferFailedError \\
+\hline
+refundPayment & RequestId, Address (requester), $\mathbb{N}$ & - &
+  TransferFailedError \\
+\hline
+payCompensation & RequestId, seq of Address, $\mathbb{N}$ (amount each) & - &
+  TransferFailedError \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None.
+
+\subsubsection{Environment Variables}
+
+None.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The sequences are aligned by position and contain only the providers
+  whose valid predictions were included in the aggregate. Each ``before'' value
+  is the reputation snapshot from the end of the reveal phase and each
+  ``after'' value is the result of the reputation update for the same request.
+\item Reputations are exact values, so products and quotients are computed
+  without rounding until the final rounding down of each share.
+\item Each request's escrow in the Token Manager holds at least the amounts
+  this module is asked to pay out.
+\item Refunds to the requester succeed, because the requester's wallet was able
+  to pay into escrow.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{eligibleProviders}($R$, $R'$):
+\begin{itemize}
+\item output: the sequence $E$ with $E_i = \top$ if $R'_i \ge R_i$ (the
+  provider's reputation did not decrease) and $\bot$ otherwise.
+\item exception: \texttt{EmptyInputError} if $R$ is empty.
+  \texttt{LengthMismatchError} if $|R| \neq |R'|$.
+\end{itemize}
+
+\noindent \texttt{calculateRewards}($T$, $R$, $R'$):
+\begin{itemize}
+\item output: Let $E$ := \texttt{eligibleProviders}($R$, $R'$) and $W =
+  \sum_{i : E_i} R'_i$. The shares are $s_i = \left\lfloor T \cdot R'_i / W
+  \right\rfloor$ if $E_i$, and $s_i = 0$ otherwise. The remainder is $T -
+  \sum_i s_i$. Shares of eligible providers are proportional to their
+  reputation after the update.
+\item exception: \texttt{NoEligibleProvidersError} if no provider is eligible.
+  \texttt{ArithmeticOverflowError} if $T \cdot R'_i$ or any sum is outside the
+  representable range. \texttt{RewardValidationError} if
+  \texttt{isValidDistribution}($T$, $s$) is false. A provider whose
+  calculated share is zero simply receives zero. The other exceptions are
+  those of \texttt{eligibleProviders}.
+\end{itemize}
+
+\noindent \texttt{isValidDistribution}($T$, $s$):
+\begin{itemize}
+\item output: $\top$ if every $s_i \ge 0$ and $\sum_i s_i \le T$, and $\bot$
+  otherwise.
+\end{itemize}
+
+\noindent \texttt{escrowPayment}(id, requester, amount):
+\begin{itemize}
+\item transition: \texttt{transfer(Wallet(requester), RequestEscrow(id),
+  amount)}.
+\item exception: \texttt{TransferFailedError} if the requester's wallet cannot
+  cover \texttt{amount}.
+\end{itemize}
+
+\noindent \texttt{distributeRewards}(id, requester, total, providers, $R$, $R'$):
+\begin{itemize}
+\item transition: Let ($s$, \texttt{remainder}) :=
+  \texttt{calculateRewards}(total, $R$, $R'$). For each index $i$ with $s_i >
+  0$, attempt \texttt{transfer(RequestEscrow(id), Wallet(providers$_i$),
+  $s_i$)}. A \texttt{TransferFailedError} on one provider does not stop the
+  others; the provider's reward stays in escrow and is added to the output.
+  Finally \texttt{transfer(RequestEscrow(id), Wallet(requester),
+  remainder)}.
+\item output: the pairs (\texttt{providers}$_i$, $s_i$) whose transfer failed.
+\item exception: those of \texttt{calculateRewards}.
+\end{itemize}
+
+\noindent \texttt{retryReward}(id, provider, amount):
+\begin{itemize}
+\item transition: \texttt{transfer(RequestEscrow(id), Wallet(provider),
+  amount)}.
+\item exception: \texttt{TransferFailedError} if the provider's wallet still
+  cannot receive tokens.
+\end{itemize}
+
+\noindent \texttt{forfeitReward}(id, amount):
+\begin{itemize}
+\item transition: \texttt{transfer(RequestEscrow(id), Burn, amount)}.
+\item exception: \texttt{TransferFailedError} if the escrow holds less than
+  \texttt{amount}.
+\end{itemize}
+
+\noindent \texttt{refundPayment}(id, requester, amount):
+\begin{itemize}
+\item transition: \texttt{transfer(RequestEscrow(id), Wallet(requester),
+  amount)}.
+\item exception: \texttt{TransferFailedError} if the escrow holds less than
+  \texttt{amount}.
+\end{itemize}
+
+\noindent \texttt{payCompensation}(id, providers, amountEach):
+\begin{itemize}
+\item transition: for each provider, \texttt{transfer(RequestEscrow(id),
+  Wallet(provider), amountEach)}. The escrow has been topped up beforehand by
+  Penalty Enforcer's \texttt{collectCompensation}.
+\item exception: \texttt{TransferFailedError} if a transfer fails; no payment
+  is then made.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{eligibleReputationTotal}($R$, $R'$): the sum $W$ used above.
+\end{itemize}
+
+
+% =====================================================================
+\section{MIS of Penalty Enforcer (\mref{mPenalty})} \label{misPenalty}
+% =====================================================================
+
+\subsection{Module}
+
+Penalty Enforcer (\mref{mPenalty}). A library implemented in the on-chain
+program. It decides whether a penalty applies and how large it is, and it burns
+the slashed stake or collects it as compensation. Stake balances are held by
+the Token Manager, so this module has no state of its own.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{Token Manager (\mref{mToken}):}
+  \texttt{transfer(source, destination, amount)} with the endpoints
+  \texttt{StakeEscrow(task, a)}, \texttt{RequestEscrow(id)}, and
+  \texttt{Burn}, and the exception \texttt{TransferFailedError}.
+\end{itemize}
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+\begin{itemize}
+\item \texttt{SLASH\_FRACTION}: $\mathbb{R}$ -- the fraction of a provider's
+  stake for a task that is slashed for an offence, with $0 < $
+  \texttt{SLASH\_FRACTION} $\le 1$
+\item \texttt{REPEAT\_OFFENSE\_COUNT}: $\mathbb{N}$ -- the number of slashed
+  requests, within the window, that makes a provider a repeat offender
+\item \texttt{REPEAT\_OFFENSE\_WINDOW}: $\mathbb{N}$ -- the number of most recent
+  accepted requests over which offences are counted, with $1 \le$
+  \texttt{REPEAT\_OFFENSE\_COUNT} $\le$ \texttt{REPEAT\_OFFENSE\_WINDOW}
+\end{itemize}
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{ParticipationOutcome} = \{NoCommit, NoReveal, RevealMismatch,
+  RevealNonConforming, ValidReveal\}
+\item \texttt{PenaltyDecision} = (\texttt{slashAmount}: $\mathbb{N}$,
+  \texttt{unregister}: $\mathbb{B}$, \texttt{burnRemaining}: $\mathbb{B}$)
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{3.2cm} p{5.3cm} p{3cm} p{4.1cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+isOffense & ParticipationOutcome & $\mathbb{B}$ & - \\
+\hline
+slashAmount & $\mathbb{N}$ (stake) & $\mathbb{N}$ & ArithmeticOverflowError \\
+\hline
+penaltyFor & ParticipationOutcome, $\mathbb{N}$ (stake), seq of
+  $\mathbb{B}$ (slash history) & PenaltyDecision & ArithmeticOverflowError \\
+\hline
+compensationShares & $\mathbb{N}$ (total), $\mathbb{N}$ (number of
+  providers) & seq of $\mathbb{N}$ & EmptyInputError \\
+\hline
+applyPenalty & TaskId, Address, ParticipationOutcome, $\mathbb{N}$ (stake),
+  seq of $\mathbb{B}$ (slash history) & PenaltyDecision &
+  ArithmeticOverflowError, TransferFailedError \\
+\hline
+collectCompensation & TaskId, RequestId, seq of Address, $\mathbb{N}$ (total)
+  & seq of $\mathbb{N}$ (share taken from each) & EmptyInputError,
+  ArithmeticOverflowError, TransferFailedError \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None.
+
+\subsubsection{Environment Variables}
+
+None.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The slash history lists, for the provider's most recent accepted requests
+  for the task before the current one, whether the provider was slashed
+  ($\top$) or not ($\bot$), with the most recent request last. Entries beyond
+  the most recent \texttt{REPEAT\_OFFENSE\_WINDOW} $-$ 1 are ignored.
+\item The stake passed in is the provider's current stake for the task, equal
+  to the balance of \texttt{StakeEscrow(task, a)}.
+\item The caller updates the Provider Registry's stake record after a call
+  that moves stake tokens.
+\item The constants satisfy the ranges given above.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{isOffense}(o):
+\begin{itemize}
+\item output: $\top$ if $o \in$ \{NoCommit, NoReveal, RevealMismatch,
+  RevealNonConforming\}, and $\bot$ if $o$ = ValidReveal.
+\end{itemize}
+
+\noindent \texttt{slashAmount}(stake):
+\begin{itemize}
+\item output: $\lfloor$ \texttt{SLASH\_FRACTION} $\times$ stake $\rfloor$.
+\item exception: \texttt{ArithmeticOverflowError} if the product is outside
+  the representable range.
+\end{itemize}
+
+\noindent \texttt{penaltyFor}(o, stake, history):
+\begin{itemize}
+\item output: Let $\mathit{off}$ := \texttt{isOffense}(o), let $h$ be the last
+  \texttt{REPEAT\_OFFENSE\_WINDOW} $-$ 1 entries of \texttt{history}, and let
+  $c = [\mathit{off}] + |\{x \in h : x = \top\}|$, where $[\mathit{off}]$ is 1
+  if $\mathit{off}$ and 0 otherwise. Let $\mathit{repeat} = \mathit{off}
+  \wedge c \ge$ \texttt{REPEAT\_OFFENSE\_COUNT}. The output is
+  (\texttt{slashAmount}: \texttt{slashAmount}(stake) if $\mathit{off}$, else 0;
+  \texttt{unregister}: $\mathit{repeat}$; \texttt{burnRemaining}:
+  $\mathit{repeat}$).
+\item exception: \texttt{ArithmeticOverflowError}, as for
+  \texttt{slashAmount}.
+\end{itemize}
+
+\noindent \texttt{compensationShares}(total, n):
+\begin{itemize}
+\item output: the sequence of length $n$ whose $i$-th entry (counting from 1)
+  is $\lfloor \mathit{total} / n \rfloor$ plus 1 if $i \le \mathit{total} \bmod
+  n$. The entries sum to \texttt{total}, and the earliest providers carry the
+  remainder.
+\item exception: \texttt{EmptyInputError} if $n = 0$.
+\end{itemize}
+
+\noindent \texttt{applyPenalty}(task, a, o, stake, history):
+\begin{itemize}
+\item transition: Let $d$ := \texttt{penaltyFor}(o, stake, history). If
+  $d$.\texttt{slashAmount} $> 0$, perform \texttt{transfer(StakeEscrow(task,
+  a), Burn, d.slashAmount)}. If $d$.\texttt{burnRemaining} and \texttt{stake}
+  $-$ $d$.\texttt{slashAmount} $> 0$, perform \texttt{transfer(StakeEscrow(task,
+  a), Burn, stake} $-$ $d$\texttt{.slashAmount)}.
+\item output: $d$.
+\item exception: those of \texttt{penaltyFor}, and \texttt{TransferFailedError}
+  if a transfer fails.
+\end{itemize}
+
+\noindent \texttt{collectCompensation}(task, id, providers, total):
+\begin{itemize}
+\item transition: Let \texttt{shares} := \texttt{compensationShares}(total,
+  $|$providers$|$). For each index $i$, perform
+  \texttt{transfer(StakeEscrow(task, providers$_i$), RequestEscrow(id),
+  shares$_i$)}.
+\item output: \texttt{shares}.
+\item exception: \texttt{EmptyInputError} if \texttt{providers} is empty.
+  \texttt{ArithmeticOverflowError} as above. \texttt{TransferFailedError} if
+  a provider's stake escrow holds less than its share; no transfer is then
+  made.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{recentWindow}(history): the last
+  \texttt{REPEAT\_OFFENSE\_WINDOW} $-$ 1 entries of \texttt{history}.
+\end{itemize}
+
+
+% =====================================================================
+\section{MIS of Reputation Handler (\mref{mReputation})} \label{misReputation}
+% =====================================================================
+
+\subsection{Module}
+
+Reputation Handler (\mref{mReputation}). A library implemented in the on-chain
+program. It calculates reputation updates, and burns the stake of a provider
+whose reputation reaches 0.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{Token Manager (\mref{mToken}):}
+  \texttt{transfer(source, destination, amount)} with the endpoints
+  \texttt{StakeEscrow(task, a)} and \texttt{Burn}, and the exception
+  \texttt{TransferFailedError}.
+\end{itemize}
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+\begin{itemize}
+\item \texttt{REPUTATION\_MIN}: $\mathbb{R}$ = 0
+\item \texttt{REPUTATION\_MAX}: $\mathbb{R}$ = 100
+\item \texttt{REPUTATION\_ADJUSTMENT\_FACTOR}: $\mathbb{R}$ = 1.0 -- the factor
+  $\alpha$ that scales each reputation change
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{5.2cm} p{3cm} p{4.3cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+updateReputations & seq of $\mathbb{R}$ (predictions), seq of $\mathbb{R}$
+  (reputations), $\mathbb{R}$ (aggregate) & seq of $\mathbb{R}$ &
+  EmptyInputError, LengthMismatchError, InvalidReputationError,
+  ArithmeticOverflowError \\
+\hline
+clampReputation & $\mathbb{R}$ & $\mathbb{R}$ & - \\
+\hline
+forfeitStake & TaskId, Address, $\mathbb{N}$ (stake) & - &
+  TransferFailedError \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None.
+
+\subsubsection{Environment Variables}
+
+None.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The reputations passed to \texttt{updateReputations} are the snapshot
+  from the end of the reveal phase for providers with a valid prediction
+  included in the aggregate, aligned by position with the predictions.
+\item The aggregate is the weighted median that the Prediction Aggregator
+  (\mref{mAggregator}) produced from the same predictions and reputations.
+\item \texttt{forfeitStake} is called only for a provider whose new reputation
+  is 0. The caller removes the provider from the Provider Registry afterwards.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{clampReputation}(x):
+\begin{itemize}
+\item output: $\min($\texttt{REPUTATION\_MAX}$, \max($\texttt{REPUTATION\_MIN}$,
+  x))$.
+\end{itemize}
+
+\noindent \texttt{updateReputations}($P$, $R$, $F$):
+\begin{itemize}
+\item output: Let $\sigma^2 = \sum_i R_i (P_i - F)^2 / \sum_i R_i$. If
+  $\sigma^2 = 0$, every reputation change is 0 and the output is
+  \texttt{clampReputation}($R_i$) for each $i$. Otherwise let $\sigma =
+  \sqrt{\sigma^2}$ and, for each $i$, let $\delta_i =
+  \alpha\left(1 - |F - P_i| / \sigma\right)$ with $\alpha$ =
+  \texttt{REPUTATION\_ADJUSTMENT\_FACTOR}. The output is
+  \texttt{clampReputation}($R_i + \delta_i$) for each $i$. This is the
+  confidence-based update of Appendix~A of the SRS. A provider closer to $F$
+  than one standard deviation gains reputation and one farther loses it, and
+  all values stay within [\texttt{REPUTATION\_MIN}, \texttt{REPUTATION\_MAX}].
+\item exception: \texttt{EmptyInputError} if $P$ is empty.
+  \texttt{LengthMismatchError} if $|P| \neq |R|$.
+  \texttt{InvalidReputationError} if some $R_i$ is not in
+  (\texttt{REPUTATION\_MIN}, \texttt{REPUTATION\_MAX}].
+  \texttt{ArithmeticOverflowError} if any intermediate value (including the
+  squared differences and the square root) is outside the representable range.
+\end{itemize}
+
+\noindent \texttt{forfeitStake}(task, a, stake):
+\begin{itemize}
+\item transition: if \texttt{stake} $> 0$, perform
+  \texttt{transfer(StakeEscrow(task, a), Burn, stake)}.
+\item exception: \texttt{TransferFailedError} if the stake escrow holds less
+  than \texttt{stake}.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{weightedVariance}($P$, $R$, $F$): the value $\sigma^2$ above.
+\end{itemize}
+
+
 
 \newpage
 
