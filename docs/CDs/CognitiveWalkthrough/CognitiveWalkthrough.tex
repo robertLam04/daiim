@@ -2,6 +2,8 @@
 
 \usepackage{tabularx}
 \usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{float}
 \usepackage[letterpaper,left=0.8in,top=1.0in,right=1.0in,bottom=1.0in]{geometry}
 
 \title{Cognitive Walkthrough for \progname}
@@ -12,6 +14,28 @@
 
 \input{../../Comments.text}
 \input{../../Common.text}
+
+% \screen{file}{caption}{label}: a Figma frame, or a placeholder box until figures/<file>.png is added
+\newcommand{\screen}[3]{%
+  \begin{figure}[htbp]
+    \centering
+    \IfFileExists{figures/#1.png}%
+      {\fbox{\includegraphics[width=0.95\textwidth]{figures/#1.png}}}%
+      {\fbox{\parbox[c][0.45\textwidth][c]{0.95\textwidth}{\centering Image to be added: \texttt{figures/#1.png}}}}
+    \caption{#2}
+    \label{fig:#3}
+  \end{figure}}
+
+
+% \stepscreen{file}{caption}: the screen for one step, kept in place under its description
+\newcommand{\stepscreen}[2]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{figures/#1.png}%
+      {\fbox{\includegraphics[width=0.75\textwidth]{figures/#1.png}}}%
+      {\fbox{\parbox[c][0.35\textwidth][c]{0.75\textwidth}{\centering Image to be added: \texttt{figures/#1.png}}}}
+    \caption{#2}
+  \end{figure}}
 
 \begin{document}
 
@@ -26,6 +50,8 @@
 \midrule
 November 15 & Keira & Initial document\\
 November 16 & Keira & Added sections Introduction and Plan \\
+November 16 & Aidan & Added tasks and action steps to Results \\
+November 16 & Aidan & Added prototype screens to each step and as an appendix \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -106,37 +132,771 @@ For the purposes of performing the cognitive walkthrough, the following four use
 \end{enumerate}
 
 \subsection{Prototype}
-\textbf{NEED TO ADD: Maybe just add where to find the prototype in the project repo, or add the figma drawings to an Appendix}
+The walkthrough uses the Figma prototype of the requester web client. Its screens are shown in Appendix~\ref{app:screens}, and each action in Section~\ref{sec:results} refers to the screen involved. A clickable version of the same screens is in \texttt{src/frontend} of the project repository.
 
 
 \section{Results}
-\subsection{Task}
-task description and action decomp
+\label{sec:results}
+Each task below lists its goal, its starting point in the prototype, and the actions a user takes to complete it.
+Each action is then analysed with the four questions from the methodology.
 
-\subsubsection{Action}
-action description
-maybe photo of what the user would see, or point to where it can be found in the Appendix
+\subsection{Task 1: Log in/sign up and log out}
+\textbf{Goal:} Priya creates an account (which also creates her wallet), then logs out.\\
+\textbf{Starting point:} home page, signed out.
 
-\begin{table}[ht]
+\textbf{Actions:}
+\begin{itemize}
+    \item Step 1.1: Click ``Sign up / Log in''.
+    \item Step 1.2: Enter her email and click ``Continue with email''.
+    \item Step 1.3: Enter the 6-digit code and click ``Verify''.
+    \item Step 1.4: Wait for account setup.
+    \item Step 1.5: Open the profile menu.
+    \item Step 1.6: Click ``Log out''.
+\end{itemize}
+
+\subsubsection{Step 1.1: Click ``Sign up / Log in''}
+On the home page, Priya clicks \textbf{Sign up / Log in} in the header. The \textbf{Sign in to DAIIM} window opens and explains that signing in also creates an account for new users. It offers Google, phone and email, plus \textbf{Use my own wallet instead} for users who already have a crypto wallet.
+
+\stepscreen{01-home-signed-out}{Step 1.1: Home page, signed out (Screen 01)}
+
+\begin{table}[H]
     \centering
     \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? & \\
+        Will users try to achieve the right result? &  \\
         \hline
-        Will users notice that the correct action is available? & \\
+        Will users notice that the correct action is available? &  \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? & \\
+        Will users associate the correct action with the result they're trying to achieve? &  \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? & \\
+        After the action is performed, will users see that progress is made toward the goal? &  \\
         \hline
     \end{tabularx}
     \caption{Step 1.1: Click ``Sign up / Log in''}
     \label{tab:cw-step-1-1}
 \end{table}
 
+\subsubsection{Step 1.2: Enter her email and click ``Continue with email''}
+Priya types her email address in the \textbf{Email} field and clicks \textbf{Continue with email}. An invalid address shows ``Enter a valid email address, like you@email.com.'' The \textbf{Enter your code} window opens.
 
+\stepscreen{02-sign-in-choose-method}{Step 1.2: Sign in: choose a method (Screen 02)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.2: Enter her email and click ``Continue with email''}
+    \label{tab:cw-step-1-2}
+\end{table}
+
+\subsubsection{Step 1.3: Enter the 6-digit code and click ``Verify''}
+Priya types the 6-digit code sent to her email into the code boxes and clicks \textbf{Verify}. A wrong code shows an error, and \textbf{Resend code} sends a new one.
+
+\stepscreen{03-sign-in-enter-code}{Step 1.3: Sign in: enter code (Screen 03)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.3: Enter the 6-digit code and click ``Verify''}
+    \label{tab:cw-step-1-3}
+\end{table}
+
+\subsubsection{Step 1.4: Wait for account setup}
+The \textbf{Setting up your account} window ticks off ``Email confirmed'' and ``Secure wallet created'' without any action from Priya. She then lands on the signed-in home page, which shows her available and held funds in the header and a getting-started checklist.
+
+\stepscreen{04-sign-in-setting-up}{Step 1.4: Sign in: setting up account (Screen 04)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.4: Wait for account setup}
+    \label{tab:cw-step-1-4}
+\end{table}
+
+\subsubsection{Step 1.5: Open the profile menu}
+Priya clicks her profile picture in the top-right corner of the header. A menu opens with \textbf{Settings}, \textbf{Profile}, \textbf{Transaction history}, \textbf{Help} and \textbf{Log out}.
+
+\stepscreen{05-home-signed-in-menu}{Step 1.5: Home page, signed in, with the profile menu open (Screen 05)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.5: Open the profile menu}
+    \label{tab:cw-step-1-5}
+\end{table}
+
+\subsubsection{Step 1.6: Click ``Log out''}
+Priya clicks \textbf{Log out} and returns to the signed-out home page. If a payment is still confirming, a warning (``A payment is still confirming'') first asks her to choose \textbf{Stay logged in} or \textbf{Log out anyway}.
+
+\stepscreen{05-home-signed-in-menu}{Step 1.6: Home page, signed in, with the profile menu open (Screen 05)}
+
+\textit{Also see Figure~\ref{fig:screen-23} (log out while a payment is still confirming) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.6: Click ``Log out''}
+    \label{tab:cw-step-1-6}
+\end{table}
+
+\subsection{Task 2: Add funds to the wallet}
+\textbf{Goal:} Priya adds \$25 to her account so she can pay for inference requests.\\
+\textbf{Starting point:} home page, signed in, with \$0.00 available.
+
+\textbf{Actions:}
+\begin{itemize}
+    \item Step 2.1: Click ``Deposit''.
+    \item Step 2.2: Choose an amount.
+    \item Step 2.3: Choose a payment method.
+    \item Step 2.4: Click ``Deposit \$25.00''.
+    \item Step 2.5: Read the confirmation and click ``Done''.
+\end{itemize}
+
+\subsubsection{Step 2.1: Click ``Deposit''}
+From the signed-in home page, Priya clicks the \textbf{Deposit} button in the header. The same action is available from step 2 (``Deposit funds'') of the getting-started checklist on the home page. The \textbf{Deposit funds} window opens.
+
+\stepscreen{05-home-signed-in-menu}{Step 2.1: Home page, signed in, with the profile menu open (Screen 05)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & Yes; the application shows a deposit button clearly in view in the top right, and there is also a deposit funds button in the homepage on initial registration. \\
+        \hline
+        Will users notice that the correct action is available? & Yes; the deposit button is prominently displayed and easy to find. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes; the deposit button is labeled clearly and the action leads to the expected outcome. \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes; the user sees a confirmation message and their wallet balance updates. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 2.1: Click ``Deposit''}
+    \label{tab:cw-step-2-1}
+\end{table}
+
+\subsubsection{Step 2.2: Choose an amount}
+Priya chooses how much to add, in CAD, by clicking one of the preset amounts (\$10, \$25 or \$50; \$25 is selected by default). For a different amount she clicks \textbf{Other} and types it, e.g.\ 15.00. Amounts outside \$0.01 to \$1,000 show an error.
+
+\stepscreen{20-deposit-funds}{Step 2.2: Deposit funds (Screen 20)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 2.2: Choose an amount}
+    \label{tab:cw-step-2-2}
+\end{table}
+
+\subsubsection{Step 2.3: Choose a payment method}
+Under \textbf{Pay with}, Priya selects \textbf{Credit or debit card} (selected by default) or \textbf{From another crypto wallet}, which shows her wallet address and a QR code. The window shows the fee (\$0.00) and notes that the test version uses practice money.
+
+\stepscreen{20-deposit-funds}{Step 2.3: Deposit funds (Screen 20)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 2.3: Choose a payment method}
+    \label{tab:cw-step-2-3}
+\end{table}
+
+\subsubsection{Step 2.4: Click ``Deposit \$25.00''}
+Priya clicks the \textbf{Deposit} button, which shows the chosen amount (e.g.\ ``Deposit \$25.00''). The button shows ``Processing\ldots'' while the deposit is recorded.
+
+\stepscreen{20-deposit-funds}{Step 2.4: Deposit funds (Screen 20)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 2.4: Click ``Deposit \$25.00''}
+    \label{tab:cw-step-2-4}
+\end{table}
+
+\subsubsection{Step 2.5: Read the confirmation and click ``Done''}
+The confirmation window shows ``\$25.00 deposited'', the new available funds, and a proof-of-deposit link. The available funds in the header are already updated. Priya clicks \textbf{Done} to return to the page she was on. If she left an unfinished request to deposit, the button reads \textbf{Back to my request} instead. \textbf{View history} opens the transaction history, where the deposit is listed.
+
+\stepscreen{21-deposit-complete}{Step 2.5: Deposit complete (Screen 21)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 2.5: Read the confirmation and click ``Done''}
+    \label{tab:cw-step-2-5}
+\end{table}
+
+\subsection{Task 3: Create a task definition}
+\textbf{Goal:} Priya defines a new prediction task that providers can serve.\\
+\textbf{Starting point:} Marketplace page, signed in.
+
+\textbf{Actions:}
+\begin{itemize}
+    \item Step 3.1: Click ``+ New task''.
+    \item Step 3.2: Name and describe the task.
+    \item Step 3.3: Define the output and inputs.
+    \item Step 3.4: Set the provider settings.
+    \item Step 3.5: Click ``Review and create'' and confirm.
+    \item Step 3.6: Read the confirmation and click ``View task''.
+\end{itemize}
+
+\subsubsection{Step 3.1: Click ``+ New task''}
+On the Marketplace page, Priya clicks \textbf{+ New task}. The \textbf{Create a new task} form opens.
+
+\stepscreen{08b-marketplace-signed-in}{Step 3.1: Marketplace, signed in (Screen 08b)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.1: Click ``+ New task''}
+    \label{tab:cw-step-3-1}
+\end{table}
+
+\subsubsection{Step 3.2: Name and describe the task}
+Priya fills in \textbf{Task name} (e.g.\ ``Snowmelt streamflow forecast''), \textbf{What should be predicted?} in one sentence, and picks a \textbf{Category} such as Hydrology.
+
+\stepscreen{11-create-task}{Step 3.2: Create a task (Screen 11)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.2: Name and describe the task}
+    \label{tab:cw-step-3-2}
+\end{table}
+
+\subsubsection{Step 3.3: Define the output and inputs}
+Priya enters the \textbf{Output} unit (e.g.\ m\textsuperscript{3}/s). Under \textbf{Inputs requesters will provide} she names each input (e.g.\ snowpack\_cm), clicking \textbf{+ Add input} for each extra one. Duplicate names show an error.
+
+\stepscreen{11-create-task}{Step 3.3: Create a task (Screen 11)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.3: Define the output and inputs}
+    \label{tab:cw-step-3-3}
+\end{table}
+
+\subsubsection{Step 3.4: Set the provider settings}
+Priya sets \textbf{Min providers} (at least 2), \textbf{Max providers}, and \textbf{Time for providers to join}.
+
+\stepscreen{11-create-task}{Step 3.4: Create a task (Screen 11)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.4: Set the provider settings}
+    \label{tab:cw-step-3-4}
+\end{table}
+
+\subsubsection{Step 3.5: Click ``Review and create'' and confirm}
+Priya clicks \textbf{Review and create}. Missing or invalid fields are highlighted with a message. Otherwise the \textbf{Please confirm your new task} window summarises the task, and she clicks \textbf{Confirm} (or \textbf{Back} to edit).
+
+\stepscreen{11-create-task}{Step 3.5: Create a task (Screen 11)}
+
+\textit{The confirmation window is in the clickable prototype only; it is not yet a Figma frame.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.5: Click ``Review and create'' and confirm}
+    \label{tab:cw-step-3-5}
+\end{table}
+
+\subsubsection{Step 3.6: Read the confirmation and click ``View task''}
+The \textbf{Task created} page confirms the task was published, with a proof link. Priya clicks \textbf{View task} to see it as it appears in the Marketplace.
+
+\textit{Not yet a Figma frame; shown in the clickable prototype only.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.6: Read the confirmation and click ``View task''}
+    \label{tab:cw-step-3-6}
+\end{table}
+
+\subsection{Task 4: Submit an inference request and view the result}
+\textbf{Goal:} Priya requests a 24-hour river level forecast and reads the result.\\
+\textbf{Starting point:} Marketplace page, signed in, with funds available.
+
+\textbf{Actions:}
+\begin{itemize}
+    \item Step 4.1: Open the ``River level forecast (24 h)'' task.
+    \item Step 4.2: Click ``Request this task''.
+    \item Step 4.3: Upload her data.
+    \item Step 4.4: Enter a payment amount.
+    \item Step 4.5: Submit and confirm the payment.
+    \item Step 4.6: Follow the request's progress.
+    \item Step 4.7: Read the result.
+\end{itemize}
+
+\subsubsection{Step 4.1: Open the ``River level forecast (24 h)'' task}
+On the Marketplace page, Priya clicks the \textbf{River level forecast (24 h)} card. The task page shows the inputs her data must follow, the output, the registered providers, and the minimum payment.
+
+\stepscreen{08b-marketplace-signed-in}{Step 4.1: Marketplace, signed in (Screen 08b)}
+
+\textit{Also see Figure~\ref{fig:screen-09} (task details) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.1: Open the ``River level forecast (24 h)'' task}
+    \label{tab:cw-step-4-1}
+\end{table}
+
+\subsubsection{Step 4.2: Click ``Request this task''}
+Priya clicks \textbf{Request this task}. The new request form opens in \textbf{My requests} with step 1 (\textbf{Select the task}) already filled in.
+
+\stepscreen{09-task-details}{Step 4.2: Task details (Screen 09)}
+
+\textit{Also see Figure~\ref{fig:screen-12} (my requests: new request form) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.2: Click ``Request this task''}
+    \label{tab:cw-step-4-2}
+\end{table}
+
+\subsubsection{Step 4.3: Upload her data}
+In step 2 (\textbf{Input your data}), Priya clicks \textbf{+ Upload data} and chooses her CSV of readings. If the columns do not match the task, the upload is rejected with an explanation of how to fix it. She can instead click \textbf{or type values instead} and then \textbf{Use these values}.
+
+\stepscreen{12-new-request-form}{Step 4.3: My requests: new request form (Screen 12)}
+
+\textit{Also see Figure~\ref{fig:screen-13} (new request: upload rejected) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.3: Upload her data}
+    \label{tab:cw-step-4-3}
+\end{table}
+
+\subsubsection{Step 4.4: Enter a payment amount}
+In step 3 (\textbf{Enter payment amount}), Priya types an amount above the task's minimum, or clicks \textbf{suggested \$2.50}. An amount at or below the minimum shows ``Amount too low''; an amount above her available funds shows ``Not enough funds'' with a link to deposit.
+
+\stepscreen{12-new-request-form}{Step 4.4: My requests: new request form (Screen 12)}
+
+\textit{Also see Figure~\ref{fig:screen-14} (new request: not enough funds) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.4: Enter a payment amount}
+    \label{tab:cw-step-4-4}
+\end{table}
+
+\subsubsection{Step 4.5: Submit and confirm the payment}
+Priya clicks \textbf{Confirm payment and submit request}. The \textbf{Please confirm and approve the transfer of funds} window shows the amount, and she clicks \textbf{Confirm}. If the payment fails, a \textbf{Payment not completed} window offers \textbf{Try again} or \textbf{Back to form}, and nothing is charged.
+
+\stepscreen{15-confirm-payment}{Step 4.5: Confirm payment (Screen 15)}
+
+\textit{Also see Figure~\ref{fig:screen-16} (payment failed) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.5: Submit and confirm the payment}
+    \label{tab:cw-step-4-5}
+\end{table}
+
+\subsubsection{Step 4.6: Follow the request's progress}
+The request page shows a timeline: Task submitted, Finding providers, Getting predictions, Aggregating results, Finalizing. The header shows the payment as held. The page notes she can leave and the request keeps running in Recents.
+
+\stepscreen{17-request-in-progress}{Step 4.6: Request in progress (Screen 17)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.6: Follow the request's progress}
+    \label{tab:cw-step-4-6}
+\end{table}
+
+\subsubsection{Step 4.7: Read the result}
+When the request completes, the page shows the forecast (e.g.\ 2.84 m) with the range across providers (2.61--3.02 m), the amount paid, and a proof of payment. If not enough providers join, the request is cancelled, the payment is refunded, and she can \textbf{Try again with a higher amount} or \textbf{Choose another task}.
+
+\stepscreen{18-request-result}{Step 4.7: Request result (Screen 18)}
+
+\textit{Also see Figure~\ref{fig:screen-19} (request cancelled and refunded) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.7: Read the result}
+    \label{tab:cw-step-4-7}
+\end{table}
+
+\subsection{Task 5: View user profile and transaction history}
+\textbf{Goal:} Priya checks her account details and what she has spent.\\
+\textbf{Starting point:} any page, signed in.
+
+\textbf{Actions:}
+\begin{itemize}
+    \item Step 5.1: Open the profile menu.
+    \item Step 5.2: Click ``Profile'' and review her details.
+    \item Step 5.3: Open ``Transaction history''.
+    \item Step 5.4: Filter the history.
+\end{itemize}
+
+\subsubsection{Step 5.1: Open the profile menu}
+Priya clicks her profile picture in the top-right corner of the header to open the menu.
+
+\stepscreen{05-home-signed-in-menu}{Step 5.1: Home page, signed in, with the profile menu open (Screen 05)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 5.1: Open the profile menu}
+    \label{tab:cw-step-5-1}
+\end{table}
+
+\subsubsection{Step 5.2: Click ``Profile'' and review her details}
+Priya clicks \textbf{Profile}. The page shows her \textbf{Display name}, email, wallet, and \textbf{Notifications} settings, with \textbf{Save changes} and \textbf{Export wallet}.
+
+\stepscreen{06-profile}{Step 5.2: Profile and settings (Screen 06)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 5.2: Click ``Profile'' and review her details}
+    \label{tab:cw-step-5-2}
+\end{table}
+
+\subsubsection{Step 5.3: Open ``Transaction history''}
+Priya opens the menu again and clicks \textbf{Transaction history}. The page lists her deposits, payments and refunds with dates, amounts and proof links.
+
+\stepscreen{05-home-signed-in-menu}{Step 5.3: Home page, signed in, with the profile menu open (Screen 05)}
+
+\textit{Also see Figure~\ref{fig:screen-22} (transaction history) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 5.3: Open ``Transaction history''}
+    \label{tab:cw-step-5-3}
+\end{table}
+
+\subsubsection{Step 5.4: Filter the history}
+Priya clicks \textbf{Deposits}, \textbf{Payments} or \textbf{Refunds} to narrow the list, or \textbf{All} to see everything.
+
+\stepscreen{22-transaction-history}{Step 5.4: Transaction history (Screen 22)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 5.4: Filter the history}
+    \label{tab:cw-step-5-4}
+\end{table}
 
 
 \section{Planned Changes}
@@ -151,5 +911,36 @@ how changes will be checked for usability in the future
 one or two paragraphs
 
 
+
+\newpage
+\appendix
+\section{Prototype Screens}
+\label{app:screens}
+The figures below are the frames of the Figma prototype (``DAIIM Requester UI -- Cognitive Walkthrough'') used for the walkthrough. Each action in the Results section refers to the screen the user sees when performing it. The same screens are implemented as a clickable prototype in \texttt{src/frontend} of the project repository.
+
+\screen{01-home-signed-out}{Screen 01: Home page, signed out}{screen-01}
+\screen{02-sign-in-choose-method}{Screen 02: Sign in: choose a method}{screen-02}
+\screen{03-sign-in-enter-code}{Screen 03: Sign in: enter code}{screen-03}
+\screen{04-sign-in-setting-up}{Screen 04: Sign in: setting up account}{screen-04}
+\screen{05-home-signed-in-menu}{Screen 05: Home page, signed in, with the profile menu open}{screen-05}
+\screen{06-profile}{Screen 06: Profile and settings}{screen-06}
+\screen{07-help}{Screen 07: Help}{screen-07}
+\screen{08a-marketplace-signed-out}{Screen 08a: Marketplace, signed out}{screen-08a}
+\screen{08b-marketplace-signed-in}{Screen 08b: Marketplace, signed in}{screen-08b}
+\screen{09-task-details}{Screen 09: Task details}{screen-09}
+\screen{10-provider-details}{Screen 10: Provider details}{screen-10}
+\screen{11-create-task}{Screen 11: Create a task}{screen-11}
+\screen{12-new-request-form}{Screen 12: My requests: new request form}{screen-12}
+\screen{13-upload-rejected}{Screen 13: New request: upload rejected}{screen-13}
+\screen{14-not-enough-funds}{Screen 14: New request: not enough funds}{screen-14}
+\screen{15-confirm-payment}{Screen 15: Confirm payment}{screen-15}
+\screen{16-payment-failed}{Screen 16: Payment failed}{screen-16}
+\screen{17-request-in-progress}{Screen 17: Request in progress}{screen-17}
+\screen{18-request-result}{Screen 18: Request result}{screen-18}
+\screen{19-request-cancelled}{Screen 19: Request cancelled and refunded}{screen-19}
+\screen{20-deposit-funds}{Screen 20: Deposit funds}{screen-20}
+\screen{21-deposit-complete}{Screen 21: Deposit complete}{screen-21}
+\screen{22-transaction-history}{Screen 22: Transaction history}{screen-22}
+\screen{23-logout-payment-confirming}{Screen 23: Log out while a payment is still confirming}{screen-23}
 
 \end{document}
