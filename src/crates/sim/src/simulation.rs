@@ -1,8 +1,11 @@
 use crate::agents::HonestAgent;
 use crate::ground_truth::{GroundTruth, LinearRegression};
+use protocol::commitment::commitment_hash;
 use protocol::error::ProtocolError;
+use protocol::instructions::{advance_request, provider_accept, provider_commit, provider_reveal};
 use protocol::ledger::Ledger;
 use protocol::params::Params;
+use protocol::types::RequestStatus;
 use protocol::types::{RequestId, Requester, Task};
 
 use rand_chacha::ChaCha8Rng;
@@ -40,6 +43,7 @@ impl Simulation {
 
     pub fn run(&mut self, iterations: u32) -> Result<(), ProtocolError> {
         for round in 0..iterations {
+            let current_time = u64::from(round) * 1_000;
             let input = self.ground_truth.generate_input(&mut self.rng);
             let mut request = protocol::instructions::create_request(
                 &mut self.ledger,
@@ -48,24 +52,78 @@ impl Simulation {
                 &self.requester,
                 input,
                 0,
+                current_time,
             )?;
 
-            let mut predictions = Vec::new();
+            for agent in &self.agents {
+                provider_accept(
+                    &mut self.ledger,
+                    &self.task,
+                    &mut request,
+                    agent.address(),
+                    &self.params,
+                    current_time,
+                )?;
+            }
+            advance_request(
+                &mut self.ledger,
+                &mut self.task,
+                &mut request,
+                &self.params,
+                current_time,
+            )?;
+            assert_eq!(request.status(), RequestStatus::Committing);
+
+            let mut private_predictions = Vec::new();
             for provider in self.task.registered_providers() {
                 let agent = self
                     .agents
                     .iter()
                     .find(|agent| agent.address() == provider.address())
                     .expect("registered provider must have a simulation agent");
-                predictions.push((agent.address(), agent.predict(input)));
+                let salt: [u8; 32] = rand::random();
+                let prediction = agent.predict(request.input());
+                let commitment = commitment_hash(&request.id(), agent.address(), prediction, salt)?;
+                provider_commit(
+                    &mut self.ledger,
+                    &mut request,
+                    agent.address(),
+                    commitment,
+                    current_time,
+                )?;
+                private_predictions.push((agent.address(), prediction, salt));
             }
-
-            protocol::instructions::settle_request(
+            advance_request(
                 &mut self.ledger,
                 &mut self.task,
                 &mut request,
                 &self.params,
-                &predictions,
+                current_time,
+            )?;
+            assert_eq!(request.status(), RequestStatus::Revealing);
+            for (address, prediction, salt) in private_predictions {
+                provider_reveal(
+                    &mut self.ledger,
+                    &mut request,
+                    address,
+                    prediction,
+                    salt,
+                    current_time,
+                )?;
+            }
+            advance_request(
+                &mut self.ledger,
+                &mut self.task,
+                &mut request,
+                &self.params,
+                current_time,
+            )?;
+            advance_request(
+                &mut self.ledger,
+                &mut self.task,
+                &mut request,
+                &self.params,
+                current_time,
             )?;
             let aggregate = request
                 .aggregated_prediction()

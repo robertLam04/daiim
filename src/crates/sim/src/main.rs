@@ -42,6 +42,7 @@ fn main() {
         "Example Task".to_string(),
         Category::Regression,
         EvaluationMetric::Accuracy,
+        2,
         3,
     )
     .expect("Failed to create task");

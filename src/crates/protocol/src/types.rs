@@ -6,6 +6,7 @@ pub enum RequestStatus {
     Accepting,
     Committing,
     Revealing,
+    Ready,
     Settled,
     Cancelled,
 }
@@ -36,6 +37,7 @@ pub struct Task {
     category: Category,
     evaluation_metric: EvaluationMetric,
     registered_providers: Vec<Provider>,
+    min_providers: u32,
     max_providers: u32,
 }
 
@@ -45,6 +47,7 @@ impl Task {
         description: String,
         category: Category,
         evaluation_metric: EvaluationMetric,
+        min_providers: u32,
         max_providers: u32,
     ) -> Self {
         Self {
@@ -53,6 +56,7 @@ impl Task {
             category,
             evaluation_metric,
             registered_providers: Vec::new(),
+            min_providers,
             max_providers,
         }
     }
@@ -63,6 +67,10 @@ impl Task {
 
     pub fn max_providers(&self) -> u32 {
         self.max_providers
+    }
+
+    pub fn min_providers(&self) -> u32 {
+        self.min_providers
     }
 
     pub fn add_provider(&mut self, provider: Provider) {
@@ -201,7 +209,39 @@ mod included_prediction_tests {
     }
 }
 
-type Salt = [u8; 32];
+pub type Salt = [u8; 32];
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ProviderParticipation {
+    pub(crate) address: Address,
+    pub(crate) commitment: Option<[u8; 32]>,
+    pub(crate) prediction: Option<f64>,
+    pub(crate) salt: Option<Salt>,
+}
+
+impl ProviderParticipation {
+    pub(crate) fn new(address: Address) -> Self {
+        Self {
+            address,
+            commitment: None,
+            prediction: None,
+            salt: None,
+        }
+    }
+
+    pub fn address(&self) -> Address {
+        self.address
+    }
+    pub fn commitment(&self) -> Option<[u8; 32]> {
+        self.commitment
+    }
+    pub fn prediction(&self) -> Option<f64> {
+        self.prediction
+    }
+    pub fn salt(&self) -> Option<Salt> {
+        self.salt
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Request {
@@ -209,14 +249,14 @@ pub struct Request {
     task_id: TaskId,
     input: f64,
     requester: Address,
-    status: RequestStatus,
+    pub(crate) status: RequestStatus,
     payment: u64,
-    accepted_providers: Vec<Address>,
-    provider_commits: Vec<(Address, [u8; 32])>,
-    provider_predictions: Vec<(Address, f64)>,
-    provider_salts: Vec<(Address, Salt)>,
-    included_predictions: Vec<IncludedPrediction>,
-    aggregated_prediction: Option<f64>,
+    pub(crate) provider_participations: Vec<ProviderParticipation>,
+    pub(crate) phase_deadline: u64,
+    pub(crate) last_accept_time: Option<u64>,
+    pub(crate) last_commit_time: Option<u64>,
+    pub(crate) included_predictions: Vec<IncludedPrediction>,
+    pub(crate) aggregated_prediction: Option<f64>,
 }
 
 impl Request {
@@ -226,6 +266,7 @@ impl Request {
         input: f64,
         requester: Address,
         payment: u64,
+        acceptance_deadline: u64,
     ) -> Self {
         Self {
             id,
@@ -234,10 +275,10 @@ impl Request {
             requester,
             status: RequestStatus::Accepting,
             payment,
-            accepted_providers: Vec::new(),
-            provider_commits: Vec::new(),
-            provider_predictions: Vec::new(),
-            provider_salts: Vec::new(),
+            provider_participations: Vec::new(),
+            phase_deadline: acceptance_deadline,
+            last_accept_time: None,
+            last_commit_time: None,
             included_predictions: Vec::new(),
             aggregated_prediction: None,
         }
@@ -245,6 +286,26 @@ impl Request {
 
     pub fn task_id(&self) -> TaskId {
         self.task_id.clone()
+    }
+
+    pub fn id(&self) -> RequestId {
+        self.id.clone()
+    }
+    pub fn input(&self) -> f64 {
+        self.input
+    }
+    pub fn phase_deadline(&self) -> u64 {
+        self.phase_deadline
+    }
+    pub fn provider_participations(&self) -> &[ProviderParticipation] {
+        &self.provider_participations
+    }
+
+    pub fn last_accept_time(&self) -> Option<u64> {
+        self.last_accept_time
+    }
+    pub fn last_commit_time(&self) -> Option<u64> {
+        self.last_commit_time
     }
 
     pub fn status(&self) -> RequestStatus {
@@ -257,15 +318,5 @@ impl Request {
 
     pub fn aggregated_prediction(&self) -> Option<f64> {
         self.aggregated_prediction
-    }
-
-    pub fn record_settlement(
-        &mut self,
-        included_predictions: Vec<IncludedPrediction>,
-        aggregate: f64,
-    ) {
-        self.included_predictions = included_predictions;
-        self.aggregated_prediction = Some(aggregate);
-        self.status = RequestStatus::Settled;
     }
 }

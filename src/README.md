@@ -29,3 +29,15 @@ cargo build -p sim            # Build only the simulator
 cargo run -p sim              # Run the simulator
 cargo test --workspace        # Run the workspace tests
 ```
+
+The simulator registers three honest providers for one regression task. Each request
+passes through acceptance, commitment, reveal, and settlement. Only valid reveals
+are aggregated; the result and reputation changes are printed for each round.
+
+### Time source for an on-chain implementation
+
+The POC passes `current_time` into request instructions so the simulator can use a
+deterministic clock. This value is controlled by the caller and is not a safe source
+for on-chain deadline checks. A Solana implementation must read the Clock sysvar
+inside the program and use that time for request creation, submissions, and phase
+advancement instead of accepting a timestamp from instruction data.
