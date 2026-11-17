@@ -1,6 +1,14 @@
 {
   "docs/CDs/CognitiveWalkthrough/CognitiveWalkthrough.tex": [
     "docs/CDs/CognitiveWalkthrough/CognitiveWalkthrough.tex",
+    "docs/CDs/CognitiveWalkthrough/figures/01-home-signed-out.png",
+    "docs/CDs/CognitiveWalkthrough/figures/02-sign-in-choose-method.png",
+    "docs/CDs/CognitiveWalkthrough/figures/03-sign-in-enter-code.png",
+    "docs/CDs/CognitiveWalkthrough/figures/06-profile.png",
+    "docs/CDs/CognitiveWalkthrough/figures/07-help.png",
+    "docs/CDs/CognitiveWalkthrough/figures/09-task-details.png",
+    "docs/CDs/CognitiveWalkthrough/figures/10-provider-details.png",
+    "docs/CDs/CognitiveWalkthrough/figures/11-create-task.png",
     "docs/Comments.text",
     "docs/Common.text"
   ],
