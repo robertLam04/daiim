@@ -446,6 +446,7 @@ to be implemented.
   explicitly.  Even if they are implemented, they are not exported; they only
   have local scope.}
 
+
 % =====================================================================
 \section{MIS of Request Lifecycle (\mref{mLifecycle})} \label{misLifecycle}
 % =====================================================================
@@ -453,66 +454,59 @@ to be implemented.
 \subsection{Module}
 
 Request Lifecycle (\mref{mLifecycle}). An abstract data type whose instances are
-inference requests, each identified by a \texttt{RequestId}. It is implemented
-in the on-chain program.
+inference requests, each identified by a \texttt{RequestId}. Implemented in the
+on-chain program.
 
 \subsection{Uses}
 
 \begin{itemize}
-\item \textbf{Provider Registry (\mref{mRegistry}):}
-  \texttt{getTaskParameters}, \texttt{isRegistered}, \texttt{getReputation},
-  \texttt{setReputation}, \texttt{getStake}, \texttt{getReservedStake},
-  \texttt{reserveStake}, \texttt{releaseStake}, \texttt{deductStake},
-  \texttt{removeProvider}, \texttt{isValidOutput}, \texttt{getSlashHistory},
-  \texttt{recordParticipation}, and the constant
-  \texttt{MINIMUM\_PROVIDER\_STAKE}. (\texttt{TaskParameters} is a record
-  with \texttt{minProviders}, \texttt{maxProviders}, and
-  \texttt{acceptancePeriod}.)
+\item \textbf{Provider Registry (\mref{mRegistry}):} task parameters
+  (\texttt{getTaskParameters}, a record with \texttt{minProviders},
+  \texttt{maxProviders}, and \texttt{acceptancePeriod}); provider status
+  (\texttt{isRegistered}, \texttt{isValidOutput}); reputation
+  (\texttt{getReputation}, \texttt{setReputation}); stake (\texttt{getStake},
+  \texttt{getReservedStake}, \texttt{reserveStake}, \texttt{releaseStake},
+  \texttt{deductStake}); removal (\texttt{unregisterProvider}); slash history
+  (\texttt{getSlashHistory}, \texttt{recordParticipation}); and the constant
+  \texttt{MINIMUM\_PROVIDER\_STAKE}.
 \item \textbf{Prediction Aggregator (\mref{mAggregator}):}
   \texttt{weightedMedian}, \texttt{resultSpread}, and \texttt{AggregationError}.
 \item \textbf{Reputation Handler (\mref{mReputation}):}
-  \texttt{updateReputations} and \texttt{forfeitStake}.
+  \texttt{updateReputations}.
 \item \textbf{Rewards Calculator (\mref{mRewards}):}
-  \texttt{escrowPayment}, \texttt{distributeRewards}, \texttt{retryReward},
-  \texttt{forfeitReward}, \texttt{refundPayment}, \texttt{payCompensation},
-  and \texttt{TransferFailedError}.
-\item \textbf{Penalty Enforcer (\mref{mPenalty}):}
-  \texttt{applyPenalty}, \texttt{collectCompensation}, \texttt{PenaltyDecision},
-  and \texttt{ParticipationOutcome}.
+  \texttt{calculateRewards}.
+\item \textbf{Penalty Enforcer (\mref{mPenalty}):} \texttt{penaltyFor} and the
+  types \texttt{PenaltyDecision} and \texttt{ParticipationOutcome}.
+\item \textbf{Token Manager (\mref{mToken}):} \texttt{transfer}, the endpoints
+  \texttt{Wallet}, \texttt{RequestEscrow}, \texttt{StakeEscrow}, and
+  \texttt{Burn}, and \texttt{TransferFailedError}.
 \end{itemize}
 
-This module calls no Token Manager (\mref{mToken}) routine. Every movement of
-tokens for a request happens inside Rewards Calculator, Penalty Enforcer, or
-Reputation Handler.
-
 The routine names above are the interface this MIS assumes from the other
-modules; they must match those modules' MIS.
+modules.
 
 \subsection{Syntax}
 
 \subsubsection{Exported Constants}
 \begin{itemize}
-\item \texttt{COMMIT\_PERIOD}: Duration -- maximum length of the commit phase,
-  measured from the end of the acceptance period
-\item \texttt{REVEAL\_PERIOD}: Duration -- maximum length of the reveal phase,
-  measured from the end of the commit phase
-\item \texttt{PENDING\_TRANSFER\_PERIOD}: Duration -- time after the end of the
-  reveal phase during which unresolved reward transfers may be retried
-\item \texttt{MINIMUM\_REQUEST\_PAYMENT}: $\mathbb{N}$ -- the lowest payment a
-  request may offer (payments must exceed it)
+\item \texttt{COMMIT\_PERIOD}, \texttt{REVEAL\_PERIOD},
+  \texttt{PENDING\_TRANSFER\_PERIOD}: Duration -- the length of the commit
+  phase, the reveal phase, and the period in which unresolved reward transfers
+  can be retried
+\item \texttt{MINIMUM\_REQUEST\_PAYMENT}: $\mathbb{N}$ -- a request's payment
+  must exceed this amount
 \end{itemize}
 
 \subsubsection{Exported Types}
 \begin{itemize}
 \item \texttt{RequestStatus} = \{Acceptance, Commit, Reveal, Finalization,
   PendingTransfer, Completed, Failed, Cancelled\}
-\item \texttt{RevealResult} = \{Accepted, Mismatch, NonConforming\}
 \item \texttt{Hash}: fixed-length byte string; \texttt{Salt}: byte string
 \end{itemize}
 
 \subsubsection{Exported Access Programs}
 
-\begin{longtable}{p{3.3cm} p{4.2cm} p{3.1cm} p{5cm}}
+\begin{longtable}{p{3.2cm} p{4cm} p{3.2cm} p{5.1cm}}
 \hline
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \hline
@@ -534,28 +528,25 @@ submitCommitment & RequestId, Address, Hash & - &
   UnknownRequestError, WrongPhaseError, DeadlinePassedError,
   NotAcceptedError, AlreadyCommittedError \\
 \hline
-revealPrediction & RequestId, Address, $\mathbb{R}$, Salt & RevealResult &
+revealPrediction & RequestId, Address, $\mathbb{R}$, Salt & - &
   UnknownRequestError, WrongPhaseError, DeadlinePassedError,
   NoCommitmentError, AlreadyRevealedError \\
 \hline
-advancePhase & RequestId & RequestStatus &
-  UnknownRequestError, ArithmeticOverflowError \\
+advancePhase & RequestId & - & UnknownRequestError,
+  ArithmeticOverflowError \\
 \hline
-retryTransfer & RequestId, Address & - &
-  UnknownRequestError, WrongPhaseError, DeadlinePassedError,
-  NoUnresolvedTransferError, TransferFailedError \\
+retryTransfer & RequestId, Address & - & UnknownRequestError,
+  WrongPhaseError, DeadlinePassedError, NoUnresolvedTransferError,
+  TransferFailedError \\
 \hline
 getStatus & RequestId & RequestStatus & UnknownRequestError \\
 \hline
+getOutcome & RequestId, Address & ParticipationOutcome &
+  UnknownRequestError, NotAcceptedError \\
+\hline
 getResult & RequestId & $\mathbb{R} \times \mathbb{R} \times \mathbb{R}
-  \times \mathbb{N}$ (result, minimum, maximum, count) &
+  \times \mathbb{N}$ (result, lowest, highest, count) &
   UnknownRequestError, ResultUnavailableError \\
-\hline
-getDeadlines & RequestId & Timestamp $\times$ Timestamp $\times$ Timestamp
-  $\times$ Timestamp & UnknownRequestError \\
-\hline
-getUnresolvedTransfers & RequestId & set of (Address $\times$ $\mathbb{N}$) &
-  UnknownRequestError \\
 \hline
 \end{longtable}
 
@@ -563,256 +554,239 @@ getUnresolvedTransfers & RequestId & set of (Address $\times$ $\mathbb{N}$) &
 
 \subsubsection{State Variables}
 
-Each request \texttt{r} has the following state variables.
+Each request \texttt{r} has these state variables.
 
 \begin{itemize}
 \item \texttt{r.taskId}: TaskId; \texttt{r.requester}: Address;
-  \texttt{r.payment}: $\mathbb{N}$ -- the escrowed payment offered for the
-  request
+  \texttt{r.payment}: $\mathbb{N}$
 \item \texttt{r.status}: RequestStatus
-\item \texttt{r.minProviders}, \texttt{r.maxProviders}: $\mathbb{N}$ --
-  copied from the task's parameters when the request is created
-\item \texttt{r.createdAt}, \texttt{r.acceptanceDeadline},
-  \texttt{r.acceptanceEnd}, \texttt{r.commitDeadline}, \texttt{r.commitEnd},
-  \texttt{r.revealDeadline}, \texttt{r.revealEnd},
-  \texttt{r.pendingDeadline}: Timestamp (or $\bot$ until set)
+\item \texttt{r.minProviders}, \texttt{r.maxProviders}: $\mathbb{N}$
+\item \texttt{r.deadline}: Timestamp $\cup$ \{$\bot$\} -- the deadline of the
+  current phase
+\item \texttt{r.pendingDeadline}: Timestamp $\cup$ \{$\bot$\} -- the deadline
+  for retrying unresolved reward transfers
 \item \texttt{r.accepted}: sequence of Address, in order of acceptance
 \item \texttt{r.commitment}: Address $\rightarrow$ Hash $\cup$ \{$\bot$\}
+\item \texttt{r.outcome}: Address $\rightarrow$ ParticipationOutcome
 \item \texttt{r.prediction}: Address $\rightarrow$ $\mathbb{R}$ $\cup$
   \{$\bot$\} -- set only for valid reveals
-\item \texttt{r.outcome}: Address $\rightarrow$ ParticipationOutcome -- the
-  latest participation outcome of each accepted provider
-\item \texttt{r.snapshot}: Address $\rightarrow$ $\mathbb{R}$ -- each
-  provider's reputation when the reveal phase ends
-\item \texttt{r.result}: $\mathbb{R}$ $\cup$ \{$\bot$\};
-  \texttt{r.lowest}, \texttt{r.highest}: $\mathbb{R}$ $\cup$ \{$\bot$\};
-  \texttt{r.included}: $\mathbb{N}$
-\item \texttt{r.unresolved}: Address $\rightarrow$ $\mathbb{N}$ -- rewards
-  held in escrow because the transfer failed
+\item \texttt{r.snapshot}: Address $\rightarrow$ $\mathbb{R}$ -- reputations
+  when the reveal phase ends
+\item \texttt{r.result}, \texttt{r.lowest}, \texttt{r.highest}: $\mathbb{R}$
+  $\cup$ \{$\bot$\}; \texttt{r.included}: $\mathbb{N}$
+\item \texttt{r.unresolved}: Address $\rightarrow$ $\mathbb{N}$ -- rewards held
+  in escrow because their transfer failed
 \end{itemize}
 
 \subsubsection{Environment Variables}
 
 \begin{itemize}
-\item \texttt{ChainClock}: Timestamp -- the blockchain's current time for the
-  executing transaction
+\item \texttt{ChainClock}: Timestamp -- the blockchain's current time
 \end{itemize}
+
+\subsubsection{State Invariant}
+
+For every request \texttt{r}:
+\begin{itemize}
+\item $|\texttt{r.accepted}| \le \texttt{r.maxProviders}$
+\item every provider with a commitment is in \texttt{r.accepted}, and every
+  provider whose outcome is ValidReveal has a commitment
+\item \texttt{r.status} = Completed $\Rightarrow$ \texttt{r.unresolved} is
+  empty
+\item \texttt{r.result} $\neq$ $\bot$ $\Rightarrow$ \texttt{r.status} $\in$
+  \{PendingTransfer, Completed\}
+\end{itemize}
+A new request starts in Acceptance with no accepted providers and no result, so
+the invariant holds initially, and each access program preserves it.
 
 \subsubsection{Assumptions}
 
 \begin{itemize}
-\item The \texttt{Address} arguments of \texttt{createRequest},
-  \texttt{acceptRequest}, \texttt{submitCommitment}, \texttt{revealPrediction},
-  and \texttt{retryTransfer} are the signers of the transaction, so a caller
-  can act only for its own address.
-\item The on-chain program does not run on its own. \texttt{advancePhase} is
-  invoked by any party, and the request advances only when it is called.
-\item The hash function behind \texttt{computeCommitment} is collision- and
-  preimage-resistant. Salts are at least 256 bits and are generated by the
-  Participation Client (\mref{mParticipation}).
-\item A transaction that raises an exception leaves all state unchanged.
-\item The Provider Registry's recorded stake for a provider and task equals the
-  balance of that provider's stake escrow in the Token Manager. Modules that
-  move stake tokens (Penalty Enforcer, Reputation Handler) leave the Registry's
-  record unchanged, and this module updates the record afterwards.
-\item Refunds to the requester and payments to providers with a valid reveal
-  always succeed, because those wallets were able to pay in or to reveal.
-\item The other modules behave as specified in their own MIS.
+\item The \texttt{Address} arguments are the signers of the transaction.
+\item \texttt{advancePhase} is called by any party. Nothing advances on its own.
+\item A call that raises an exception leaves all state unchanged.
+\item Salts are at least 256 bits and are generated by the Participation Client
+  (\mref{mParticipation}).
+\item The Provider Registry's stake record for a provider equals the provider's
+  stake escrow. When this module moves stake tokens, it updates the record too.
+\item Refunds to the requester, and payments to providers whose reveal was
+  valid, succeed.
 \end{itemize}
 
 \subsubsection{Access Routine Semantics}
 
 \noindent \texttt{computeCommitment}(id, provider, p, salt):
 \begin{itemize}
-\item output: the hash of the concatenation of \texttt{id}, \texttt{provider},
-  \texttt{p}, and \texttt{salt}, in that order.
+\item output: \textit{out} := the hash of \texttt{id}, \texttt{provider},
+  \texttt{p}, and \texttt{salt}, in that order
 \end{itemize}
 
 \noindent \texttt{createRequest}(taskId, requester, payment):
 \begin{itemize}
 \item transition: Let \texttt{params} := \texttt{getTaskParameters(taskId)}.
-  Allocate the identifier \texttt{id}. Call \texttt{escrowPayment(id,
-  requester, payment)}. Create a request \texttt{r} with \texttt{r.status} :=
-  Acceptance, \texttt{r.createdAt} := \texttt{ChainClock},
-  \texttt{r.acceptanceDeadline} := \texttt{ChainClock} +
-  \texttt{params.acceptancePeriod}, and \texttt{minProviders} and
-  \texttt{maxProviders} copied from \texttt{params}. All other fields start
-  empty.
-\item output: the identifier \texttt{id} of the new request.
-\item exception: \texttt{UnknownTaskError} if the task does not exist.
-  \texttt{InvalidPaymentError} if \texttt{payment} $\le$
-  \texttt{MINIMUM\_REQUEST\_PAYMENT}. \texttt{TransferFailedError} if the
-  requester's wallet cannot cover the payment.
+  \texttt{transfer(Wallet(requester), RequestEscrow(id), payment)}. Create a
+  request with \texttt{status} := Acceptance, \texttt{deadline} :=
+  \texttt{ChainClock} + \texttt{params.acceptancePeriod}, and
+  \texttt{minProviders}, \texttt{maxProviders} taken from \texttt{params}.
+\item output: \textit{out} := the new request's \texttt{id}
+\item exception: \textit{exc} := (the task does not exist $\Rightarrow$
+  UnknownTaskError $\mid$ \texttt{payment} $\le$
+  \texttt{MINIMUM\_REQUEST\_PAYMENT} $\Rightarrow$ InvalidPaymentError $\mid$
+  the transfer fails $\Rightarrow$ TransferFailedError)
 \end{itemize}
 
 \noindent \texttt{acceptRequest}(id, provider):
 \begin{itemize}
-\item transition: Let \texttt{reservation} := (\texttt{r.minProviders} $-$ 1)
-  $\times$ \texttt{r.payment}. Call \texttt{reserveStake(r.taskId, provider,
-  reservation)}. Append \texttt{provider} to \texttt{r.accepted} and set
-  \texttt{r.outcome[provider]} := NoCommit. If $|\texttt{r.accepted}| =
-  \texttt{r.maxProviders}$, close the acceptance period early:
-  \texttt{r.acceptanceEnd} := \texttt{ChainClock}, \texttt{r.status} := Commit,
-  and \texttt{r.commitDeadline} := \texttt{r.acceptanceEnd} +
+\item transition: \texttt{reserveStake(r.taskId, provider, (r.minProviders}
+  $-$ 1\texttt{)} $\times$ \texttt{r.payment)}. Append \texttt{provider} to
+  \texttt{r.accepted} and set \texttt{r.outcome[provider]} := NoCommit. If
+  $|\texttt{r.accepted}| = \texttt{r.maxProviders}$, acceptance closes early:
+  \texttt{r.status} := Commit and \texttt{r.deadline} := \texttt{ChainClock} +
   \texttt{COMMIT\_PERIOD}.
-\item exception: \texttt{WrongPhaseError} if \texttt{r.status} $\neq$
-  Acceptance. \texttt{DeadlinePassedError} if \texttt{ChainClock} $\ge$
-  \texttt{r.acceptanceDeadline}. \texttt{NotRegisteredError} if
-  \texttt{isRegistered(r.taskId, provider)} is false.
-  \texttt{AlreadyAcceptedError} if \texttt{provider} $\in$
-  \texttt{r.accepted}. \texttt{InsufficientStakeError} if
-  \texttt{getStake(r.taskId, provider)} $-$ \texttt{getReservedStake(r.taskId,
-  provider)} $-$ \texttt{reservation} $<$ \texttt{MINIMUM\_PROVIDER\_STAKE}.
+\item exception: \textit{exc} := (\texttt{r.status} $\neq$ Acceptance
+  $\Rightarrow$ WrongPhaseError $\mid$ \texttt{ChainClock} $\ge$
+  \texttt{r.deadline} $\Rightarrow$ DeadlinePassedError $\mid$ provider not
+  registered for \texttt{r.taskId} $\Rightarrow$ NotRegisteredError $\mid$
+  \texttt{provider} $\in$ \texttt{r.accepted} $\Rightarrow$
+  AlreadyAcceptedError $\mid$ the provider's stake less its reservations and
+  this reservation would be below \texttt{MINIMUM\_PROVIDER\_STAKE}
+  $\Rightarrow$ InsufficientStakeError)
 \end{itemize}
 
 \noindent \texttt{submitCommitment}(id, provider, c):
 \begin{itemize}
 \item transition: \texttt{r.commitment[provider]} := \texttt{c} and
-  \texttt{r.outcome[provider]} := NoReveal. If every provider in
-  \texttt{r.accepted} now has a commitment, then \texttt{r.commitEnd} :=
-  \texttt{ChainClock}, \texttt{r.status} := Reveal, and
-  \texttt{r.revealDeadline} := \texttt{r.commitEnd} + \texttt{REVEAL\_PERIOD}.
-\item exception: \texttt{WrongPhaseError} if \texttt{r.status} $\neq$ Commit.
-  \texttt{DeadlinePassedError} if \texttt{ChainClock} $\ge$
-  \texttt{r.commitDeadline}. \texttt{NotAcceptedError} if \texttt{provider}
-  $\notin$ \texttt{r.accepted}. \texttt{AlreadyCommittedError} if
-  \texttt{r.commitment[provider]} $\neq$ $\bot$.
+  \texttt{r.outcome[provider]} := NoReveal. If every accepted provider now has a
+  commitment: \texttt{r.status} := Reveal and \texttt{r.deadline} :=
+  \texttt{ChainClock} + \texttt{REVEAL\_PERIOD}.
+\item exception: \textit{exc} := (\texttt{r.status} $\neq$ Commit $\Rightarrow$
+  WrongPhaseError $\mid$ \texttt{ChainClock} $\ge$ \texttt{r.deadline}
+  $\Rightarrow$ DeadlinePassedError $\mid$ \texttt{provider} $\notin$
+  \texttt{r.accepted} $\Rightarrow$ NotAcceptedError $\mid$
+  \texttt{r.commitment[provider]} $\neq$ $\bot$ $\Rightarrow$
+  AlreadyCommittedError)
 \end{itemize}
 
 \noindent \texttt{revealPrediction}(id, provider, p, salt):
 \begin{itemize}
-\item transition: Let \texttt{matches} := (\texttt{computeCommitment(id,
-  provider, p, salt)} = \texttt{r.commitment[provider]}) and
-  \texttt{conforms} := \texttt{isValidOutput(r.taskId, p)}.
-  \begin{itemize}
-  \item If \texttt{matches} $\wedge$ \texttt{conforms}:
-    \texttt{r.prediction[provider]} := \texttt{p} and
-    \texttt{r.outcome[provider]} := ValidReveal.
-  \item If $\neg$\texttt{matches}: \texttt{r.outcome[provider]} :=
-    RevealMismatch.
-  \item Otherwise: \texttt{r.outcome[provider]} := RevealNonConforming.
-  \end{itemize}
-  In every case the provider's single reveal is consumed. If every provider
-  with a commitment has now revealed, then \texttt{r.revealEnd} :=
-  \texttt{ChainClock}, \texttt{r.snapshot} := the current reputations of the
-  committed providers, and \texttt{r.status} := Finalization.
-\item output: Accepted, Mismatch, or NonConforming, matching the three cases.
-  A rejected reveal is reported through the output, not an exception, because
-  an exception would roll back the record of the offence. The offence is
-  penalized when the request ends.
-\item exception: \texttt{WrongPhaseError} if \texttt{r.status} $\neq$ Reveal.
-  \texttt{DeadlinePassedError} if \texttt{ChainClock} $\ge$
-  \texttt{r.revealDeadline}. \texttt{NoCommitmentError} if
-  \texttt{r.commitment[provider]} = $\bot$. \texttt{AlreadyRevealedError} if
-  \texttt{r.outcome[provider]} $\neq$ NoReveal.
+\item transition: If \texttt{computeCommitment(id, provider, p, salt)} equals
+  \texttt{r.commitment[provider]} and \texttt{p} conforms to the task's output
+  schema (\texttt{isValidOutput}), then \texttt{r.prediction[provider]} :=
+  \texttt{p} and \texttt{r.outcome[provider]} := ValidReveal. If the
+  commitment does not match, \texttt{r.outcome[provider]} := RevealMismatch.
+  Otherwise \texttt{r.outcome[provider]} := RevealNonConforming. A rejected
+  reveal is recorded and penalized when the request ends, not reported as an
+  exception, so that the record is not rolled back. If every provider with a
+  commitment has now revealed, run \texttt{enterFinalization(r,
+  ChainClock)}.
+\item exception: \textit{exc} := (\texttt{r.status} $\neq$ Reveal $\Rightarrow$
+  WrongPhaseError $\mid$ \texttt{ChainClock} $\ge$ \texttt{r.deadline}
+  $\Rightarrow$ DeadlinePassedError $\mid$ \texttt{r.commitment[provider]} =
+  $\bot$ $\Rightarrow$ NoCommitmentError $\mid$ \texttt{r.outcome[provider]}
+  $\neq$ NoReveal $\Rightarrow$ AlreadyRevealedError)
 \end{itemize}
 
 \noindent \texttt{advancePhase}(id):
 \begin{itemize}
-\item transition: Repeat the first applicable rule below until none applies.
+\item transition: Repeat the first rule that applies until none applies.
   \begin{itemize}
-  \item \emph{Acceptance} and \texttt{ChainClock} $\ge$
-    \texttt{r.acceptanceDeadline}: \texttt{r.acceptanceEnd} :=
-    \texttt{r.acceptanceDeadline}. If $|\texttt{r.accepted}| <
-    \texttt{r.minProviders}$, run \texttt{cancel(r)}. Otherwise
-    \texttt{r.status} := Commit and \texttt{r.commitDeadline} :=
-    \texttt{r.acceptanceEnd} + \texttt{COMMIT\_PERIOD}.
-  \item \emph{Commit} and \texttt{ChainClock} $\ge$ \texttt{r.commitDeadline}:
-    \texttt{r.commitEnd} := \texttt{r.commitDeadline}. If no provider has a
-    commitment, then \texttt{r.revealEnd} := \texttt{r.commitEnd},
-    \texttt{r.snapshot} := empty, and \texttt{r.status} := Finalization.
-    Otherwise \texttt{r.status} := Reveal and \texttt{r.revealDeadline} :=
-    \texttt{r.commitEnd} + \texttt{REVEAL\_PERIOD}.
-  \item \emph{Reveal} and \texttt{ChainClock} $\ge$ \texttt{r.revealDeadline}:
-    \texttt{r.revealEnd} := \texttt{r.revealDeadline}, \texttt{r.snapshot} :=
-    the current reputations of the committed providers, and
-    \texttt{r.status} := Finalization.
-  \item \emph{Finalization}: let $I$ be the set of providers whose outcome is
-    ValidReveal and whose snapshot reputation is non-zero. If $|I| <
-    \texttt{r.minProviders}$, run \texttt{cancel(r)}. Otherwise run
-    \texttt{finalize(r, I)}.
-  \item \emph{PendingTransfer} and \texttt{ChainClock} $\ge$
-    \texttt{r.pendingDeadline}: for each unresolved reward, call
-    \texttt{forfeitReward(id, amount)} and discard the entry. Then
-    \texttt{r.status} := Completed.
+  \item Acceptance and \texttt{ChainClock} $\ge$ \texttt{r.deadline}: if
+    $|\texttt{r.accepted}| < \texttt{r.minProviders}$, \texttt{cancel(r)};
+    otherwise \texttt{r.status} := Commit and \texttt{r.deadline} :=
+    \texttt{r.deadline} + \texttt{COMMIT\_PERIOD}.
+  \item Commit and \texttt{ChainClock} $\ge$ \texttt{r.deadline}: if no
+    provider has a commitment, \texttt{enterFinalization(r, r.deadline)};
+    otherwise \texttt{r.status} := Reveal and \texttt{r.deadline} :=
+    \texttt{r.deadline} + \texttt{REVEAL\_PERIOD}.
+  \item Reveal and \texttt{ChainClock} $\ge$ \texttt{r.deadline}:
+    \texttt{enterFinalization(r, r.deadline)}.
+  \item Finalization: let $I$ be the providers with outcome ValidReveal and
+    a non-zero snapshot reputation. If $|I| < \texttt{r.minProviders}$,
+    \texttt{cancel(r)}; otherwise \texttt{finalize(r, I)}.
+  \item PendingTransfer and \texttt{ChainClock} $\ge$
+    \texttt{r.pendingDeadline}: burn every unresolved reward with
+    \texttt{transfer(RequestEscrow(id), Burn, amount)}, clear
+    \texttt{r.unresolved}, and set \texttt{r.status} := Completed.
   \end{itemize}
-\item output: \texttt{r.status} after the rules have been applied.
-\item exception: \texttt{UnknownRequestError} if \texttt{id} does not exist.
-  \texttt{ArithmeticOverflowError} if an overflow occurs in a called module;
-  the request is then left unchanged.
+\item exception: \textit{exc} := (the request does not exist $\Rightarrow$
+  UnknownRequestError $\mid$ an overflow occurs in a called module
+  $\Rightarrow$ ArithmeticOverflowError)
 \end{itemize}
 
 \noindent \texttt{retryTransfer}(id, provider):
 \begin{itemize}
-\item transition: Call \texttt{retryReward(id, provider,
+\item transition: \texttt{transfer(RequestEscrow(id), Wallet(provider),
   r.unresolved[provider])}, then remove \texttt{provider} from
   \texttt{r.unresolved}. If \texttt{r.unresolved} is now empty,
   \texttt{r.status} := Completed.
-\item exception: \texttt{WrongPhaseError} if \texttt{r.status} $\neq$
-  PendingTransfer. \texttt{DeadlinePassedError} if \texttt{ChainClock} $\ge$
-  \texttt{r.pendingDeadline}. \texttt{NoUnresolvedTransferError} if
-  \texttt{provider} $\notin$ \texttt{r.unresolved}.
-  \texttt{TransferFailedError} if the transfer fails again.
+\item exception: \textit{exc} := (\texttt{r.status} $\neq$ PendingTransfer
+  $\Rightarrow$ WrongPhaseError $\mid$ \texttt{ChainClock} $\ge$
+  \texttt{r.pendingDeadline} $\Rightarrow$ DeadlinePassedError $\mid$
+  \texttt{provider} $\notin$ \texttt{r.unresolved} $\Rightarrow$
+  NoUnresolvedTransferError $\mid$ the transfer fails $\Rightarrow$
+  TransferFailedError)
 \end{itemize}
 
-\noindent \texttt{getStatus}(id), \texttt{getResult}(id),
-\texttt{getDeadlines}(id), \texttt{getUnresolvedTransfers}(id):
+\noindent \texttt{getStatus}(id), \texttt{getOutcome}(id, provider),
+\texttt{getResult}(id):
 \begin{itemize}
-\item output: \texttt{r.status}; (\texttt{r.result}, \texttt{r.lowest},
-  \texttt{r.highest}, \texttt{r.included}); the tuple
-  (\texttt{r.acceptanceDeadline}, \texttt{r.commitDeadline},
-  \texttt{r.revealDeadline}, \texttt{r.pendingDeadline}); and
-  \texttt{r.unresolved} as a set of pairs.
-\item exception: \texttt{UnknownRequestError} for every routine.
-  \texttt{ResultUnavailableError} for \texttt{getResult} if \texttt{r.result}
-  = $\bot$.
+\item output: \textit{out} := \texttt{r.status}; \texttt{r.outcome[provider]};
+  (\texttt{r.result}, \texttt{r.lowest}, \texttt{r.highest},
+  \texttt{r.included})
+\item exception: \textit{exc} := (the request does not exist $\Rightarrow$
+  UnknownRequestError $\mid$ for \texttt{getOutcome}, \texttt{provider}
+  $\notin$ \texttt{r.accepted} $\Rightarrow$ NotAcceptedError $\mid$ for
+  \texttt{getResult}, \texttt{r.result} = $\bot$ $\Rightarrow$
+  ResultUnavailableError)
 \end{itemize}
 
 \subsubsection{Local Functions}
 
 \begin{itemize}
-\item \texttt{releaseReservations(r)}: calls \texttt{releaseStake} for each
-  provider in \texttt{r.accepted}, releasing the reservation made in
-  \texttt{acceptRequest}, less any amount already collected as compensation.
-\item \texttt{applyPenalties(r)}: for each provider \texttt{a} in
-  \texttt{r.accepted} that \texttt{isRegistered(r.taskId, a)}, let
-  \texttt{d} := \texttt{applyPenalty(r.taskId, a, r.outcome[a],
-  getStake(r.taskId, a), getSlashHistory(r.taskId, a))}. This burns the
-  slashed tokens, and also the remaining stake if \texttt{d.burnRemaining}.
-  Then update the Registry's record: if \texttt{d.unregister}, call
-  \texttt{removeProvider(r.taskId, a)}; otherwise, if \texttt{d.slashAmount}
-  $> 0$, call \texttt{deductStake(r.taskId, a, d.slashAmount)}. Finally call
-  \texttt{recordParticipation(r.taskId, a, id, d.slashAmount} $> 0$\texttt{)}.
-\item \texttt{cancel(r)}: let $V$ be the providers whose outcome is
-  ValidReveal and $F$ the remaining providers in \texttt{r.accepted}, in
-  acceptance order. If $V \neq \emptyset$, let $C$ := \texttt{r.payment}
-  $\times |V|$, call \texttt{collectCompensation(r.taskId, id, F, C)}, call
-  \texttt{deductStake(r.taskId, f, share)} for each provider $f$ in $F$ with
-  the share returned for it, and call \texttt{payCompensation(id, V,
-  r.payment)}. After that, call \texttt{refundPayment(id, r.requester,
-  r.payment)}, run \texttt{releaseReservations(r)} and
-  \texttt{applyPenalties(r)}, and set \texttt{r.status} := Cancelled.
-\item \texttt{finalize(r, I)}: let $p$ be the predictions of $I$ and $\rho$
-  their snapshot reputations, in acceptance order.
+\item \texttt{enterFinalization(r, t)}: \texttt{r.snapshot} := the current
+  reputation of each provider with a commitment; \texttt{r.pendingDeadline} :=
+  $t$ + \texttt{PENDING\_TRANSFER\_PERIOD}; \texttt{r.status} := Finalization.
+\item \texttt{moveStake(task, a, destination, amount)}:
+  \texttt{deductStake(task, a, amount)}, then
+  \texttt{transfer(StakeEscrow(task, a), destination, amount)}.
+\item \texttt{releaseReservations(r)}: \texttt{releaseStake} for each accepted
+  provider, less any amount already paid out as compensation.
+\item \texttt{applyPenalties(r)}: for each accepted provider \texttt{a} still
+  registered, let $d$ := \texttt{penaltyFor(r.outcome[a], getStake(r.taskId, a),
+  getSlashHistory(r.taskId, a))}. If $d$.\texttt{slashAmount} $> 0$, run
+  \texttt{moveStake(r.taskId, a, Burn, d.slashAmount)}. Call
+  \texttt{recordParticipation} with whether \texttt{a} was slashed. If
+  $d$.\texttt{unregister}, call \texttt{unregisterProvider(r.taskId, a,
+  d.burnRemaining)}.
+\item \texttt{cancel(r)}: let $V$ be the providers with outcome ValidReveal and
+  $F$ the other accepted providers. If $V \neq \emptyset$, collect
+  \texttt{r.payment} $\times |V|$ in equal parts from the reserved stake of the
+  providers in $F$ into \texttt{RequestEscrow(id)} (with \texttt{moveStake}),
+  then pay \texttt{r.payment} from it to each provider in $V$. Then refund
+  \texttt{r.payment} to \texttt{r.requester}, run
+  \texttt{releaseReservations(r)} and \texttt{applyPenalties(r)}, and set
+  \texttt{r.status} := Cancelled.
+\item \texttt{finalize(r, I)}: with $p$ the predictions and $\rho$ the snapshot
+  reputations of $I$:
   \begin{enumerate}
-  \item Let \texttt{F} := \texttt{weightedMedian(p, $\rho$)} and
-    (\texttt{lowest}, \texttt{highest}) := \texttt{resultSpread(p)}. If
-    \texttt{AggregationError} is raised, call \texttt{refundPayment(id,
-    r.requester, r.payment)}, run \texttt{releaseReservations(r)} and
+  \item \texttt{F} := \texttt{weightedMedian(p, $\rho$)} and (\texttt{lowest},
+    \texttt{highest}) := \texttt{resultSpread(p)}. On \texttt{AggregationError},
+    refund the requester, run \texttt{releaseReservations(r)} and
     \texttt{applyPenalties(r)}, set \texttt{r.status} := Failed, and stop.
-  \item Let $\rho'$ := \texttt{updateReputations(p, $\rho$, F)} and call
-    \texttt{setReputation} for each provider in $I$ with its new value. For
-    each provider $a$ in $I$ whose new reputation is 0, call
-    \texttt{forfeitStake(r.taskId, a, getStake(r.taskId, a))} and then
-    \texttt{removeProvider(r.taskId, a)}.
-  \item Set \texttt{r.unresolved} := \texttt{distributeRewards(id,
-    r.requester, r.payment, I, $\rho$, $\rho'$)}.
-  \item Set \texttt{r.result} := \texttt{F}, \texttt{r.lowest},
-    \texttt{r.highest}, and \texttt{r.included} := $|I|$. Run
-    \texttt{releaseReservations(r)} and \texttt{applyPenalties(r)}.
-  \item Set \texttt{r.pendingDeadline} := \texttt{r.revealEnd} +
-    \texttt{PENDING\_TRANSFER\_PERIOD}. Set \texttt{r.status} := Completed if
-    \texttt{r.unresolved} is empty, and PendingTransfer otherwise.
+  \item $\rho'$ := \texttt{updateReputations(p, $\rho$, F)}. Call
+    \texttt{setReputation} for each provider in $I$. For each provider whose new
+    reputation is 0, call \texttt{unregisterProvider(r.taskId, a, $\top$)}.
+  \item (\texttt{shares}, \texttt{remainder}) :=
+    \texttt{calculateRewards(r.payment, $\rho$, $\rho'$)}. Transfer each
+    positive share from \texttt{RequestEscrow(id)} to the provider's wallet. If
+    a transfer fails, record the share in \texttt{r.unresolved}. Refund
+    \texttt{remainder} to \texttt{r.requester}.
+  \item Store \texttt{F}, \texttt{lowest}, \texttt{highest}, and $|I|$ in
+    \texttt{r.result}, \texttt{r.lowest}, \texttt{r.highest}, and
+    \texttt{r.included}. Run \texttt{releaseReservations(r)} and
+    \texttt{applyPenalties(r)}.
+  \item \texttt{r.status} := Completed if \texttt{r.unresolved} is empty,
+    otherwise PendingTransfer.
   \end{enumerate}
 \end{itemize}
 
@@ -839,7 +813,7 @@ None.
 \subsubsection{Exported Access Programs}
 
 \begin{center}
-\begin{tabular}{p{3cm} p{4.5cm} p{3cm} p{5cm}}
+\begin{tabular}{p{3cm} p{4.8cm} p{2.6cm} p{5cm}}
 \hline
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \hline
@@ -866,53 +840,37 @@ None.
 \subsubsection{Assumptions}
 
 \begin{itemize}
-\item The caller passes only valid revealed predictions, each paired by
-  position with the reputation of its provider at the end of the reveal phase,
-  and only from providers with non-zero reputation.
-\item The caller checks that the number of predictions meets the task's
-  minimum before calling.
-\item Implementations compute with exact integer or fixed-point arithmetic, so
-  the result equals the mathematical definition below whenever no exception is
-  raised.
+\item The caller passes only valid predictions from providers with non-zero
+  reputation, each paired by position with its provider's reputation, and has
+  checked that there are enough of them.
 \end{itemize}
 
 \subsubsection{Access Routine Semantics}
 
 \noindent \texttt{weightedMedian}($P$, $R$):
 \begin{itemize}
-\item output: Let $n = |P|$ and let $\pi$ be a permutation that sorts $P$ in
-  nondecreasing order (equal predictions keep their input order). Let $S =
-  \sum_{i} R_i$ and $S_k = \sum_{j=1}^{k} R_{\pi(j)}$, with $S_0 = 0$. Let
-  $k^*$ be the smallest $k$ such that $2 S_k > S$. The output is
-  \[
-  \begin{cases}
-  \dfrac{P_{\pi(k^*-1)} + P_{\pi(k^*)}}{2} & \text{if } 2 S_{k^*-1} = S,\\[1ex]
-  P_{\pi(k^*)} & \text{otherwise.}
-  \end{cases}
-  \]
-  This is the weighted median of Appendix~A of the SRS, where each prediction's
-  weight is $R_i / S$. The comparisons use $2 S_k$ and $S$ directly, so no
-  division is needed.
-\item exception: \texttt{EmptyInputError} if $n = 0$.
-  \texttt{LengthMismatchError} if $|P| \neq |R|$.
-  \texttt{InvalidReputationError} if some $R_i \le 0$.
-  \texttt{ArithmeticOverflowError} if any intermediate value is outside the
-  representable range. \texttt{AggregationError} if no $k^*$ exists, which
-  cannot happen when the assumptions hold.
+\item output: \textit{out} := the weighted median of $P$ in which each
+  prediction $P_i$ has weight $R_i / \sum_j R_j$: sort the predictions in
+  increasing order and take the first one at which the running total of weights
+  exceeds $1/2$. If the running total was exactly $1/2$ just before it, take the
+  average of that prediction and the previous one instead. (This is the
+  algorithm in Appendix~A of the SRS.)
+\item exception: \textit{exc} := ($P$ is empty $\Rightarrow$ EmptyInputError
+  $\mid$ $|P| \neq |R|$ $\Rightarrow$ LengthMismatchError $\mid$ some $R_i \le
+  0$ $\Rightarrow$ InvalidReputationError $\mid$ a calculation overflows
+  $\Rightarrow$ ArithmeticOverflowError $\mid$ no median is found
+  $\Rightarrow$ AggregationError)
 \end{itemize}
 
 \noindent \texttt{resultSpread}($P$):
 \begin{itemize}
-\item output: $(\min_i P_i, \max_i P_i)$.
-\item exception: \texttt{EmptyInputError} if $P$ is empty.
+\item output: \textit{out} := $(\min_i P_i, \max_i P_i)$
+\item exception: \textit{exc} := ($P$ is empty $\Rightarrow$ EmptyInputError)
 \end{itemize}
 
 \subsubsection{Local Functions}
 
-\begin{itemize}
-\item \texttt{sortedOrder}($P$): the permutation $\pi$ used above.
-\item \texttt{cumulativeReputation}($R$, $\pi$, $k$): the sum $S_k$.
-\end{itemize}
+None.
 
 
 % =====================================================================
@@ -922,19 +880,12 @@ None.
 \subsection{Module}
 
 Rewards Calculator (\mref{mRewards}). A library implemented in the on-chain
-program. It decides who earns a reward and how much, and carries out every
-payment from and refund of a request's reward escrow. The escrow balances
-themselves are held by the Token Manager, so this module has no state of its
-own.
+program. It only calculates rewards. The Request Lifecycle
+(\mref{mLifecycle}) moves the tokens.
 
 \subsection{Uses}
 
-\begin{itemize}
-\item \textbf{Token Manager (\mref{mToken}):}
-  \texttt{transfer(source, destination, amount)} with the endpoints
-  \texttt{Wallet(a)}, \texttt{RequestEscrow(id)}, and \texttt{Burn}, and the
-  exception \texttt{TransferFailedError}.
-\end{itemize}
+This module uses no other module.
 
 \subsection{Syntax}
 
@@ -944,379 +895,16 @@ None.
 
 \subsubsection{Exported Access Programs}
 
-\begin{longtable}{p{3.2cm} p{5.3cm} p{3cm} p{4.1cm}}
+\begin{center}
+\begin{tabular}{p{3cm} p{5.2cm} p{3.2cm} p{4cm}}
 \hline
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
-\hline
-\endfirsthead
-\hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
-\hline
-\endhead
-eligibleProviders & seq of $\mathbb{R}$ (reputations before), seq of
-  $\mathbb{R}$ (reputations after) & seq of $\mathbb{B}$ &
-  EmptyInputError, LengthMismatchError \\
 \hline
 calculateRewards & $\mathbb{N}$ (total reward), seq of $\mathbb{R}$
   (reputations before), seq of $\mathbb{R}$ (reputations after) & seq of
   $\mathbb{N}$ (shares) $\times$ $\mathbb{N}$ (remainder) & EmptyInputError,
   LengthMismatchError, NoEligibleProvidersError, ArithmeticOverflowError,
   RewardValidationError \\
-\hline
-isValidDistribution & $\mathbb{N}$ (total reward), seq of $\mathbb{N}$
-  (shares) & $\mathbb{B}$ & - \\
-\hline
-escrowPayment & RequestId, Address (requester), $\mathbb{N}$ & - &
-  TransferFailedError \\
-\hline
-distributeRewards & RequestId, Address (requester), $\mathbb{N}$ (total
-  reward), seq of Address, seq of $\mathbb{R}$ (reputations before), seq of
-  $\mathbb{R}$ (reputations after) & seq of (Address $\times$ $\mathbb{N}$)
-  (unresolved rewards) & the exceptions of calculateRewards \\
-\hline
-retryReward & RequestId, Address, $\mathbb{N}$ & - & TransferFailedError \\
-\hline
-forfeitReward & RequestId, $\mathbb{N}$ & - & TransferFailedError \\
-\hline
-refundPayment & RequestId, Address (requester), $\mathbb{N}$ & - &
-  TransferFailedError \\
-\hline
-payCompensation & RequestId, seq of Address, $\mathbb{N}$ (amount each) & - &
-  TransferFailedError \\
-\hline
-\end{longtable}
-
-\subsection{Semantics}
-
-\subsubsection{State Variables}
-
-None.
-
-\subsubsection{Environment Variables}
-
-None.
-
-\subsubsection{Assumptions}
-
-\begin{itemize}
-\item The sequences are aligned by position and contain only the providers
-  whose valid predictions were included in the aggregate. Each ``before'' value
-  is the reputation snapshot from the end of the reveal phase and each
-  ``after'' value is the result of the reputation update for the same request.
-\item Reputations are exact values, so products and quotients are computed
-  without rounding until the final rounding down of each share.
-\item Each request's escrow in the Token Manager holds at least the amounts
-  this module is asked to pay out.
-\item Refunds to the requester succeed, because the requester's wallet was able
-  to pay into escrow.
-\end{itemize}
-
-\subsubsection{Access Routine Semantics}
-
-\noindent \texttt{eligibleProviders}($R$, $R'$):
-\begin{itemize}
-\item output: the sequence $E$ with $E_i = \top$ if $R'_i \ge R_i$ (the
-  provider's reputation did not decrease) and $\bot$ otherwise.
-\item exception: \texttt{EmptyInputError} if $R$ is empty.
-  \texttt{LengthMismatchError} if $|R| \neq |R'|$.
-\end{itemize}
-
-\noindent \texttt{calculateRewards}($T$, $R$, $R'$):
-\begin{itemize}
-\item output: Let $E$ := \texttt{eligibleProviders}($R$, $R'$) and $W =
-  \sum_{i : E_i} R'_i$. The shares are $s_i = \left\lfloor T \cdot R'_i / W
-  \right\rfloor$ if $E_i$, and $s_i = 0$ otherwise. The remainder is $T -
-  \sum_i s_i$. Shares of eligible providers are proportional to their
-  reputation after the update.
-\item exception: \texttt{NoEligibleProvidersError} if no provider is eligible.
-  \texttt{ArithmeticOverflowError} if $T \cdot R'_i$ or any sum is outside the
-  representable range. \texttt{RewardValidationError} if
-  \texttt{isValidDistribution}($T$, $s$) is false. A provider whose
-  calculated share is zero simply receives zero. The other exceptions are
-  those of \texttt{eligibleProviders}.
-\end{itemize}
-
-\noindent \texttt{isValidDistribution}($T$, $s$):
-\begin{itemize}
-\item output: $\top$ if every $s_i \ge 0$ and $\sum_i s_i \le T$, and $\bot$
-  otherwise.
-\end{itemize}
-
-\noindent \texttt{escrowPayment}(id, requester, amount):
-\begin{itemize}
-\item transition: \texttt{transfer(Wallet(requester), RequestEscrow(id),
-  amount)}.
-\item exception: \texttt{TransferFailedError} if the requester's wallet cannot
-  cover \texttt{amount}.
-\end{itemize}
-
-\noindent \texttt{distributeRewards}(id, requester, total, providers, $R$, $R'$):
-\begin{itemize}
-\item transition: Let ($s$, \texttt{remainder}) :=
-  \texttt{calculateRewards}(total, $R$, $R'$). For each index $i$ with $s_i >
-  0$, attempt \texttt{transfer(RequestEscrow(id), Wallet(providers$_i$),
-  $s_i$)}. A \texttt{TransferFailedError} on one provider does not stop the
-  others; the provider's reward stays in escrow and is added to the output.
-  Finally \texttt{transfer(RequestEscrow(id), Wallet(requester),
-  remainder)}.
-\item output: the pairs (\texttt{providers}$_i$, $s_i$) whose transfer failed.
-\item exception: those of \texttt{calculateRewards}.
-\end{itemize}
-
-\noindent \texttt{retryReward}(id, provider, amount):
-\begin{itemize}
-\item transition: \texttt{transfer(RequestEscrow(id), Wallet(provider),
-  amount)}.
-\item exception: \texttt{TransferFailedError} if the provider's wallet still
-  cannot receive tokens.
-\end{itemize}
-
-\noindent \texttt{forfeitReward}(id, amount):
-\begin{itemize}
-\item transition: \texttt{transfer(RequestEscrow(id), Burn, amount)}.
-\item exception: \texttt{TransferFailedError} if the escrow holds less than
-  \texttt{amount}.
-\end{itemize}
-
-\noindent \texttt{refundPayment}(id, requester, amount):
-\begin{itemize}
-\item transition: \texttt{transfer(RequestEscrow(id), Wallet(requester),
-  amount)}.
-\item exception: \texttt{TransferFailedError} if the escrow holds less than
-  \texttt{amount}.
-\end{itemize}
-
-\noindent \texttt{payCompensation}(id, providers, amountEach):
-\begin{itemize}
-\item transition: for each provider, \texttt{transfer(RequestEscrow(id),
-  Wallet(provider), amountEach)}. The escrow has been topped up beforehand by
-  Penalty Enforcer's \texttt{collectCompensation}.
-\item exception: \texttt{TransferFailedError} if a transfer fails; no payment
-  is then made.
-\end{itemize}
-
-\subsubsection{Local Functions}
-
-\begin{itemize}
-\item \texttt{eligibleReputationTotal}($R$, $R'$): the sum $W$ used above.
-\end{itemize}
-
-
-% =====================================================================
-\section{MIS of Penalty Enforcer (\mref{mPenalty})} \label{misPenalty}
-% =====================================================================
-
-\subsection{Module}
-
-Penalty Enforcer (\mref{mPenalty}). A library implemented in the on-chain
-program. It decides whether a penalty applies and how large it is, and it burns
-the slashed stake or collects it as compensation. Stake balances are held by
-the Token Manager, so this module has no state of its own.
-
-\subsection{Uses}
-
-\begin{itemize}
-\item \textbf{Token Manager (\mref{mToken}):}
-  \texttt{transfer(source, destination, amount)} with the endpoints
-  \texttt{StakeEscrow(task, a)}, \texttt{RequestEscrow(id)}, and
-  \texttt{Burn}, and the exception \texttt{TransferFailedError}.
-\end{itemize}
-
-\subsection{Syntax}
-
-\subsubsection{Exported Constants}
-
-\begin{itemize}
-\item \texttt{SLASH\_FRACTION}: $\mathbb{R}$ -- the fraction of a provider's
-  stake for a task that is slashed for an offence, with $0 < $
-  \texttt{SLASH\_FRACTION} $\le 1$
-\item \texttt{REPEAT\_OFFENSE\_COUNT}: $\mathbb{N}$ -- the number of slashed
-  requests, within the window, that makes a provider a repeat offender
-\item \texttt{REPEAT\_OFFENSE\_WINDOW}: $\mathbb{N}$ -- the number of most recent
-  accepted requests over which offences are counted, with $1 \le$
-  \texttt{REPEAT\_OFFENSE\_COUNT} $\le$ \texttt{REPEAT\_OFFENSE\_WINDOW}
-\end{itemize}
-
-\subsubsection{Exported Types}
-\begin{itemize}
-\item \texttt{ParticipationOutcome} = \{NoCommit, NoReveal, RevealMismatch,
-  RevealNonConforming, ValidReveal\}
-\item \texttt{PenaltyDecision} = (\texttt{slashAmount}: $\mathbb{N}$,
-  \texttt{unregister}: $\mathbb{B}$, \texttt{burnRemaining}: $\mathbb{B}$)
-\end{itemize}
-
-\subsubsection{Exported Access Programs}
-
-\begin{longtable}{p{3.2cm} p{5.3cm} p{3cm} p{4.1cm}}
-\hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
-\hline
-\endfirsthead
-\hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
-\hline
-\endhead
-isOffense & ParticipationOutcome & $\mathbb{B}$ & - \\
-\hline
-slashAmount & $\mathbb{N}$ (stake) & $\mathbb{N}$ & ArithmeticOverflowError \\
-\hline
-penaltyFor & ParticipationOutcome, $\mathbb{N}$ (stake), seq of
-  $\mathbb{B}$ (slash history) & PenaltyDecision & ArithmeticOverflowError \\
-\hline
-compensationShares & $\mathbb{N}$ (total), $\mathbb{N}$ (number of
-  providers) & seq of $\mathbb{N}$ & EmptyInputError \\
-\hline
-applyPenalty & TaskId, Address, ParticipationOutcome, $\mathbb{N}$ (stake),
-  seq of $\mathbb{B}$ (slash history) & PenaltyDecision &
-  ArithmeticOverflowError, TransferFailedError \\
-\hline
-collectCompensation & TaskId, RequestId, seq of Address, $\mathbb{N}$ (total)
-  & seq of $\mathbb{N}$ (share taken from each) & EmptyInputError,
-  ArithmeticOverflowError, TransferFailedError \\
-\hline
-\end{longtable}
-
-\subsection{Semantics}
-
-\subsubsection{State Variables}
-
-None.
-
-\subsubsection{Environment Variables}
-
-None.
-
-\subsubsection{Assumptions}
-
-\begin{itemize}
-\item The slash history lists, for the provider's most recent accepted requests
-  for the task before the current one, whether the provider was slashed
-  ($\top$) or not ($\bot$), with the most recent request last. Entries beyond
-  the most recent \texttt{REPEAT\_OFFENSE\_WINDOW} $-$ 1 are ignored.
-\item The stake passed in is the provider's current stake for the task, equal
-  to the balance of \texttt{StakeEscrow(task, a)}.
-\item The caller updates the Provider Registry's stake record after a call
-  that moves stake tokens.
-\item The constants satisfy the ranges given above.
-\end{itemize}
-
-\subsubsection{Access Routine Semantics}
-
-\noindent \texttt{isOffense}(o):
-\begin{itemize}
-\item output: $\top$ if $o \in$ \{NoCommit, NoReveal, RevealMismatch,
-  RevealNonConforming\}, and $\bot$ if $o$ = ValidReveal.
-\end{itemize}
-
-\noindent \texttt{slashAmount}(stake):
-\begin{itemize}
-\item output: $\lfloor$ \texttt{SLASH\_FRACTION} $\times$ stake $\rfloor$.
-\item exception: \texttt{ArithmeticOverflowError} if the product is outside
-  the representable range.
-\end{itemize}
-
-\noindent \texttt{penaltyFor}(o, stake, history):
-\begin{itemize}
-\item output: Let $\mathit{off}$ := \texttt{isOffense}(o), let $h$ be the last
-  \texttt{REPEAT\_OFFENSE\_WINDOW} $-$ 1 entries of \texttt{history}, and let
-  $c = [\mathit{off}] + |\{x \in h : x = \top\}|$, where $[\mathit{off}]$ is 1
-  if $\mathit{off}$ and 0 otherwise. Let $\mathit{repeat} = \mathit{off}
-  \wedge c \ge$ \texttt{REPEAT\_OFFENSE\_COUNT}. The output is
-  (\texttt{slashAmount}: \texttt{slashAmount}(stake) if $\mathit{off}$, else 0;
-  \texttt{unregister}: $\mathit{repeat}$; \texttt{burnRemaining}:
-  $\mathit{repeat}$).
-\item exception: \texttt{ArithmeticOverflowError}, as for
-  \texttt{slashAmount}.
-\end{itemize}
-
-\noindent \texttt{compensationShares}(total, n):
-\begin{itemize}
-\item output: the sequence of length $n$ whose $i$-th entry (counting from 1)
-  is $\lfloor \mathit{total} / n \rfloor$ plus 1 if $i \le \mathit{total} \bmod
-  n$. The entries sum to \texttt{total}, and the earliest providers carry the
-  remainder.
-\item exception: \texttt{EmptyInputError} if $n = 0$.
-\end{itemize}
-
-\noindent \texttt{applyPenalty}(task, a, o, stake, history):
-\begin{itemize}
-\item transition: Let $d$ := \texttt{penaltyFor}(o, stake, history). If
-  $d$.\texttt{slashAmount} $> 0$, perform \texttt{transfer(StakeEscrow(task,
-  a), Burn, d.slashAmount)}. If $d$.\texttt{burnRemaining} and \texttt{stake}
-  $-$ $d$.\texttt{slashAmount} $> 0$, perform \texttt{transfer(StakeEscrow(task,
-  a), Burn, stake} $-$ $d$\texttt{.slashAmount)}.
-\item output: $d$.
-\item exception: those of \texttt{penaltyFor}, and \texttt{TransferFailedError}
-  if a transfer fails.
-\end{itemize}
-
-\noindent \texttt{collectCompensation}(task, id, providers, total):
-\begin{itemize}
-\item transition: Let \texttt{shares} := \texttt{compensationShares}(total,
-  $|$providers$|$). For each index $i$, perform
-  \texttt{transfer(StakeEscrow(task, providers$_i$), RequestEscrow(id),
-  shares$_i$)}.
-\item output: \texttt{shares}.
-\item exception: \texttt{EmptyInputError} if \texttt{providers} is empty.
-  \texttt{ArithmeticOverflowError} as above. \texttt{TransferFailedError} if
-  a provider's stake escrow holds less than its share; no transfer is then
-  made.
-\end{itemize}
-
-\subsubsection{Local Functions}
-
-\begin{itemize}
-\item \texttt{recentWindow}(history): the last
-  \texttt{REPEAT\_OFFENSE\_WINDOW} $-$ 1 entries of \texttt{history}.
-\end{itemize}
-
-
-% =====================================================================
-\section{MIS of Reputation Handler (\mref{mReputation})} \label{misReputation}
-% =====================================================================
-
-\subsection{Module}
-
-Reputation Handler (\mref{mReputation}). A library implemented in the on-chain
-program. It calculates reputation updates, and burns the stake of a provider
-whose reputation reaches 0.
-
-\subsection{Uses}
-
-\begin{itemize}
-\item \textbf{Token Manager (\mref{mToken}):}
-  \texttt{transfer(source, destination, amount)} with the endpoints
-  \texttt{StakeEscrow(task, a)} and \texttt{Burn}, and the exception
-  \texttt{TransferFailedError}.
-\end{itemize}
-
-\subsection{Syntax}
-
-\subsubsection{Exported Constants}
-
-\begin{itemize}
-\item \texttt{REPUTATION\_MIN}: $\mathbb{R}$ = 0
-\item \texttt{REPUTATION\_MAX}: $\mathbb{R}$ = 100
-\item \texttt{REPUTATION\_ADJUSTMENT\_FACTOR}: $\mathbb{R}$ = 1.0 -- the factor
-  $\alpha$ that scales each reputation change
-\end{itemize}
-
-\subsubsection{Exported Access Programs}
-
-\begin{center}
-\begin{tabular}{p{3cm} p{5.2cm} p{3cm} p{4.3cm}}
-\hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
-\hline
-updateReputations & seq of $\mathbb{R}$ (predictions), seq of $\mathbb{R}$
-  (reputations), $\mathbb{R}$ (aggregate) & seq of $\mathbb{R}$ &
-  EmptyInputError, LengthMismatchError, InvalidReputationError,
-  ArithmeticOverflowError \\
-\hline
-clampReputation & $\mathbb{R}$ & $\mathbb{R}$ & - \\
-\hline
-forfeitStake & TaskId, Address, $\mathbb{N}$ (stake) & - &
-  TransferFailedError \\
 \hline
 \end{tabular}
 \end{center}
@@ -1334,56 +922,207 @@ None.
 \subsubsection{Assumptions}
 
 \begin{itemize}
-\item The reputations passed to \texttt{updateReputations} are the snapshot
-  from the end of the reveal phase for providers with a valid prediction
-  included in the aggregate, aligned by position with the predictions.
-\item The aggregate is the weighted median that the Prediction Aggregator
-  (\mref{mAggregator}) produced from the same predictions and reputations.
-\item \texttt{forfeitStake} is called only for a provider whose new reputation
-  is 0. The caller removes the provider from the Provider Registry afterwards.
+\item The sequences are aligned by position and list only the providers whose
+  valid predictions were included in the aggregate. ``Before'' is the
+  reputation at the end of the reveal phase and ``after'' is the reputation after
+  the update for the same request.
 \end{itemize}
 
 \subsubsection{Access Routine Semantics}
 
-\noindent \texttt{clampReputation}(x):
+\noindent \texttt{calculateRewards}($T$, $R$, $R'$):
 \begin{itemize}
-\item output: $\min($\texttt{REPUTATION\_MAX}$, \max($\texttt{REPUTATION\_MIN}$,
-  x))$.
+\item output: \textit{out} := (shares $s$, remainder $T - \sum_i s_i$), where
+  provider $i$ is eligible if $R'_i \ge R_i$, and $s_i = \lfloor T \cdot R'_i /
+  W \rfloor$ for eligible providers and 0 otherwise, with $W$ the sum of $R'_j$
+  over eligible providers. Shares are proportional to the eligible providers'
+  reputation after the update.
+\item exception: \textit{exc} := ($R$ is empty $\Rightarrow$ EmptyInputError
+  $\mid$ $|R| \neq |R'|$ $\Rightarrow$ LengthMismatchError $\mid$ no provider is
+  eligible $\Rightarrow$ NoEligibleProvidersError $\mid$ a calculation
+  overflows $\Rightarrow$ ArithmeticOverflowError $\mid$ some $s_i < 0$ or
+  $\sum_i s_i > T$ $\Rightarrow$ RewardValidationError)
 \end{itemize}
 
-\noindent \texttt{updateReputations}($P$, $R$, $F$):
+\subsubsection{Local Functions}
+
+None.
+
+
+% =====================================================================
+\section{MIS of Penalty Enforcer (\mref{mPenalty})} \label{misPenalty}
+% =====================================================================
+
+\subsection{Module}
+
+Penalty Enforcer (\mref{mPenalty}). A library implemented in the on-chain
+program. It only decides penalties. The Request Lifecycle
+(\mref{mLifecycle}) applies them.
+
+\subsection{Uses}
+
+This module uses no other module.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
 \begin{itemize}
-\item output: Let $\sigma^2 = \sum_i R_i (P_i - F)^2 / \sum_i R_i$. If
-  $\sigma^2 = 0$, every reputation change is 0 and the output is
-  \texttt{clampReputation}($R_i$) for each $i$. Otherwise let $\sigma =
-  \sqrt{\sigma^2}$ and, for each $i$, let $\delta_i =
-  \alpha\left(1 - |F - P_i| / \sigma\right)$ with $\alpha$ =
-  \texttt{REPUTATION\_ADJUSTMENT\_FACTOR}. The output is
-  \texttt{clampReputation}($R_i + \delta_i$) for each $i$. This is the
-  confidence-based update of Appendix~A of the SRS. A provider closer to $F$
-  than one standard deviation gains reputation and one farther loses it, and
-  all values stay within [\texttt{REPUTATION\_MIN}, \texttt{REPUTATION\_MAX}].
-\item exception: \texttt{EmptyInputError} if $P$ is empty.
-  \texttt{LengthMismatchError} if $|P| \neq |R|$.
-  \texttt{InvalidReputationError} if some $R_i$ is not in
-  (\texttt{REPUTATION\_MIN}, \texttt{REPUTATION\_MAX}].
-  \texttt{ArithmeticOverflowError} if any intermediate value (including the
-  squared differences and the square root) is outside the representable range.
+\item \texttt{SLASH\_FRACTION}: $\mathbb{R}$ -- the fraction of a provider's
+  stake slashed for an offence, with $0 < $ \texttt{SLASH\_FRACTION} $\le 1$
+\item \texttt{REPEAT\_OFFENSE\_COUNT}, \texttt{REPEAT\_OFFENSE\_WINDOW}:
+  $\mathbb{N}$ -- a provider slashed in at least \texttt{REPEAT\_OFFENSE\_COUNT}
+  of its last \texttt{REPEAT\_OFFENSE\_WINDOW} accepted requests is a repeat
+  offender, with $1 \le$ \texttt{COUNT} $\le$ \texttt{WINDOW}
 \end{itemize}
 
-\noindent \texttt{forfeitStake}(task, a, stake):
+\subsubsection{Exported Types}
 \begin{itemize}
-\item transition: if \texttt{stake} $> 0$, perform
-  \texttt{transfer(StakeEscrow(task, a), Burn, stake)}.
-\item exception: \texttt{TransferFailedError} if the stake escrow holds less
-  than \texttt{stake}.
+\item \texttt{ParticipationOutcome} = \{NoCommit, NoReveal, RevealMismatch,
+  RevealNonConforming, ValidReveal\}
+\item \texttt{PenaltyDecision} = (\texttt{slashAmount}: $\mathbb{N}$,
+  \texttt{unregister}: $\mathbb{B}$, \texttt{burnRemaining}: $\mathbb{B}$)
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{2.6cm} p{5.5cm} p{3cm} p{4cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+penaltyFor & ParticipationOutcome, $\mathbb{N}$ (stake), seq of
+  $\mathbb{B}$ (slash history) & PenaltyDecision & ArithmeticOverflowError \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None.
+
+\subsubsection{Environment Variables}
+
+None.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The slash history lists whether the provider was slashed ($\top$) or not
+  ($\bot$) for its earlier accepted requests for the task, most recent last.
+\item The stake is the provider's current stake for the task.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{penaltyFor}(o, stake, history):
+\begin{itemize}
+\item output: \textit{out} := (\texttt{slashAmount}: \texttt{slashAmount}(stake)
+  if \texttt{isOffense}(o), else 0; \texttt{unregister}: $\mathit{repeat}$;
+  \texttt{burnRemaining}: $\mathit{repeat}$), where $\mathit{repeat}$ holds if
+  \texttt{isOffense}(o) and the current offence plus the slashed entries among
+  the last \texttt{REPEAT\_OFFENSE\_WINDOW} $-$ 1 entries of \texttt{history}
+  number at least \texttt{REPEAT\_OFFENSE\_COUNT}
+\item exception: \textit{exc} := (a calculation overflows $\Rightarrow$
+  ArithmeticOverflowError)
 \end{itemize}
 
 \subsubsection{Local Functions}
 
 \begin{itemize}
-\item \texttt{weightedVariance}($P$, $R$, $F$): the value $\sigma^2$ above.
+\item \texttt{isOffense}(o): $\top$ unless $o$ = ValidReveal.
+\item \texttt{slashAmount}(stake): $\lfloor$ \texttt{SLASH\_FRACTION}
+  $\times$ stake $\rfloor$.
 \end{itemize}
+
+
+% =====================================================================
+\section{MIS of Reputation Handler (\mref{mReputation})} \label{misReputation}
+% =====================================================================
+
+\subsection{Module}
+
+Reputation Handler (\mref{mReputation}). A library implemented in the on-chain
+program. It only calculates new reputations. The Request Lifecycle
+(\mref{mLifecycle}) stores them.
+
+\subsection{Uses}
+
+This module uses no other module.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+\begin{itemize}
+\item \texttt{REPUTATION\_MIN} = 0, \texttt{REPUTATION\_MAX} = 100:
+  $\mathbb{R}$ -- the range every reputation stays within
+\item \texttt{REPUTATION\_ADJUSTMENT\_FACTOR}: $\mathbb{R}$ = 1.0 -- the factor
+  $\alpha$ that scales each change
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{5.2cm} p{2.8cm} p{4cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+updateReputations & seq of $\mathbb{R}$ (predictions), seq of $\mathbb{R}$
+  (reputations), $\mathbb{R}$ (aggregate) & seq of $\mathbb{R}$ &
+  EmptyInputError, LengthMismatchError, InvalidReputationError,
+  ArithmeticOverflowError \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None.
+
+\subsubsection{Environment Variables}
+
+None.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The reputations are those at the end of the reveal phase of the providers
+  whose valid predictions were included, aligned by position with the
+  predictions. The aggregate is the weighted median of those predictions.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{updateReputations}($P$, $R$, $F$):
+\begin{itemize}
+\item output: \textit{out} := the sequence whose $i$-th entry is
+  \texttt{clampReputation}($R_i + \delta_i$), where $\sigma^2 =
+  \texttt{weightedVariance}(P, R, F)$, $\delta_i = 0$ if $\sigma^2 = 0$, and
+  otherwise $\delta_i = \alpha (1 - |F - P_i| / \sqrt{\sigma^2})$. A provider
+  closer to $F$ than one standard deviation gains reputation and one farther
+  loses it. (This is the algorithm in Appendix~A of the SRS.)
+\item exception: \textit{exc} := ($P$ is empty $\Rightarrow$ EmptyInputError
+  $\mid$ $|P| \neq |R|$ $\Rightarrow$ LengthMismatchError $\mid$ some $R_i$ is
+  not in (\texttt{REPUTATION\_MIN}, \texttt{REPUTATION\_MAX}] $\Rightarrow$
+  InvalidReputationError $\mid$ a calculation overflows $\Rightarrow$
+  ArithmeticOverflowError)
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{weightedVariance}($P$, $R$, $F$): $\sum_i R_i (P_i - F)^2 /
+  \sum_i R_i$.
+\item \texttt{clampReputation}($x$): $\min($\texttt{REPUTATION\_MAX}$,
+  \max($\texttt{REPUTATION\_MIN}$, x))$.
+\end{itemize}
+
+
 
 % =====================================================================
 \section{MIS of Participation Client (\mref{mParticipation})} \label{misParticipation}
@@ -1393,48 +1132,44 @@ None.
 
 Participation Client (\mref{mParticipation}). An abstract data type whose
 instances each represent a provider's participation in the requests of one
-registered task. It is implemented in the provider SDK.
+registered task. Implemented in the provider SDK.
 
 \subsection{Uses}
 
 \begin{itemize}
-\item \textbf{Provider Setup (\mref{mProviderSetup}):}
-  \texttt{isReady}, \texttt{getProviderAddress}, \texttt{getRegisteredTasks},
-  \texttt{signAndSend}, and the exception \texttt{SubmissionFailedError}.
-\item \textbf{Request Listener (\mref{mListener}):}
-  \texttt{create}, \texttt{activeRequests}, \texttt{getSnapshot}, and the type
-  \texttt{RequestSnapshot} (the request's phase, its commit and reveal
-  deadlines, and whether the provider has been accepted).
-\item \textbf{Request Input Manager (\mref{mInput}):}
-  \texttt{getInputAccess}, and the exception \texttt{AccessDeniedError}.
-\item \textbf{Model (\mref{mModel}):} \texttt{predict} and the exception
-  \texttt{ModelError}.
-\item \textbf{Request Lifecycle (\mref{mLifecycle}):}
-  \texttt{computeCommitment} and the instruction forms of
-  \texttt{submitCommitment} and \texttt{revealPrediction}, and the type
-  \texttt{RevealResult}.
+\item \textbf{Provider Setup (\mref{mProviderSetup}):} \texttt{isReady},
+  \texttt{getProviderAddress}, \texttt{getRegisteredTasks}, and
+  \texttt{signAndSend}.
+\item \textbf{Request Listener (\mref{mListener}):} \texttt{create},
+  \texttt{activeRequests}, and \texttt{getSnapshot} (a record with the
+  request's phase, its deadlines, and whether the provider was accepted).
+\item \textbf{Request Input Manager (\mref{mInput}):} \texttt{getInputAccess}.
+\item \textbf{Model (\mref{mModel}):} \texttt{predict}.
+\item \textbf{Request Lifecycle (\mref{mLifecycle}):} \texttt{computeCommitment}
+  and the instructions for \texttt{submitCommitment} and
+  \texttt{revealPrediction}.
 \end{itemize}
 
 The routine names above are the interface this MIS assumes from the other
-modules; they must match those modules' MIS.
+modules.
 
 \subsection{Syntax}
 
 \subsubsection{Exported Constants}
 \begin{itemize}
-\item \texttt{SALT\_LENGTH\_BYTES}: $\mathbb{N}$ = 32 -- length of each salt;
-  32 bytes is 256 bits, the minimum required by \nfrref{NFR_CommitSalt}
+\item \texttt{SALT\_LENGTH\_BYTES}: $\mathbb{N}$ = 32 -- the length of a salt
+  (256 bits, as \nfrref{NFR_CommitSalt} requires)
 \end{itemize}
 
 \subsubsection{Exported Types}
 \begin{itemize}
 \item \texttt{ParticipationAction} = \{Commit, Reveal\}
-\item \texttt{ParticipationState} = \{Idle, Prepared, Committed, Revealed\}
+\item \texttt{ParticipationState} = \{Idle, Committed, Revealed\}
 \end{itemize}
 
 \subsubsection{Exported Access Programs}
 
-\begin{longtable}{p{3cm} p{4.1cm} p{3.2cm} p{5.2cm}}
+\begin{longtable}{p{3cm} p{4cm} p{3.4cm} p{5cm}}
 \hline
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \hline
@@ -1446,22 +1181,19 @@ modules; they must match those modules' MIS.
 create & ProviderSetup, TaskId & ParticipationClient &
   SetupNotReadyError, NotRegisteredError \\
 \hline
+commitPrediction & ParticipationClient, RequestId & - & UnknownRequestError,
+  WrongPhaseError, NotAcceptedError, AlreadyCommittedError, AccessDeniedError,
+  ModelError, InvalidPredictionError, SubmissionFailedError \\
+\hline
+revealPrediction & ParticipationClient, RequestId & - & UnknownRequestError,
+  WrongPhaseError, NoCommitmentError, AlreadyRevealedError,
+  SubmissionFailedError \\
+\hline
 pendingActions & ParticipationClient & seq of (RequestId $\times$
   ParticipationAction) & - \\
 \hline
-commitPrediction & ParticipationClient, RequestId & Hash &
-  UnknownRequestError, WrongPhaseError, NotAcceptedError,
-  AlreadyCommittedError, AccessDeniedError, ModelError,
-  InvalidPredictionError, SubmissionFailedError \\
-\hline
-revealPrediction & ParticipationClient, RequestId & RevealResult &
-  UnknownRequestError, WrongPhaseError, NoStoredCommitmentError,
-  AlreadyRevealedError, SubmissionFailedError \\
-\hline
-getParticipationState & ParticipationClient, RequestId &
-  ParticipationState & - \\
-\hline
-close & ParticipationClient & - & - \\
+getParticipationState & ParticipationClient, RequestId & ParticipationState &
+  - \\
 \hline
 \end{longtable}
 
@@ -1469,148 +1201,120 @@ close & ParticipationClient & - & - \\
 
 \subsubsection{State Variables}
 
-Each client \texttt{c} has the following state variables.
+Each client \texttt{c} has these state variables.
 
 \begin{itemize}
 \item \texttt{c.provider}: Address; \texttt{c.taskId}: TaskId
-\item \texttt{c.setup}: the ProviderSetup instance given to \texttt{create}
-\item \texttt{c.listener}: the Request Listener instance for \texttt{c.taskId}
-\item \texttt{c.record}: RequestId $\rightarrow$ (\texttt{prediction}:
-  $\mathbb{R}$, \texttt{salt}: Salt, \texttt{commitment}: Hash,
-  \texttt{committed}: $\mathbb{B}$, \texttt{revealed}: $\mathbb{B}$) --
-  the prediction and salt kept for each active request until its reveal
-  completes
+\item \texttt{c.setup}: ProviderSetup; \texttt{c.listener}: RequestListener
+\item \texttt{c.state}: RequestId $\rightarrow$ ParticipationState
+\item \texttt{c.pending}: RequestId $\rightarrow$ ($\mathbb{R}$ $\times$ Salt
+  $\times$ Hash) $\cup$ \{$\bot$\} -- the prediction, salt, and commitment kept
+  for a request until its reveal completes
 \end{itemize}
 
 \subsubsection{Environment Variables}
 
 \begin{itemize}
-\item \texttt{RandomSource}: a cryptographically secure random number generator
-\item \texttt{SecureLocalStore}: durable storage on the provider's machine that
-  holds \texttt{c.record}, so a prediction and its salt survive a restart
-  between commit and reveal
+\item \texttt{RandomSource}: a cryptographically secure random number
+  generator
+\item \texttt{SecureLocalStore}: RequestId $\rightarrow$ ($\mathbb{R}$ $\times$
+  Salt $\times$ Hash) -- durable storage on the provider's machine holding a
+  copy of \texttt{c.pending}, so that a prediction and its salt survive a
+  restart
 \end{itemize}
+
+\subsubsection{State Invariant}
+
+For every request \texttt{id}: \texttt{c.state[id]} = Committed if and only if
+\texttt{c.pending[id]} $\neq$ $\bot$; and \texttt{c.pending[id]} = $\bot$
+whenever \texttt{c.state[id]} $\in$ \{Idle, Revealed\}. A new client holds no
+requests, and each access program preserves this.
 
 \subsubsection{Assumptions}
 
 \begin{itemize}
-\item The Provider Setup instance has been initialized before \texttt{create}
-  is called, and its wallet can sign for the provider's address.
-\item Acceptance of a request is done outside this module (through the
-  Transaction Manager, \mref{mTransaction}). This module only participates in
-  requests the provider has already been accepted for.
-\item The provider's model (\mref{mModel}) returns a single finite real number
-  for each input it supports.
-\item The caller invokes \texttt{commitPrediction} and
-  \texttt{revealPrediction} while the corresponding phase is open, using
-  \texttt{pendingActions} to find out when. The phase and deadlines come from
-  the Request Listener and are as current as its last observation.
-\item The provider's machine keeps \texttt{SecureLocalStore} intact between
-  commit and reveal.
+\item The provider setup is ready and its wallet can sign for the provider.
+\item Requests are accepted by the provider before this module takes part in
+  them. Acceptance is not done by this module.
+\item The provider's model returns one number for each input it supports.
+\item \texttt{SecureLocalStore} is not lost between commit and reveal.
 \end{itemize}
 
 \subsubsection{Access Routine Semantics}
 
 \noindent \texttt{create}(setup, taskId):
 \begin{itemize}
-\item transition: Create a client \texttt{c} with \texttt{c.setup} := setup,
+\item transition: A new client \texttt{c} with \texttt{c.setup} := setup,
   \texttt{c.taskId} := taskId, \texttt{c.provider} :=
   \texttt{setup.getProviderAddress()}, and \texttt{c.listener} :=
-  \texttt{RequestListener.create(taskId)}. Load \texttt{c.record} from
-  \texttt{SecureLocalStore}; it is empty if nothing was stored for this
-  provider and task.
-\item output: the new client \texttt{c}.
-\item exception: \texttt{SetupNotReadyError} if \texttt{setup.isReady()} is
-  false. \texttt{NotRegisteredError} if \texttt{taskId} $\notin$
-  \texttt{setup.getRegisteredTasks()}.
-\end{itemize}
-
-\noindent \texttt{pendingActions}(c):
-\begin{itemize}
-\item output: the pairs (\texttt{id}, Commit) for each \texttt{id} in
-  \texttt{c.listener.activeRequests()} whose snapshot shows the Commit phase,
-  the provider accepted, and no committed record; and the pairs (\texttt{id},
-  Reveal) for each whose snapshot shows the Reveal phase and whose record is
-  committed but not revealed.
+  \texttt{RequestListener.create(taskId)}. \texttt{c.state} and
+  \texttt{c.pending} are restored from \texttt{SecureLocalStore}, or are empty
+  if it holds nothing for this task.
+\item output: \textit{out} := \texttt{c}
+\item exception: \textit{exc} := (\texttt{setup.isReady()} is false
+  $\Rightarrow$ SetupNotReadyError $\mid$ \texttt{taskId} $\notin$
+  \texttt{setup.getRegisteredTasks()} $\Rightarrow$ NotRegisteredError)
 \end{itemize}
 
 \noindent \texttt{commitPrediction}(c, id):
 \begin{itemize}
-\item transition: Let \texttt{s} := \texttt{c.listener.getSnapshot(id)}.
-  \begin{enumerate}
-  \item If \texttt{c.record[id]} does not exist: let (\texttt{ciphertext},
-    \texttt{key}) := \texttt{getInputAccess(id, c.provider)}, decrypt
-    \texttt{ciphertext} with \texttt{key} to obtain the input, let
-    \texttt{p} := \texttt{predict(input)}, let \texttt{salt} :=
-    \texttt{RandomSource} bytes of length \texttt{SALT\_LENGTH\_BYTES}, and let
-    \texttt{h} := \texttt{computeCommitment(id, c.provider, p, salt)}. Store
-    (\texttt{p}, \texttt{salt}, \texttt{h}, $\bot$, $\bot$) in
-    \texttt{c.record[id]} and in \texttt{SecureLocalStore} before anything is
-    sent. If a record with \texttt{committed} = $\bot$ already exists (an
-    earlier attempt failed to send), reuse its \texttt{p}, \texttt{salt}, and
-    \texttt{h} instead.
-  \item Call \texttt{signAndSend} on \texttt{c.setup} with the
-    \texttt{submitCommitment}(id, c.provider, \texttt{h}) instruction. On
-    success set \texttt{c.record[id].committed} := $\top$ and update
-    \texttt{SecureLocalStore}.
-  \end{enumerate}
-\item output: the commitment \texttt{h}.
-\item exception: \texttt{UnknownRequestError} if the Listener does not know
-  \texttt{id}. \texttt{WrongPhaseError} if \texttt{s} is not in the Commit
-  phase. \texttt{NotAcceptedError} if the provider is not an accepted provider
-  of the request. \texttt{AlreadyCommittedError} if
-  \texttt{c.record[id].committed} is $\top$ (one commitment per request).
-  \texttt{AccessDeniedError} and \texttt{ModelError} as raised by the modules
-  used. \texttt{InvalidPredictionError} if \texttt{p} is not a finite real
-  number; nothing is stored or sent, so the provider is not penalized for an
-  obviously invalid value. \texttt{SubmissionFailedError} if the instruction
-  is rejected on-chain or cannot be sent; the stored record is kept so the call
-  can be repeated before the deadline.
+\item transition: Obtain the request's input with \texttt{getInputAccess(id,
+  c.provider)}, let \texttt{p} := \texttt{predict(input)}, generate a salt of
+  \texttt{SALT\_LENGTH\_BYTES} bytes with \texttt{RandomSource}, and let
+  \texttt{h} := \texttt{computeCommitment(id, c.provider, p, salt)}. Store
+  (\texttt{p}, \texttt{salt}, \texttt{h}) in \texttt{c.pending[id]} and
+  \texttt{SecureLocalStore[id]}, send \texttt{submitCommitment(id,
+  c.provider, h)} with \texttt{c.setup.signAndSend}, and set
+  \texttt{c.state[id]} := Committed. If \texttt{c.pending[id]} already holds a
+  value from an attempt that failed to send, that value is reused instead of
+  being recomputed.
+\item exception: \textit{exc} := (the listener does not know \texttt{id}
+  $\Rightarrow$ UnknownRequestError $\mid$ the request is not in the Commit
+  phase $\Rightarrow$ WrongPhaseError $\mid$ the provider was not accepted
+  $\Rightarrow$ NotAcceptedError $\mid$ \texttt{c.state[id]} = Committed
+  $\Rightarrow$ AlreadyCommittedError $\mid$ the input is refused $\Rightarrow$
+  AccessDeniedError $\mid$ the model fails $\Rightarrow$ ModelError $\mid$
+  \texttt{p} is not a finite number $\Rightarrow$ InvalidPredictionError $\mid$
+  the commitment cannot be sent or is rejected $\Rightarrow$
+  SubmissionFailedError)
 \end{itemize}
 
 \noindent \texttt{revealPrediction}(c, id):
 \begin{itemize}
-\item transition: Call \texttt{signAndSend} on \texttt{c.setup} with the
-  \texttt{revealPrediction}(id, c.provider, \texttt{p}, \texttt{salt})
-  instruction using the stored \texttt{p} and \texttt{salt}. On success set
-  \texttt{c.record[id].revealed} := $\top$, then delete the stored
-  \texttt{prediction} and \texttt{salt} from \texttt{c.record[id]} and from
-  \texttt{SecureLocalStore}.
-\item output: the \texttt{RevealResult} reported by the on-chain program. The
-  reveal counts as used even if the result is not Accepted.
-\item exception: \texttt{UnknownRequestError} if the Listener does not know
-  \texttt{id}. \texttt{WrongPhaseError} if the snapshot is not in the Reveal
-  phase. \texttt{NoStoredCommitmentError} if \texttt{c.record[id]} does not
-  exist or \texttt{committed} is $\bot$. \texttt{AlreadyRevealedError} if
-  \texttt{revealed} is $\top$ (one reveal per request).
-  \texttt{SubmissionFailedError} if the instruction cannot be sent; the
-  prediction and salt are kept so the call can be repeated before the
-  deadline.
+\item transition: With (\texttt{p}, \texttt{salt}, \texttt{h}) :=
+  \texttt{c.pending[id]}, send \texttt{revealPrediction(id, c.provider,
+  p, salt)} with \texttt{c.setup.signAndSend}. Then set \texttt{c.state[id]} :=
+  Revealed and remove \texttt{id} from \texttt{c.pending} and
+  \texttt{SecureLocalStore}. The reveal counts as used even if the on-chain
+  program rejects it.
+\item exception: \textit{exc} := (the listener does not know \texttt{id}
+  $\Rightarrow$ UnknownRequestError $\mid$ the request is not in the Reveal
+  phase $\Rightarrow$ WrongPhaseError $\mid$ \texttt{c.state[id]} = Idle
+  $\Rightarrow$ NoCommitmentError $\mid$ \texttt{c.state[id]} = Revealed
+  $\Rightarrow$ AlreadyRevealedError $\mid$ the reveal cannot be sent
+  $\Rightarrow$ SubmissionFailedError). After SubmissionFailedError the state is
+  unchanged, so the call can be repeated before the deadline.
+\end{itemize}
+
+\noindent \texttt{pendingActions}(c):
+\begin{itemize}
+\item output: \textit{out} := the pairs (\texttt{id}, Commit) for each active
+  request in the Commit phase that the provider has been accepted for and has
+  not committed, and the pairs (\texttt{id}, Reveal) for each active request in
+  the Reveal phase with \texttt{c.state[id]} = Committed
 \end{itemize}
 
 \noindent \texttt{getParticipationState}(c, id):
 \begin{itemize}
-\item output: Idle if there is no record for \texttt{id}; Prepared if a record
-  exists with \texttt{committed} = $\bot$; Committed if \texttt{committed} =
-  $\top$ and \texttt{revealed} = $\bot$; Revealed if \texttt{revealed} =
-  $\top$.
-\end{itemize}
-
-\noindent \texttt{close}(c):
-\begin{itemize}
-\item transition: Stop \texttt{c.listener}. Records in
-  \texttt{SecureLocalStore} are kept, so a later \texttt{create} can resume
-  them.
+\item output: \textit{out} := \texttt{c.state[id]} (Idle if \texttt{id} has no
+  entry)
 \end{itemize}
 
 \subsubsection{Local Functions}
 
 \begin{itemize}
-\item \texttt{decrypt}(ciphertext, key): decrypts a request input using the
-  key supplied by the Request Input Manager, with a standard authenticated
-  encryption scheme from the platform's cryptography library.
-\item \texttt{isFiniteReal}(x): $\top$ if $x$ is a real number that is neither
-  infinite nor undefined.
+\item \texttt{decrypt}(ciphertext, key): the input decrypted with the key from
+  the Request Input Manager.
 \end{itemize}
 
 
@@ -1621,8 +1325,8 @@ Each client \texttt{c} has the following state variables.
 \subsection{Module}
 
 Token Manager (\mref{mToken}). A library implemented in the on-chain program.
-All balances live in the blockchain's token ledger, which is an environment
-variable of this module, so the module has no state of its own.
+Balances are held in the blockchain's token ledger, an environment variable, so
+the module has no state of its own.
 
 \subsection{Uses}
 
@@ -1632,26 +1336,23 @@ This module uses no other module.
 
 \subsubsection{Exported Constants}
 \begin{itemize}
-\item \texttt{MAX\_TOKEN\_AMOUNT}: $\mathbb{N}$ = $2^{64} - 1$ -- the largest
-  amount a balance or a single transfer can hold
+\item \texttt{MAX\_TOKEN\_AMOUNT}: $\mathbb{N}$ -- the largest balance the
+  ledger can hold
 \end{itemize}
 
 \subsubsection{Exported Types}
 \begin{itemize}
 \item \texttt{Endpoint} = Wallet(Address) $|$ RequestEscrow(RequestId) $|$
-  StakeEscrow(TaskId, Address) $|$ Burn -- a place tokens can be held or sent.
-  \texttt{Wallet(a)} is the token account of address $a$,
-  \texttt{RequestEscrow(id)} holds the payment of request $id$,
-  \texttt{StakeEscrow(task, a)} holds the stake of provider $a$ for the task,
-  and \texttt{Burn} removes tokens from the supply.
-\item \texttt{TokenTotals} = (\texttt{minted}: $\mathbb{N}$, \texttt{burned}:
-  $\mathbb{N}$, \texttt{staked}: $\mathbb{N}$, \texttt{escrowed}: $\mathbb{N}$)
+  StakeEscrow(TaskId, Address) $|$ Burn -- a place where tokens are held or
+  sent. \texttt{Burn} removes tokens from the supply.
+\item \texttt{TokenTotals} = (\texttt{minted}, \texttt{burned},
+  \texttt{staked}, \texttt{escrowed}): $\mathbb{N}^4$
 \end{itemize}
 
 \subsubsection{Exported Access Programs}
 
 \begin{center}
-\begin{tabular}{p{2.8cm} p{4.6cm} p{3cm} p{4.6cm}}
+\begin{tabular}{p{2.4cm} p{4.8cm} p{3cm} p{4.6cm}}
 \hline
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \hline
@@ -1677,66 +1378,56 @@ None.
 \subsubsection{Environment Variables}
 
 \begin{itemize}
-\item \texttt{TokenLedger}: the blockchain's record of token balances, mapping
-  each Endpoint to its balance in $\mathbb{N}$, together with the running
-  totals minted, burned, staked (the sum over all \texttt{StakeEscrow}
-  endpoints), and escrowed (the sum over all \texttt{RequestEscrow}
-  endpoints). The ledger holds no balance for \texttt{Burn}.
+\item \texttt{TokenLedger}: Endpoint $\rightarrow$ $\mathbb{N}$ -- the balance
+  of each endpoint
+\item \texttt{LedgerTotals}: TokenTotals -- the running totals kept with the
+  ledger
 \end{itemize}
+
+\subsubsection{State Invariant}
+
+None, since the module has no state variables.
 
 \subsubsection{Assumptions}
 
 \begin{itemize}
-\item A transfer whose source is \texttt{Wallet(a)} is requested only in a
-  transaction signed by address $a$. The Transaction Manager
-  (\mref{mTransaction}) and the Wallet Service (\mref{mWallet}) ensure this
-  before the transaction is submitted (\ref{SA_SignedTransactionsOnly}).
-  Transfers from escrow endpoints are requested only by the Provider Registry
-  (\mref{mRegistry}) and the Request Lifecycle (\mref{mLifecycle}), the two
-  modules that use this module.
+\item A transfer from \texttt{Wallet(a)} is requested only in a transaction
+  signed by address $a$. Transfers from escrow endpoints are requested only by
+  the Provider Registry (\mref{mRegistry}) and the Request Lifecycle
+  (\mref{mLifecycle}).
 \item \texttt{mint} is requested only by the program's mint authority.
-\item Each call is atomic: it either completes fully or leaves the ledger
-  unchanged.
+\item Each call is atomic.
 \end{itemize}
 
 \subsubsection{Access Routine Semantics}
 
 \noindent \texttt{transfer}(source, destination, amount):
 \begin{itemize}
-\item transition: Let $L$ be \texttt{TokenLedger}. If \texttt{destination} is
-  \texttt{Burn}: $L$[source] := $L$[source] $-$ amount and the burned total
-  increases by amount. Otherwise: $L$[source] := $L$[source] $-$ amount and
-  $L$[destination] := $L$[destination] $+$ amount. A transfer of amount 0
-  changes nothing. The staked and escrowed totals change by the amounts that
-  enter or leave \texttt{StakeEscrow} and \texttt{RequestEscrow} endpoints.
-  Escrow endpoints that do not yet exist are created by the first transfer
-  into them.
-\item exception: \texttt{TransferFailedError} if $L$[source] $<$ amount (this
-  is the on-chain funds check of \ref{SA_OnChainFundsCheck}), or if the
-  destination cannot receive tokens, such as a \texttt{Wallet} with no valid
-  token account. \texttt{ArithmeticOverflowError} if the new balance of the
-  destination would exceed \texttt{MAX\_TOKEN\_AMOUNT}. On either exception the
-  ledger is unchanged.
+\item transition: \texttt{TokenLedger[source]} := \texttt{TokenLedger[source]}
+  $-$ amount. If \texttt{destination} is \texttt{Burn}, \texttt{LedgerTotals}
+  burned total increases by amount; otherwise \texttt{TokenLedger[destination]}
+  := \texttt{TokenLedger[destination]} + amount. The staked and escrowed totals
+  change with any amount entering or leaving a \texttt{StakeEscrow} or
+  \texttt{RequestEscrow} endpoint.
+\item exception: \textit{exc} := (\texttt{TokenLedger[source]} $<$ amount or
+  the destination cannot receive tokens $\Rightarrow$ TransferFailedError $\mid$
+  the destination balance would exceed \texttt{MAX\_TOKEN\_AMOUNT}
+  $\Rightarrow$ ArithmeticOverflowError)
 \end{itemize}
 
 \noindent \texttt{mint}(destination, amount):
 \begin{itemize}
-\item transition: $L$[destination] := $L$[destination] $+$ amount and the
-  minted total increases by amount.
-\item exception: \texttt{ArithmeticOverflowError} if the new balance of the
-  destination or the new minted total would exceed
-  \texttt{MAX\_TOKEN\_AMOUNT}.
+\item transition: \texttt{TokenLedger[destination]} :=
+  \texttt{TokenLedger[destination]} + amount, and the minted total in
+  \texttt{LedgerTotals} increases by amount.
+\item exception: \textit{exc} := (a balance or total would exceed
+  \texttt{MAX\_TOKEN\_AMOUNT} $\Rightarrow$ ArithmeticOverflowError)
 \end{itemize}
 
-\noindent \texttt{balanceOf}(endpoint):
+\noindent \texttt{balanceOf}(endpoint), \texttt{getTotals}():
 \begin{itemize}
-\item output: $L$[endpoint], or 0 if the endpoint has no balance yet.
-\end{itemize}
-
-\noindent \texttt{getTotals}():
-\begin{itemize}
-\item output: the running totals (\texttt{minted}, \texttt{burned},
-  \texttt{staked}, \texttt{escrowed}) held in \texttt{TokenLedger}.
+\item output: \textit{out} := \texttt{TokenLedger[endpoint]} (0 if the endpoint
+  has no balance); \texttt{LedgerTotals}
 \end{itemize}
 
 \subsubsection{Local Functions}
@@ -1755,9 +1446,8 @@ application. It reads the blockchain and never sends transactions.
 
 \subsection{Uses}
 
-This module uses no other module. It reads on-chain data directly from the
-blockchain (its environment variable \texttt{BlockchainNetwork}) and decodes
-it using the account layouts published by the on-chain program.
+This module uses no other module. It reads the blockchain through its
+environment variable \texttt{BlockchainNetwork}.
 
 \subsection{Syntax}
 
@@ -1767,30 +1457,25 @@ None.
 
 \subsubsection{Exported Types}
 \begin{itemize}
-\item \texttt{TaskInfo} = (\texttt{taskId}, \texttt{name}, \texttt{description},
-  \texttt{inputSchema}, \texttt{outputSchema}, \texttt{minProviders},
-  \texttt{maxProviders}, \texttt{acceptancePeriod}, \texttt{minimumStake},
-  \texttt{registeredProviders}: $\mathbb{N}$)
+\item \texttt{TaskInfo} = (\texttt{taskId}, \texttt{definition},
+  \texttt{minimumStake}, \texttt{registeredProviders}: $\mathbb{N}$)
 \item \texttt{ProviderInfo} = (\texttt{address}, \texttt{taskId},
-  \texttt{registered}: $\mathbb{B}$, \texttt{reputation}: $\mathbb{R}$,
-  \texttt{stake}: $\mathbb{N}$, \texttt{reservedStake}: $\mathbb{N}$,
+  \texttt{reputation}: $\mathbb{R}$, \texttt{stake}: $\mathbb{N}$,
   \texttt{rewardsEarned}: $\mathbb{N}$)
 \item \texttt{RequestInfo} = (\texttt{requestId}, \texttt{taskId},
-  \texttt{requester}, \texttt{payment}, \texttt{status}: RequestStatus,
-  \texttt{createdAt}, \texttt{deadlines}, \texttt{result}: $\mathbb{R}$ $\cup$
-  \{$\bot$\}, \texttt{lowest}, \texttt{highest}: $\mathbb{R}$ $\cup$
-  \{$\bot$\}, \texttt{includedCount}: $\mathbb{N}$, \texttt{elapsed}:
-  Duration $\cup$ \{$\bot$\} -- the time from \texttt{createdAt} to the
-  finalization of the request, or $\bot$ if it is not finalized)
+  \texttt{requester}, \texttt{payment}, \texttt{status}, \texttt{result}:
+  $\mathbb{R}$ $\cup$ \{$\bot$\}, \texttt{lowest}, \texttt{highest}:
+  $\mathbb{R}$ $\cup$ \{$\bot$\}, \texttt{includedCount}: $\mathbb{N}$,
+  \texttt{elapsed}: Duration $\cup$ \{$\bot$\})
 \item \texttt{PendingTransfer} = (\texttt{requestId}, \texttt{amount}:
   $\mathbb{N}$, \texttt{deadline}: Timestamp)
-\item \texttt{TransactionInfo} = (\texttt{id}: TransactionId, \texttt{status}:
-  \{Pending, Confirmed, Failed\}, \texttt{time}: Timestamp, \texttt{action}:
-  String, \texttt{tokenChange}: signed integer)
+\item \texttt{TransactionInfo} = (\texttt{id}, \texttt{status}, \texttt{time}:
+  Timestamp, \texttt{description}: String, \texttt{tokenChange}: $\mathbb{Z}$)
 \item \texttt{Target} = TaskTarget(TaskId) $|$ RequestTarget(RequestId) $|$
   AddressTarget(Address)
 \item \texttt{ChangeEvent} = (\texttt{target}: Target, \texttt{description}:
-  String, \texttt{time}: Timestamp)
+  String, \texttt{time}: Timestamp); \texttt{ChangeHandler}: a function that
+  accepts a \texttt{ChangeEvent}
 \end{itemize}
 
 \subsubsection{Exported Access Programs}
@@ -1823,22 +1508,16 @@ listRequests & Address (requester) & seq of RequestInfo &
 getPendingTransfers & Address (provider) & seq of PendingTransfer &
   NetworkUnavailableError \\
 \hline
-getTransaction & TransactionId & TransactionInfo & UnknownTransactionError,
+getTransactionHistory & Address & seq of TransactionInfo &
   NetworkUnavailableError \\
-\hline
-getTransactionHistory & Address, $\mathbb{N}$ (limit) & seq of
-  TransactionInfo & NetworkUnavailableError \\
 \hline
 getBalances & Address & $\mathbb{N} \times \mathbb{N}$ (tokens, network
   currency) & NetworkUnavailableError \\
 \hline
-subscribe & Target & SubscriptionId & UnknownTaskError, UnknownRequestError,
-  NetworkUnavailableError \\
+subscribe & Target, ChangeHandler & - & UnknownTaskError,
+  UnknownRequestError \\
 \hline
-pollChanges & SubscriptionId & seq of ChangeEvent & UnknownSubscriptionError,
-  NetworkUnavailableError \\
-\hline
-unsubscribe & SubscriptionId & - & UnknownSubscriptionError \\
+unsubscribe & Target, ChangeHandler & - & - \\
 \hline
 \end{longtable}
 
@@ -1847,117 +1526,88 @@ unsubscribe & SubscriptionId & - & UnknownSubscriptionError \\
 \subsubsection{State Variables}
 
 \begin{itemize}
-\item \texttt{subscriptions}: SubscriptionId $\rightarrow$ (\texttt{target}:
-  Target, \texttt{lastObserved}: the most recent view of the target that was
-  reported)
+\item \texttt{subscriptions}: set of (Target $\times$ ChangeHandler)
 \end{itemize}
 
 \subsubsection{Environment Variables}
 
 \begin{itemize}
-\item \texttt{BlockchainNetwork}: the Solana cluster the system runs on,
-  providing account data, transaction records, and balances
+\item \texttt{BlockchainNetwork}: the blockchain's accounts, transactions, and
+  balances, which this module reads but never writes
 \end{itemize}
+
+\subsubsection{State Invariant}
+
+Every target in \texttt{subscriptions} existed when it was subscribed. Initially
+\texttt{subscriptions} is empty, and each access program preserves the
+invariant.
 
 \subsubsection{Assumptions}
 
 \begin{itemize}
-\item The data returned reflects the cluster at its confirmed state when it
-  was read. It may lag the newest unconfirmed transactions.
+\item The data returned is the blockchain's confirmed state when it is read.
 \item Only on-chain data is returned. Display names and other profile details
-  come from the User Information module (\mref{mUserInfo}), so public views
-  never expose more than what is on-chain and consented to
-  (\nfrref{NFR_PublicPagesPrivacy}).
-\item The on-chain account layouts do not change while the module is running.
+  come from the User Information module (\mref{mUserInfo}).
 \end{itemize}
 
 \subsubsection{Access Routine Semantics}
 
+\noindent \texttt{subscribe}(target, handler):
+\begin{itemize}
+\item transition: \texttt{subscriptions} := \texttt{subscriptions} $\cup$
+  \{(target, handler)\}. From then on, whenever the on-chain data for
+  \texttt{target} changes, \texttt{handler} is called with a
+  \texttt{ChangeEvent} describing the change.
+\item exception: \textit{exc} := (\texttt{target} is a task that does not exist
+  $\Rightarrow$ UnknownTaskError $\mid$ \texttt{target} is a request that does
+  not exist $\Rightarrow$ UnknownRequestError)
+\end{itemize}
+
+\noindent \texttt{unsubscribe}(target, handler):
+\begin{itemize}
+\item transition: \texttt{subscriptions} := \texttt{subscriptions}
+  $\setminus$ \{(target, handler)\}
+\end{itemize}
+
 \noindent \texttt{listTasks}(), \texttt{getTask}(id), \texttt{listProviders}(id),
 \texttt{getProviderInfo}(id, a):
 \begin{itemize}
-\item output: the task definitions, the registered providers of a task with
-  their reputations, or one provider's registration, reputation, stake and
-  rewards earned for a task, as recorded on-chain. \texttt{registeredProviders}
-  is the number of providers currently registered for the task.
-  \texttt{getProviderInfo} returns a \texttt{ProviderInfo} with
-  \texttt{registered} = $\bot$ and zero values if the address is not registered.
-\item exception: \texttt{UnknownTaskError} if the task does not exist.
-  \texttt{NetworkUnavailableError} if the blockchain cannot be reached.
+\item output: \textit{out} := the task definitions, the providers registered
+  for a task with their reputations, or the registration, reputation, stake, and
+  rewards earned of one address for a task, as recorded on-chain
+\item exception: \textit{exc} := (the task does not exist $\Rightarrow$
+  UnknownTaskError $\mid$ the blockchain cannot be reached $\Rightarrow$
+  NetworkUnavailableError)
 \end{itemize}
 
 \noindent \texttt{getRequestInfo}(id), \texttt{listRequests}(requester):
 \begin{itemize}
-\item output: the on-chain request record or records, including the status,
-  the deadlines, and, once available, the aggregated result, the lowest and
-  highest included prediction, and the number of included predictions.
-  \texttt{listRequests} returns the requests created by \texttt{requester},
-  most recent first.
-\item exception: \texttt{UnknownRequestError} if the request does not exist.
-  \texttt{NetworkUnavailableError} if the blockchain cannot be reached.
+\item output: \textit{out} := the on-chain record of a request, or of each
+  request created by \texttt{requester} (most recent first), including its
+  status and, once available, its result, lowest and highest included
+  prediction, number of included predictions, and the time elapsed from
+  creation to finalization
+\item exception: \textit{exc} := (the request does not exist $\Rightarrow$
+  UnknownRequestError $\mid$ the blockchain cannot be reached $\Rightarrow$
+  NetworkUnavailableError)
 \end{itemize}
 
-\noindent \texttt{getPendingTransfers}(provider):
+\noindent \texttt{getPendingTransfers}(provider), \texttt{getTransactionHistory}(a),
+\texttt{getBalances}(a):
 \begin{itemize}
-\item output: for each request in the PendingTransfer status that holds an
-  unresolved reward for \texttt{provider}, its \texttt{requestId}, the held
-  \texttt{amount}, and the pending transfer \texttt{deadline}.
-\end{itemize}
-
-\noindent \texttt{getTransaction}(id), \texttt{getTransactionHistory}(a, limit):
-\begin{itemize}
-\item output: the status, time, a plain-language action name, and net token
-  change of one transaction, or of the most recent \texttt{limit} transactions
-  involving address \texttt{a}, most recent first. A transaction that has not
-  yet been confirmed is reported as Pending.
-\item exception: \texttt{UnknownTransactionError} if no transaction has that
-  identifier. \texttt{NetworkUnavailableError} if the blockchain cannot be
-  reached.
-\end{itemize}
-
-\noindent \texttt{getBalances}(a):
-\begin{itemize}
-\item output: the token balance and the network-currency balance (used for
-  fees) of address \texttt{a}.
-\end{itemize}
-
-\noindent \texttt{subscribe}(target):
-\begin{itemize}
-\item transition: Allocate a new identifier \texttt{sid} and set
-  \texttt{subscriptions[sid]} := (\texttt{target}, the current on-chain view of
-  \texttt{target}).
-\item output: \texttt{sid}.
-\item exception: \texttt{UnknownTaskError} or \texttt{UnknownRequestError} if
-  the target does not exist.
-\end{itemize}
-
-\noindent \texttt{pollChanges}(sid):
-\begin{itemize}
-\item transition: Read the current on-chain view of the subscription's target
-  and set \texttt{lastObserved} to it.
-\item output: one \texttt{ChangeEvent} for each difference between the previous
-  \texttt{lastObserved} and the current view, such as a new request for a
-  task, a new status or result for a request, or a changed balance, reputation,
-  or unresolved reward for an address. The sequence is empty if nothing
-  changed.
-\item exception: \texttt{UnknownSubscriptionError} if \texttt{sid} is not
-  active.
-\end{itemize}
-
-\noindent \texttt{unsubscribe}(sid):
-\begin{itemize}
-\item transition: remove \texttt{sid} from \texttt{subscriptions}.
+\item output: \textit{out} := for each request holding an unresolved reward of
+  \texttt{provider}, the request, the held amount, and the transfer deadline;
+  the transactions involving address \texttt{a}, most recent first; the token
+  and network-currency balances of \texttt{a}
+\item exception: \textit{exc} := (the blockchain cannot be reached
+  $\Rightarrow$ NetworkUnavailableError)
 \end{itemize}
 
 \subsubsection{Local Functions}
 
 \begin{itemize}
-\item \texttt{decodeAccount}(data): converts raw account bytes into the views
-  above using the on-chain program's account layouts.
-\item \texttt{currentView}(target): reads the current on-chain view of a task,
-  request, or address.
-\item \texttt{diff}(old, new): the list of differences between two views of the
-  same target.
+\item \texttt{decode}(data): converts raw on-chain account data into the
+  types above.
 \end{itemize}
 
 
@@ -1968,61 +1618,57 @@ unsubscribe & SubscriptionId & - & UnknownSubscriptionError \\
 \subsection{Module}
 
 Transaction Manager (\mref{mTransaction}). A library implemented in the
-off-chain application. It owns no state: everything a later call needs is
-carried in the \texttt{PreparedTransaction} and \texttt{TransactionRecord}
-values it returns, and the blockchain itself is the public log of verified
-transactions.
+off-chain application. The values it returns carry everything later calls need,
+and the blockchain is the public record of submitted transactions.
 
 \subsection{Uses}
 
 \begin{itemize}
 \item \textbf{Marketplace Action Preflight (\mref{mActionPreflight}):}
-  \texttt{check} and the type \texttt{PreflightIssue}.
-\item \textbf{Wallet Service (\mref{mWallet}):}
-  \texttt{getConnectedAddress}, \texttt{requestSignature}, and the exceptions
-  \texttt{WalletNotConnectedError} and \texttt{SignatureRejectedError}.
-\item \textbf{Provider Registry (\mref{mRegistry}):} the instruction forms of
-  \texttt{createTask}, \texttt{registerProvider}, and
-  \texttt{unregisterProvider}.
-\item \textbf{Request Lifecycle (\mref{mLifecycle}):} the instruction forms of
-  \texttt{createRequest}, \texttt{acceptRequest}, and \texttt{retryTransfer}.
+  \texttt{check}, which returns the list of issues found with a proposed
+  action.
+\item \textbf{Wallet Service (\mref{mWallet}):} \texttt{getConnectedAddress},
+  \texttt{requestSignature}, and the exceptions \texttt{WalletNotConnectedError}
+  and \texttt{SignatureRejectedError}.
+\item \textbf{Provider Registry (\mref{mRegistry}):} the instructions for
+  creating a task and for registering and unregistering a provider.
+\item \textbf{Request Lifecycle (\mref{mLifecycle}):} the instructions for
+  creating and accepting a request and for retrying a reward transfer.
 \end{itemize}
 
 The routine names above are the interface this MIS assumes from the other
-modules; they must match those modules' MIS.
+modules.
 
 \subsection{Syntax}
 
 \subsubsection{Exported Constants}
 \begin{itemize}
 \item \texttt{ERROR\_REPORT\_LIMIT}: Duration = 2 seconds -- the longest time
-  between detecting a failure and raising its exception (\ref{SA_ErrorMessageTime})
+  between detecting a failure and reporting it (\ref{SA_ErrorMessageTime})
 \end{itemize}
 
 \subsubsection{Exported Types}
 \begin{itemize}
 \item \texttt{MarketplaceAction} = CreateTask(TaskDefinition) $|$
   RegisterProvider(TaskId) $|$ UnregisterProvider(TaskId) $|$
-  CreateRequest(TaskId, $\mathbb{N}$ payment) $|$ AcceptRequest(RequestId)
-  $|$ RetryReward(RequestId)
+  CreateRequest(TaskId, $\mathbb{N}$) $|$ AcceptRequest(RequestId) $|$
+  RetryReward(RequestId)
 \item \texttt{TransactionPreview} = (\texttt{description}: String,
-  \texttt{tokensTransferred}: $\mathbb{N}$, \texttt{tokensReserved}:
-  $\mathbb{N}$, \texttt{networkFee}: $\mathbb{N}$)
-\item \texttt{PreparedTransaction} = (\texttt{action}, \texttt{actor}:
-  Address, \texttt{instructions}, \texttt{preview}: TransactionPreview,
-  \texttt{validUntil}: Timestamp)
+  \texttt{tokensTransferred}: $\mathbb{N}$, \texttt{networkFee}: $\mathbb{N}$)
+\item \texttt{PreparedTransaction} = (\texttt{action}, \texttt{actor}: Address,
+  \texttt{preview}: TransactionPreview, \texttt{validUntil}: Timestamp)
+\item \texttt{SignedTransaction} = (\texttt{prepared}: PreparedTransaction,
+  \texttt{id}: TransactionId) -- the \texttt{id} is what a user looks up on the
+  blockchain (\rref{FR_TransactionVerification})
 \item \texttt{TransactionStatus} = \{Pending, Confirmed, Failed, Expired\}
-\item \texttt{TransactionRecord} = (\texttt{id}: TransactionId,
-  \texttt{prepared}: PreparedTransaction, \texttt{status}: TransactionStatus,
-  \texttt{balanceChange}: signed integer or $\bot$)
 \end{itemize}
 
-Every exception raised by this module carries a name, a description in plain
-language, and a suggested fix (\nfrref{NFR_ErrorVisibility}).
+Every exception raised by this module carries a name, a description, and a
+suggested fix (\nfrref{NFR_ErrorVisibility}).
 
 \subsubsection{Exported Access Programs}
 
-\begin{longtable}{p{3cm} p{3.6cm} p{3.4cm} p{5cm}}
+\begin{longtable}{p{3cm} p{3.8cm} p{3.2cm} p{5cm}}
 \hline
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \hline
@@ -2031,23 +1677,19 @@ language, and a suggested fix (\nfrref{NFR_ErrorVisibility}).
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \hline
 \endhead
-prepareTransaction & MarketplaceAction, Address (actor) &
-  PreparedTransaction & PreflightFailedError, WalletNotConnectedError,
-  InsufficientFundsError, SimulationMismatchError, NetworkUnavailableError \\
+prepareTransaction & MarketplaceAction, Address (actor), SignedTransaction
+  $\cup$ \{$\bot$\} (earlier attempt) & PreparedTransaction &
+  PreflightFailedError, InsufficientFundsError, SimulationMismatchError,
+  DuplicateSubmissionError, NetworkUnavailableError \\
 \hline
-getPreview & PreparedTransaction & TransactionPreview & - \\
+signTransaction & PreparedTransaction & SignedTransaction &
+  WalletNotConnectedError, SignatureRejectedError, ExpiredTransactionError \\
 \hline
-submitTransaction & PreparedTransaction & TransactionRecord &
-  WalletNotConnectedError, SignatureRejectedError, ExpiredTransactionError,
+submitTransaction & SignedTransaction & - & ExpiredTransactionError,
   NetworkUnavailableError \\
 \hline
-refreshStatus & TransactionRecord & TransactionRecord &
+getStatus & SignedTransaction & TransactionStatus &
   NetworkUnavailableError \\
-\hline
-getTransactionId & TransactionRecord & TransactionId & - \\
-\hline
-retryTransaction & TransactionRecord & PreparedTransaction &
-  DuplicateSubmissionError, and those of prepareTransaction \\
 \hline
 \end{longtable}
 
@@ -2060,137 +1702,87 @@ None.
 \subsubsection{Environment Variables}
 
 \begin{itemize}
-\item \texttt{BlockchainNetwork}: the Solana cluster, which accepts submitted
-  transactions, simulates them, and reports their status, balances, and fees
-\item \texttt{NetworkTime}: the cluster's current time
+\item \texttt{BlockchainNetwork}: the blockchain, which accepts submitted
+  transactions and reports their status, balances, and fees
+\item \texttt{NetworkTime}: Timestamp -- the blockchain's current time
 \end{itemize}
+
+\subsubsection{State Invariant}
+
+None, since the module has no state variables.
 
 \subsubsection{Assumptions}
 
 \begin{itemize}
-\item The caller shows the \texttt{TransactionPreview} to the user before
-  calling \texttt{submitTransaction} (\rref{FR_TransactionPreview}).
-\item The caller keeps the \texttt{TransactionRecord} and passes it back to
-  \texttt{refreshStatus} until the status is Confirmed, Failed, or Expired
-  (\rref{FR_TransactionStatus}).
-\item Each call that signs for the user requires the user to approve in their
-  own wallet. This module never holds signing keys (\ref{SA_WalletSigning}).
-\item Request commitments and reveals are submitted by the Participation Client
+\item The caller shows the preview to the user before calling
+  \texttt{signTransaction} (\rref{FR_TransactionPreview}).
+\item To retry an action, the caller passes the earlier \texttt{SignedTransaction}
+  to \texttt{prepareTransaction}.
+\item Commitments and reveals are sent by the Participation Client
   (\mref{mParticipation}), not by this module.
 \end{itemize}
 
 \subsubsection{Access Routine Semantics}
 
-\noindent \texttt{prepareTransaction}(action, actor):
+\noindent \texttt{prepareTransaction}(action, actor, earlier):
 \begin{itemize}
-\item transition: None; it reads the network but changes no state. The steps
-  are, in order:
-  \begin{enumerate}
-  \item Let \texttt{issues} := \texttt{check(action, actor)}. If not empty,
-    stop.
-  \item Build the instructions for \texttt{action} with the instruction forms
-    of the Provider Registry and Request Lifecycle. The payment or stake in
-    the instructions equals the amount in \texttt{action} or the task's
-    required stake (\ref{SA_ChargeEqualsAuthorized}).
-  \item Let \texttt{fee} be the network fee for the instructions. Let
-    \texttt{tokensTransferred} be the tokens the action moves out of the
-    actor's wallet (the payment of a \texttt{CreateRequest}, the minimum stake
-    of a \texttt{RegisterProvider}, and 0 otherwise). If the actor's token
-    balance is below \texttt{tokensTransferred} or the actor's network-currency
-    balance is below \texttt{fee}, stop (\ref{SA_BalanceCheck}).
-  \item Simulate the transaction. If the token balance change the simulation
-    reports for the actor differs from $-$\texttt{tokensTransferred}, stop
-    (\ref{SA_TransactionSimulation}).
-  \end{enumerate}
-\item output: a \texttt{PreparedTransaction} with the actor, instructions,
-  validity limit \texttt{validUntil}, and a preview whose \texttt{description}
-  names the action, whose \texttt{tokensTransferred} is as above, whose
-  \texttt{tokensReserved} is the stake reserved by an \texttt{AcceptRequest}
-  (it reserves stake without transferring tokens) and 0 otherwise, and whose
-  \texttt{networkFee} is \texttt{fee}.
-\item exception: \texttt{PreflightFailedError} listing the \texttt{issues}
-  returned by Preflight. \texttt{WalletNotConnectedError} if
-  \texttt{getConnectedAddress()} is not \texttt{actor}.
-  \texttt{InsufficientFundsError} stating the shortfall in tokens and in
-  network currency. \texttt{SimulationMismatchError} if the simulated balance
-  change differs from the previewed amount. \texttt{NetworkUnavailableError}
-  if the cluster cannot be reached. A failure is raised within
-  \texttt{ERROR\_REPORT\_LIMIT}, and in every failing case nothing is
-  submitted.
+\item output: \textit{out} := a prepared transaction for \texttt{action} by
+  \texttt{actor} whose preview describes the action, the tokens it moves out of
+  the actor's wallet (the payment of a \texttt{CreateRequest}, the stake of a
+  \texttt{RegisterProvider}, and 0 otherwise), and the network fee. Before it is
+  returned, the transaction has been checked by Preflight, found affordable, and
+  simulated, with the simulated token change equal to the previewed amount
+  (\ref{SA_BalanceCheck}, \ref{SA_TransactionSimulation},
+  \ref{SA_ChargeEqualsAuthorized}).
+\item exception: \textit{exc} := (\texttt{check(action, actor)} returns issues
+  $\Rightarrow$ PreflightFailedError $\mid$ the actor's token or
+  network-currency balance is too low $\Rightarrow$ InsufficientFundsError
+  $\mid$ the simulated change differs from the previewed amount $\Rightarrow$
+  SimulationMismatchError $\mid$ \texttt{earlier} $\neq$ $\bot$ and
+  \texttt{getStatus(earlier)} is Pending or Confirmed $\Rightarrow$
+  DuplicateSubmissionError (\ref{SA_NoDuplicateSubmission}) $\mid$ the
+  blockchain cannot be reached $\Rightarrow$ NetworkUnavailableError)
 \end{itemize}
 
-\noindent \texttt{getPreview}(p):
+\noindent \texttt{signTransaction}(p):
 \begin{itemize}
-\item output: \texttt{p.preview}.
+\item output: \textit{out} := \texttt{p} signed through the Wallet Service by
+  \texttt{p.actor}, together with its transaction identifier. The signature is
+  always made in the user's wallet (\ref{SA_SignedTransactionsOnly}).
+\item exception: \textit{exc} := (no wallet is connected, or the connected
+  address is not \texttt{p.actor} $\Rightarrow$ WalletNotConnectedError $\mid$
+  the user refuses to sign $\Rightarrow$ SignatureRejectedError $\mid$
+  \texttt{NetworkTime} $\ge$ \texttt{p.validUntil} $\Rightarrow$
+  ExpiredTransactionError)
 \end{itemize}
 
-\noindent \texttt{submitTransaction}(p):
+\noindent \texttt{submitTransaction}(s):
 \begin{itemize}
-\item transition: Obtain the user's signature with \texttt{requestSignature}
-  for the instructions in \texttt{p}. Check that the signature is valid for
-  \texttt{p.actor}. Submit the signed transaction to
-  \texttt{BlockchainNetwork}. A transaction is never submitted without a valid
-  signature from \texttt{p.actor} (\ref{SA_SignedTransactionsOnly}).
-\item output: a \texttt{TransactionRecord} with the new transaction identifier,
-  \texttt{prepared} := \texttt{p}, \texttt{status} := Pending, and
-  \texttt{balanceChange} := $\bot$.
-\item exception: \texttt{WalletNotConnectedError} if no wallet is connected.
-  \texttt{SignatureRejectedError} if the user declines to sign or the
-  signature is not valid for \texttt{p.actor}; no transaction is submitted.
-  \texttt{ExpiredTransactionError} if \texttt{NetworkTime} $\ge$
-  \texttt{p.validUntil}; the caller must call \texttt{prepareTransaction}
-  again. \texttt{NetworkUnavailableError} if the cluster cannot be reached.
+\item transition: \texttt{BlockchainNetwork} receives the transaction
+  \texttt{s}.
+\item exception: \textit{exc} := (\texttt{NetworkTime} $\ge$
+  \texttt{s.prepared.validUntil} $\Rightarrow$ ExpiredTransactionError $\mid$
+  the blockchain cannot be reached $\Rightarrow$ NetworkUnavailableError)
 \end{itemize}
 
-\noindent \texttt{refreshStatus}(r):
+\noindent \texttt{getStatus}(s):
 \begin{itemize}
-\item transition: Query \texttt{BlockchainNetwork} for \texttt{r.id}.
-  \begin{itemize}
-  \item If the transaction is confirmed successfully: \texttt{status} :=
-    Confirmed and \texttt{balanceChange} := the actor's net token change
-    reported for it.
-  \item If it was processed with an error: \texttt{status} := Failed.
-  \item If it is not found and \texttt{NetworkTime} $<$
-    \texttt{r.prepared.validUntil}: \texttt{status} := Pending. A transaction
-    is not marked failed while it could still be processed
-    (\ref{SA_ExpiryCheck}).
-  \item If it is not found, \texttt{NetworkTime} $\ge$
-    \texttt{r.prepared.validUntil}, and a final query after that time still
-    does not find it: \texttt{status} := Expired.
-  \end{itemize}
-\item output: the updated record.
-\item exception: \texttt{NetworkUnavailableError} if the cluster cannot be
-  reached; the record is returned unchanged by the caller.
-\end{itemize}
-
-\noindent \texttt{getTransactionId}(r):
-\begin{itemize}
-\item output: \texttt{r.id}, the identifier used to look the transaction up on
-  the blockchain (\rref{FR_TransactionVerification}).
-\end{itemize}
-
-\noindent \texttt{retryTransaction}(r):
-\begin{itemize}
-\item output: \texttt{prepareTransaction(r.prepared.action,
-  r.prepared.actor)}, a fresh prepared transaction that must be signed again.
-\item exception: \texttt{DuplicateSubmissionError} if \texttt{r.status}
-  $\notin$ \{Failed, Expired\}, because the original may still be processed
-  (\ref{SA_NoDuplicateSubmission}). The exceptions of
-  \texttt{prepareTransaction} otherwise.
+\item output: \textit{out} := Confirmed if the blockchain has processed \texttt{s}
+  successfully; Failed if it processed it with an error; Pending if it has not
+  found \texttt{s} and \texttt{NetworkTime} $<$ \texttt{s.prepared.validUntil};
+  and Expired if it has not found \texttt{s} after \texttt{s.prepared.validUntil}
+  has passed. A transaction is not reported as failed or expired while it could
+  still be processed (\ref{SA_ExpiryCheck}).
+\item exception: \textit{exc} := (the blockchain cannot be reached
+  $\Rightarrow$ NetworkUnavailableError)
 \end{itemize}
 
 \subsubsection{Local Functions}
 
 \begin{itemize}
-\item \texttt{buildInstructions}(action, actor): the instructions for an
-  action, using the Provider Registry and Request Lifecycle instruction forms.
-\item \texttt{expectedTokenOutflow}(action): the tokens an action moves out of
-  the actor's wallet, as defined in \texttt{prepareTransaction}.
-\item \texttt{validityElapsed}(r): $\top$ if \texttt{NetworkTime} $\ge$
-  \texttt{r.prepared.validUntil}.
+\item \texttt{tokensOut}(action): the tokens an action moves out of the actor's
+  wallet.
 \end{itemize}
-
-
 
 
 
