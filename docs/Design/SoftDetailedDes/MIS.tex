@@ -38,6 +38,8 @@ urlcolor=cyan          % color of external links
 \input{../../Common.text}
 
 \newcommand{\mref}[1]{M\ref{#1}}
+\newcommand{\rref}[1]{FR\ref{#1}}
+\newcommand{\nfrref}[1]{NFR\ref{#1}}
 
 \begin{document}
 
@@ -56,7 +58,7 @@ urlcolor=cyan          % color of external links
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
+November 17 & 1.0 & Added several MIS for modules\\
 Date 2 & 1.1 & Notes\\
 \bottomrule
 \end{tabularx}
@@ -1168,6 +1170,813 @@ None.
 \begin{itemize}
 \item \texttt{weightedVariance}($P$, $R$, $F$): the value $\sigma^2$ above.
 \end{itemize}
+
+% =====================================================================
+\section{MIS of Participation Client (\mref{mParticipation})} \label{misParticipation}
+% =====================================================================
+
+\subsection{Module}
+
+Participation Client (\mref{mParticipation}). An abstract data type whose
+instances each represent a provider's participation in the requests of one
+registered task. It is implemented in the provider SDK.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{Provider Setup (\mref{mProviderSetup}):}
+  \texttt{isReady}, \texttt{getProviderAddress}, \texttt{getRegisteredTasks},
+  \texttt{signAndSend}, and the exception \texttt{SubmissionFailedError}.
+\item \textbf{Request Listener (\mref{mListener}):}
+  \texttt{create}, \texttt{activeRequests}, \texttt{getSnapshot}, and the type
+  \texttt{RequestSnapshot} (the request's phase, its commit and reveal
+  deadlines, and whether the provider has been accepted).
+\item \textbf{Request Input Manager (\mref{mInput}):}
+  \texttt{getInputAccess}, and the exception \texttt{AccessDeniedError}.
+\item \textbf{Model (\mref{mModel}):} \texttt{predict} and the exception
+  \texttt{ModelError}.
+\item \textbf{Request Lifecycle (\mref{mLifecycle}):}
+  \texttt{computeCommitment} and the instruction forms of
+  \texttt{submitCommitment} and \texttt{revealPrediction}, and the type
+  \texttt{RevealResult}.
+\end{itemize}
+
+The routine names above are the interface this MIS assumes from the other
+modules; they must match those modules' MIS.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+\begin{itemize}
+\item \texttt{SALT\_LENGTH\_BYTES}: $\mathbb{N}$ = 32 -- length of each salt;
+  32 bytes is 256 bits, the minimum required by \nfrref{NFR_CommitSalt}
+\end{itemize}
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{ParticipationAction} = \{Commit, Reveal\}
+\item \texttt{ParticipationState} = \{Idle, Prepared, Committed, Revealed\}
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{3cm} p{4.1cm} p{3.2cm} p{5.2cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+create & ProviderSetup, TaskId & ParticipationClient &
+  SetupNotReadyError, NotRegisteredError \\
+\hline
+pendingActions & ParticipationClient & seq of (RequestId $\times$
+  ParticipationAction) & - \\
+\hline
+commitPrediction & ParticipationClient, RequestId & Hash &
+  UnknownRequestError, WrongPhaseError, NotAcceptedError,
+  AlreadyCommittedError, AccessDeniedError, ModelError,
+  InvalidPredictionError, SubmissionFailedError \\
+\hline
+revealPrediction & ParticipationClient, RequestId & RevealResult &
+  UnknownRequestError, WrongPhaseError, NoStoredCommitmentError,
+  AlreadyRevealedError, SubmissionFailedError \\
+\hline
+getParticipationState & ParticipationClient, RequestId &
+  ParticipationState & - \\
+\hline
+close & ParticipationClient & - & - \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+Each client \texttt{c} has the following state variables.
+
+\begin{itemize}
+\item \texttt{c.provider}: Address; \texttt{c.taskId}: TaskId
+\item \texttt{c.setup}: the ProviderSetup instance given to \texttt{create}
+\item \texttt{c.listener}: the Request Listener instance for \texttt{c.taskId}
+\item \texttt{c.record}: RequestId $\rightarrow$ (\texttt{prediction}:
+  $\mathbb{R}$, \texttt{salt}: Salt, \texttt{commitment}: Hash,
+  \texttt{committed}: $\mathbb{B}$, \texttt{revealed}: $\mathbb{B}$) --
+  the prediction and salt kept for each active request until its reveal
+  completes
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item \texttt{RandomSource}: a cryptographically secure random number generator
+\item \texttt{SecureLocalStore}: durable storage on the provider's machine that
+  holds \texttt{c.record}, so a prediction and its salt survive a restart
+  between commit and reveal
+\end{itemize}
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The Provider Setup instance has been initialized before \texttt{create}
+  is called, and its wallet can sign for the provider's address.
+\item Acceptance of a request is done outside this module (through the
+  Transaction Manager, \mref{mTransaction}). This module only participates in
+  requests the provider has already been accepted for.
+\item The provider's model (\mref{mModel}) returns a single finite real number
+  for each input it supports.
+\item The caller invokes \texttt{commitPrediction} and
+  \texttt{revealPrediction} while the corresponding phase is open, using
+  \texttt{pendingActions} to find out when. The phase and deadlines come from
+  the Request Listener and are as current as its last observation.
+\item The provider's machine keeps \texttt{SecureLocalStore} intact between
+  commit and reveal.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{create}(setup, taskId):
+\begin{itemize}
+\item transition: Create a client \texttt{c} with \texttt{c.setup} := setup,
+  \texttt{c.taskId} := taskId, \texttt{c.provider} :=
+  \texttt{setup.getProviderAddress()}, and \texttt{c.listener} :=
+  \texttt{RequestListener.create(taskId)}. Load \texttt{c.record} from
+  \texttt{SecureLocalStore}; it is empty if nothing was stored for this
+  provider and task.
+\item output: the new client \texttt{c}.
+\item exception: \texttt{SetupNotReadyError} if \texttt{setup.isReady()} is
+  false. \texttt{NotRegisteredError} if \texttt{taskId} $\notin$
+  \texttt{setup.getRegisteredTasks()}.
+\end{itemize}
+
+\noindent \texttt{pendingActions}(c):
+\begin{itemize}
+\item output: the pairs (\texttt{id}, Commit) for each \texttt{id} in
+  \texttt{c.listener.activeRequests()} whose snapshot shows the Commit phase,
+  the provider accepted, and no committed record; and the pairs (\texttt{id},
+  Reveal) for each whose snapshot shows the Reveal phase and whose record is
+  committed but not revealed.
+\end{itemize}
+
+\noindent \texttt{commitPrediction}(c, id):
+\begin{itemize}
+\item transition: Let \texttt{s} := \texttt{c.listener.getSnapshot(id)}.
+  \begin{enumerate}
+  \item If \texttt{c.record[id]} does not exist: let (\texttt{ciphertext},
+    \texttt{key}) := \texttt{getInputAccess(id, c.provider)}, decrypt
+    \texttt{ciphertext} with \texttt{key} to obtain the input, let
+    \texttt{p} := \texttt{predict(input)}, let \texttt{salt} :=
+    \texttt{RandomSource} bytes of length \texttt{SALT\_LENGTH\_BYTES}, and let
+    \texttt{h} := \texttt{computeCommitment(id, c.provider, p, salt)}. Store
+    (\texttt{p}, \texttt{salt}, \texttt{h}, $\bot$, $\bot$) in
+    \texttt{c.record[id]} and in \texttt{SecureLocalStore} before anything is
+    sent. If a record with \texttt{committed} = $\bot$ already exists (an
+    earlier attempt failed to send), reuse its \texttt{p}, \texttt{salt}, and
+    \texttt{h} instead.
+  \item Call \texttt{signAndSend} on \texttt{c.setup} with the
+    \texttt{submitCommitment}(id, c.provider, \texttt{h}) instruction. On
+    success set \texttt{c.record[id].committed} := $\top$ and update
+    \texttt{SecureLocalStore}.
+  \end{enumerate}
+\item output: the commitment \texttt{h}.
+\item exception: \texttt{UnknownRequestError} if the Listener does not know
+  \texttt{id}. \texttt{WrongPhaseError} if \texttt{s} is not in the Commit
+  phase. \texttt{NotAcceptedError} if the provider is not an accepted provider
+  of the request. \texttt{AlreadyCommittedError} if
+  \texttt{c.record[id].committed} is $\top$ (one commitment per request).
+  \texttt{AccessDeniedError} and \texttt{ModelError} as raised by the modules
+  used. \texttt{InvalidPredictionError} if \texttt{p} is not a finite real
+  number; nothing is stored or sent, so the provider is not penalized for an
+  obviously invalid value. \texttt{SubmissionFailedError} if the instruction
+  is rejected on-chain or cannot be sent; the stored record is kept so the call
+  can be repeated before the deadline.
+\end{itemize}
+
+\noindent \texttt{revealPrediction}(c, id):
+\begin{itemize}
+\item transition: Call \texttt{signAndSend} on \texttt{c.setup} with the
+  \texttt{revealPrediction}(id, c.provider, \texttt{p}, \texttt{salt})
+  instruction using the stored \texttt{p} and \texttt{salt}. On success set
+  \texttt{c.record[id].revealed} := $\top$, then delete the stored
+  \texttt{prediction} and \texttt{salt} from \texttt{c.record[id]} and from
+  \texttt{SecureLocalStore}.
+\item output: the \texttt{RevealResult} reported by the on-chain program. The
+  reveal counts as used even if the result is not Accepted.
+\item exception: \texttt{UnknownRequestError} if the Listener does not know
+  \texttt{id}. \texttt{WrongPhaseError} if the snapshot is not in the Reveal
+  phase. \texttt{NoStoredCommitmentError} if \texttt{c.record[id]} does not
+  exist or \texttt{committed} is $\bot$. \texttt{AlreadyRevealedError} if
+  \texttt{revealed} is $\top$ (one reveal per request).
+  \texttt{SubmissionFailedError} if the instruction cannot be sent; the
+  prediction and salt are kept so the call can be repeated before the
+  deadline.
+\end{itemize}
+
+\noindent \texttt{getParticipationState}(c, id):
+\begin{itemize}
+\item output: Idle if there is no record for \texttt{id}; Prepared if a record
+  exists with \texttt{committed} = $\bot$; Committed if \texttt{committed} =
+  $\top$ and \texttt{revealed} = $\bot$; Revealed if \texttt{revealed} =
+  $\top$.
+\end{itemize}
+
+\noindent \texttt{close}(c):
+\begin{itemize}
+\item transition: Stop \texttt{c.listener}. Records in
+  \texttt{SecureLocalStore} are kept, so a later \texttt{create} can resume
+  them.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{decrypt}(ciphertext, key): decrypts a request input using the
+  key supplied by the Request Input Manager, with a standard authenticated
+  encryption scheme from the platform's cryptography library.
+\item \texttt{isFiniteReal}(x): $\top$ if $x$ is a real number that is neither
+  infinite nor undefined.
+\end{itemize}
+
+
+% =====================================================================
+\section{MIS of Token Manager (\mref{mToken})} \label{misToken}
+% =====================================================================
+
+\subsection{Module}
+
+Token Manager (\mref{mToken}). A library implemented in the on-chain program.
+All balances live in the blockchain's token ledger, which is an environment
+variable of this module, so the module has no state of its own.
+
+\subsection{Uses}
+
+This module uses no other module.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+\begin{itemize}
+\item \texttt{MAX\_TOKEN\_AMOUNT}: $\mathbb{N}$ = $2^{64} - 1$ -- the largest
+  amount a balance or a single transfer can hold
+\end{itemize}
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{Endpoint} = Wallet(Address) $|$ RequestEscrow(RequestId) $|$
+  StakeEscrow(TaskId, Address) $|$ Burn -- a place tokens can be held or sent.
+  \texttt{Wallet(a)} is the token account of address $a$,
+  \texttt{RequestEscrow(id)} holds the payment of request $id$,
+  \texttt{StakeEscrow(task, a)} holds the stake of provider $a$ for the task,
+  and \texttt{Burn} removes tokens from the supply.
+\item \texttt{TokenTotals} = (\texttt{minted}: $\mathbb{N}$, \texttt{burned}:
+  $\mathbb{N}$, \texttt{staked}: $\mathbb{N}$, \texttt{escrowed}: $\mathbb{N}$)
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{2.8cm} p{4.6cm} p{3cm} p{4.6cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+transfer & Endpoint (source), Endpoint (destination), $\mathbb{N}$ (amount)
+  & - & TransferFailedError, ArithmeticOverflowError \\
+\hline
+mint & Endpoint (destination), $\mathbb{N}$ (amount) & - &
+  ArithmeticOverflowError \\
+\hline
+balanceOf & Endpoint & $\mathbb{N}$ & - \\
+\hline
+getTotals & - & TokenTotals & - \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None.
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item \texttt{TokenLedger}: the blockchain's record of token balances, mapping
+  each Endpoint to its balance in $\mathbb{N}$, together with the running
+  totals minted, burned, staked (the sum over all \texttt{StakeEscrow}
+  endpoints), and escrowed (the sum over all \texttt{RequestEscrow}
+  endpoints). The ledger holds no balance for \texttt{Burn}.
+\end{itemize}
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item A transfer whose source is \texttt{Wallet(a)} is requested only in a
+  transaction signed by address $a$. The Transaction Manager
+  (\mref{mTransaction}) and the Wallet Service (\mref{mWallet}) ensure this
+  before the transaction is submitted (\ref{SA_SignedTransactionsOnly}).
+  Transfers from escrow endpoints are requested only by the Provider Registry
+  (\mref{mRegistry}) and the Request Lifecycle (\mref{mLifecycle}), the two
+  modules that use this module.
+\item \texttt{mint} is requested only by the program's mint authority.
+\item Each call is atomic: it either completes fully or leaves the ledger
+  unchanged.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{transfer}(source, destination, amount):
+\begin{itemize}
+\item transition: Let $L$ be \texttt{TokenLedger}. If \texttt{destination} is
+  \texttt{Burn}: $L$[source] := $L$[source] $-$ amount and the burned total
+  increases by amount. Otherwise: $L$[source] := $L$[source] $-$ amount and
+  $L$[destination] := $L$[destination] $+$ amount. A transfer of amount 0
+  changes nothing. The staked and escrowed totals change by the amounts that
+  enter or leave \texttt{StakeEscrow} and \texttt{RequestEscrow} endpoints.
+  Escrow endpoints that do not yet exist are created by the first transfer
+  into them.
+\item exception: \texttt{TransferFailedError} if $L$[source] $<$ amount (this
+  is the on-chain funds check of \ref{SA_OnChainFundsCheck}), or if the
+  destination cannot receive tokens, such as a \texttt{Wallet} with no valid
+  token account. \texttt{ArithmeticOverflowError} if the new balance of the
+  destination would exceed \texttt{MAX\_TOKEN\_AMOUNT}. On either exception the
+  ledger is unchanged.
+\end{itemize}
+
+\noindent \texttt{mint}(destination, amount):
+\begin{itemize}
+\item transition: $L$[destination] := $L$[destination] $+$ amount and the
+  minted total increases by amount.
+\item exception: \texttt{ArithmeticOverflowError} if the new balance of the
+  destination or the new minted total would exceed
+  \texttt{MAX\_TOKEN\_AMOUNT}.
+\end{itemize}
+
+\noindent \texttt{balanceOf}(endpoint):
+\begin{itemize}
+\item output: $L$[endpoint], or 0 if the endpoint has no balance yet.
+\end{itemize}
+
+\noindent \texttt{getTotals}():
+\begin{itemize}
+\item output: the running totals (\texttt{minted}, \texttt{burned},
+  \texttt{staked}, \texttt{escrowed}) held in \texttt{TokenLedger}.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None.
+
+
+% =====================================================================
+\section{MIS of Chain Observer (\mref{mChain})} \label{misChain}
+% =====================================================================
+
+\subsection{Module}
+
+Chain Observer (\mref{mChain}). An abstract object implemented in the off-chain
+application. It reads the blockchain and never sends transactions.
+
+\subsection{Uses}
+
+This module uses no other module. It reads on-chain data directly from the
+blockchain (its environment variable \texttt{BlockchainNetwork}) and decodes
+it using the account layouts published by the on-chain program.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{TaskInfo} = (\texttt{taskId}, \texttt{name}, \texttt{description},
+  \texttt{inputSchema}, \texttt{outputSchema}, \texttt{minProviders},
+  \texttt{maxProviders}, \texttt{acceptancePeriod}, \texttt{minimumStake},
+  \texttt{registeredProviders}: $\mathbb{N}$)
+\item \texttt{ProviderInfo} = (\texttt{address}, \texttt{taskId},
+  \texttt{registered}: $\mathbb{B}$, \texttt{reputation}: $\mathbb{R}$,
+  \texttt{stake}: $\mathbb{N}$, \texttt{reservedStake}: $\mathbb{N}$,
+  \texttt{rewardsEarned}: $\mathbb{N}$)
+\item \texttt{RequestInfo} = (\texttt{requestId}, \texttt{taskId},
+  \texttt{requester}, \texttt{payment}, \texttt{status}: RequestStatus,
+  \texttt{createdAt}, \texttt{deadlines}, \texttt{result}: $\mathbb{R}$ $\cup$
+  \{$\bot$\}, \texttt{lowest}, \texttt{highest}: $\mathbb{R}$ $\cup$
+  \{$\bot$\}, \texttt{includedCount}: $\mathbb{N}$, \texttt{elapsed}:
+  Duration $\cup$ \{$\bot$\} -- the time from \texttt{createdAt} to the
+  finalization of the request, or $\bot$ if it is not finalized)
+\item \texttt{PendingTransfer} = (\texttt{requestId}, \texttt{amount}:
+  $\mathbb{N}$, \texttt{deadline}: Timestamp)
+\item \texttt{TransactionInfo} = (\texttt{id}: TransactionId, \texttt{status}:
+  \{Pending, Confirmed, Failed\}, \texttt{time}: Timestamp, \texttt{action}:
+  String, \texttt{tokenChange}: signed integer)
+\item \texttt{Target} = TaskTarget(TaskId) $|$ RequestTarget(RequestId) $|$
+  AddressTarget(Address)
+\item \texttt{ChangeEvent} = (\texttt{target}: Target, \texttt{description}:
+  String, \texttt{time}: Timestamp)
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{3.4cm} p{3.6cm} p{3.4cm} p{4.6cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+listTasks & - & seq of TaskInfo & NetworkUnavailableError \\
+\hline
+getTask & TaskId & TaskInfo & UnknownTaskError, NetworkUnavailableError \\
+\hline
+listProviders & TaskId & seq of ProviderInfo & UnknownTaskError,
+  NetworkUnavailableError \\
+\hline
+getProviderInfo & TaskId, Address & ProviderInfo & UnknownTaskError,
+  NetworkUnavailableError \\
+\hline
+getRequestInfo & RequestId & RequestInfo & UnknownRequestError,
+  NetworkUnavailableError \\
+\hline
+listRequests & Address (requester) & seq of RequestInfo &
+  NetworkUnavailableError \\
+\hline
+getPendingTransfers & Address (provider) & seq of PendingTransfer &
+  NetworkUnavailableError \\
+\hline
+getTransaction & TransactionId & TransactionInfo & UnknownTransactionError,
+  NetworkUnavailableError \\
+\hline
+getTransactionHistory & Address, $\mathbb{N}$ (limit) & seq of
+  TransactionInfo & NetworkUnavailableError \\
+\hline
+getBalances & Address & $\mathbb{N} \times \mathbb{N}$ (tokens, network
+  currency) & NetworkUnavailableError \\
+\hline
+subscribe & Target & SubscriptionId & UnknownTaskError, UnknownRequestError,
+  NetworkUnavailableError \\
+\hline
+pollChanges & SubscriptionId & seq of ChangeEvent & UnknownSubscriptionError,
+  NetworkUnavailableError \\
+\hline
+unsubscribe & SubscriptionId & - & UnknownSubscriptionError \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item \texttt{subscriptions}: SubscriptionId $\rightarrow$ (\texttt{target}:
+  Target, \texttt{lastObserved}: the most recent view of the target that was
+  reported)
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item \texttt{BlockchainNetwork}: the Solana cluster the system runs on,
+  providing account data, transaction records, and balances
+\end{itemize}
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The data returned reflects the cluster at its confirmed state when it
+  was read. It may lag the newest unconfirmed transactions.
+\item Only on-chain data is returned. Display names and other profile details
+  come from the User Information module (\mref{mUserInfo}), so public views
+  never expose more than what is on-chain and consented to
+  (\nfrref{NFR_PublicPagesPrivacy}).
+\item The on-chain account layouts do not change while the module is running.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{listTasks}(), \texttt{getTask}(id), \texttt{listProviders}(id),
+\texttt{getProviderInfo}(id, a):
+\begin{itemize}
+\item output: the task definitions, the registered providers of a task with
+  their reputations, or one provider's registration, reputation, stake and
+  rewards earned for a task, as recorded on-chain. \texttt{registeredProviders}
+  is the number of providers currently registered for the task.
+  \texttt{getProviderInfo} returns a \texttt{ProviderInfo} with
+  \texttt{registered} = $\bot$ and zero values if the address is not registered.
+\item exception: \texttt{UnknownTaskError} if the task does not exist.
+  \texttt{NetworkUnavailableError} if the blockchain cannot be reached.
+\end{itemize}
+
+\noindent \texttt{getRequestInfo}(id), \texttt{listRequests}(requester):
+\begin{itemize}
+\item output: the on-chain request record or records, including the status,
+  the deadlines, and, once available, the aggregated result, the lowest and
+  highest included prediction, and the number of included predictions.
+  \texttt{listRequests} returns the requests created by \texttt{requester},
+  most recent first.
+\item exception: \texttt{UnknownRequestError} if the request does not exist.
+  \texttt{NetworkUnavailableError} if the blockchain cannot be reached.
+\end{itemize}
+
+\noindent \texttt{getPendingTransfers}(provider):
+\begin{itemize}
+\item output: for each request in the PendingTransfer status that holds an
+  unresolved reward for \texttt{provider}, its \texttt{requestId}, the held
+  \texttt{amount}, and the pending transfer \texttt{deadline}.
+\end{itemize}
+
+\noindent \texttt{getTransaction}(id), \texttt{getTransactionHistory}(a, limit):
+\begin{itemize}
+\item output: the status, time, a plain-language action name, and net token
+  change of one transaction, or of the most recent \texttt{limit} transactions
+  involving address \texttt{a}, most recent first. A transaction that has not
+  yet been confirmed is reported as Pending.
+\item exception: \texttt{UnknownTransactionError} if no transaction has that
+  identifier. \texttt{NetworkUnavailableError} if the blockchain cannot be
+  reached.
+\end{itemize}
+
+\noindent \texttt{getBalances}(a):
+\begin{itemize}
+\item output: the token balance and the network-currency balance (used for
+  fees) of address \texttt{a}.
+\end{itemize}
+
+\noindent \texttt{subscribe}(target):
+\begin{itemize}
+\item transition: Allocate a new identifier \texttt{sid} and set
+  \texttt{subscriptions[sid]} := (\texttt{target}, the current on-chain view of
+  \texttt{target}).
+\item output: \texttt{sid}.
+\item exception: \texttt{UnknownTaskError} or \texttt{UnknownRequestError} if
+  the target does not exist.
+\end{itemize}
+
+\noindent \texttt{pollChanges}(sid):
+\begin{itemize}
+\item transition: Read the current on-chain view of the subscription's target
+  and set \texttt{lastObserved} to it.
+\item output: one \texttt{ChangeEvent} for each difference between the previous
+  \texttt{lastObserved} and the current view, such as a new request for a
+  task, a new status or result for a request, or a changed balance, reputation,
+  or unresolved reward for an address. The sequence is empty if nothing
+  changed.
+\item exception: \texttt{UnknownSubscriptionError} if \texttt{sid} is not
+  active.
+\end{itemize}
+
+\noindent \texttt{unsubscribe}(sid):
+\begin{itemize}
+\item transition: remove \texttt{sid} from \texttt{subscriptions}.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{decodeAccount}(data): converts raw account bytes into the views
+  above using the on-chain program's account layouts.
+\item \texttt{currentView}(target): reads the current on-chain view of a task,
+  request, or address.
+\item \texttt{diff}(old, new): the list of differences between two views of the
+  same target.
+\end{itemize}
+
+
+% =====================================================================
+\section{MIS of Transaction Manager (\mref{mTransaction})} \label{misTransaction}
+% =====================================================================
+
+\subsection{Module}
+
+Transaction Manager (\mref{mTransaction}). A library implemented in the
+off-chain application. It owns no state: everything a later call needs is
+carried in the \texttt{PreparedTransaction} and \texttt{TransactionRecord}
+values it returns, and the blockchain itself is the public log of verified
+transactions.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{Marketplace Action Preflight (\mref{mActionPreflight}):}
+  \texttt{check} and the type \texttt{PreflightIssue}.
+\item \textbf{Wallet Service (\mref{mWallet}):}
+  \texttt{getConnectedAddress}, \texttt{requestSignature}, and the exceptions
+  \texttt{WalletNotConnectedError} and \texttt{SignatureRejectedError}.
+\item \textbf{Provider Registry (\mref{mRegistry}):} the instruction forms of
+  \texttt{createTask}, \texttt{registerProvider}, and
+  \texttt{unregisterProvider}.
+\item \textbf{Request Lifecycle (\mref{mLifecycle}):} the instruction forms of
+  \texttt{createRequest}, \texttt{acceptRequest}, and \texttt{retryTransfer}.
+\end{itemize}
+
+The routine names above are the interface this MIS assumes from the other
+modules; they must match those modules' MIS.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+\begin{itemize}
+\item \texttt{ERROR\_REPORT\_LIMIT}: Duration = 2 seconds -- the longest time
+  between detecting a failure and raising its exception (\ref{SA_ErrorMessageTime})
+\end{itemize}
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{MarketplaceAction} = CreateTask(TaskDefinition) $|$
+  RegisterProvider(TaskId) $|$ UnregisterProvider(TaskId) $|$
+  CreateRequest(TaskId, $\mathbb{N}$ payment) $|$ AcceptRequest(RequestId)
+  $|$ RetryReward(RequestId)
+\item \texttt{TransactionPreview} = (\texttt{description}: String,
+  \texttt{tokensTransferred}: $\mathbb{N}$, \texttt{tokensReserved}:
+  $\mathbb{N}$, \texttt{networkFee}: $\mathbb{N}$)
+\item \texttt{PreparedTransaction} = (\texttt{action}, \texttt{actor}:
+  Address, \texttt{instructions}, \texttt{preview}: TransactionPreview,
+  \texttt{validUntil}: Timestamp)
+\item \texttt{TransactionStatus} = \{Pending, Confirmed, Failed, Expired\}
+\item \texttt{TransactionRecord} = (\texttt{id}: TransactionId,
+  \texttt{prepared}: PreparedTransaction, \texttt{status}: TransactionStatus,
+  \texttt{balanceChange}: signed integer or $\bot$)
+\end{itemize}
+
+Every exception raised by this module carries a name, a description in plain
+language, and a suggested fix (\nfrref{NFR_ErrorVisibility}).
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{3cm} p{3.6cm} p{3.4cm} p{5cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+prepareTransaction & MarketplaceAction, Address (actor) &
+  PreparedTransaction & PreflightFailedError, WalletNotConnectedError,
+  InsufficientFundsError, SimulationMismatchError, NetworkUnavailableError \\
+\hline
+getPreview & PreparedTransaction & TransactionPreview & - \\
+\hline
+submitTransaction & PreparedTransaction & TransactionRecord &
+  WalletNotConnectedError, SignatureRejectedError, ExpiredTransactionError,
+  NetworkUnavailableError \\
+\hline
+refreshStatus & TransactionRecord & TransactionRecord &
+  NetworkUnavailableError \\
+\hline
+getTransactionId & TransactionRecord & TransactionId & - \\
+\hline
+retryTransaction & TransactionRecord & PreparedTransaction &
+  DuplicateSubmissionError, and those of prepareTransaction \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None.
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item \texttt{BlockchainNetwork}: the Solana cluster, which accepts submitted
+  transactions, simulates them, and reports their status, balances, and fees
+\item \texttt{NetworkTime}: the cluster's current time
+\end{itemize}
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The caller shows the \texttt{TransactionPreview} to the user before
+  calling \texttt{submitTransaction} (\rref{FR_TransactionPreview}).
+\item The caller keeps the \texttt{TransactionRecord} and passes it back to
+  \texttt{refreshStatus} until the status is Confirmed, Failed, or Expired
+  (\rref{FR_TransactionStatus}).
+\item Each call that signs for the user requires the user to approve in their
+  own wallet. This module never holds signing keys (\ref{SA_WalletSigning}).
+\item Request commitments and reveals are submitted by the Participation Client
+  (\mref{mParticipation}), not by this module.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{prepareTransaction}(action, actor):
+\begin{itemize}
+\item transition: None; it reads the network but changes no state. The steps
+  are, in order:
+  \begin{enumerate}
+  \item Let \texttt{issues} := \texttt{check(action, actor)}. If not empty,
+    stop.
+  \item Build the instructions for \texttt{action} with the instruction forms
+    of the Provider Registry and Request Lifecycle. The payment or stake in
+    the instructions equals the amount in \texttt{action} or the task's
+    required stake (\ref{SA_ChargeEqualsAuthorized}).
+  \item Let \texttt{fee} be the network fee for the instructions. Let
+    \texttt{tokensTransferred} be the tokens the action moves out of the
+    actor's wallet (the payment of a \texttt{CreateRequest}, the minimum stake
+    of a \texttt{RegisterProvider}, and 0 otherwise). If the actor's token
+    balance is below \texttt{tokensTransferred} or the actor's network-currency
+    balance is below \texttt{fee}, stop (\ref{SA_BalanceCheck}).
+  \item Simulate the transaction. If the token balance change the simulation
+    reports for the actor differs from $-$\texttt{tokensTransferred}, stop
+    (\ref{SA_TransactionSimulation}).
+  \end{enumerate}
+\item output: a \texttt{PreparedTransaction} with the actor, instructions,
+  validity limit \texttt{validUntil}, and a preview whose \texttt{description}
+  names the action, whose \texttt{tokensTransferred} is as above, whose
+  \texttt{tokensReserved} is the stake reserved by an \texttt{AcceptRequest}
+  (it reserves stake without transferring tokens) and 0 otherwise, and whose
+  \texttt{networkFee} is \texttt{fee}.
+\item exception: \texttt{PreflightFailedError} listing the \texttt{issues}
+  returned by Preflight. \texttt{WalletNotConnectedError} if
+  \texttt{getConnectedAddress()} is not \texttt{actor}.
+  \texttt{InsufficientFundsError} stating the shortfall in tokens and in
+  network currency. \texttt{SimulationMismatchError} if the simulated balance
+  change differs from the previewed amount. \texttt{NetworkUnavailableError}
+  if the cluster cannot be reached. A failure is raised within
+  \texttt{ERROR\_REPORT\_LIMIT}, and in every failing case nothing is
+  submitted.
+\end{itemize}
+
+\noindent \texttt{getPreview}(p):
+\begin{itemize}
+\item output: \texttt{p.preview}.
+\end{itemize}
+
+\noindent \texttt{submitTransaction}(p):
+\begin{itemize}
+\item transition: Obtain the user's signature with \texttt{requestSignature}
+  for the instructions in \texttt{p}. Check that the signature is valid for
+  \texttt{p.actor}. Submit the signed transaction to
+  \texttt{BlockchainNetwork}. A transaction is never submitted without a valid
+  signature from \texttt{p.actor} (\ref{SA_SignedTransactionsOnly}).
+\item output: a \texttt{TransactionRecord} with the new transaction identifier,
+  \texttt{prepared} := \texttt{p}, \texttt{status} := Pending, and
+  \texttt{balanceChange} := $\bot$.
+\item exception: \texttt{WalletNotConnectedError} if no wallet is connected.
+  \texttt{SignatureRejectedError} if the user declines to sign or the
+  signature is not valid for \texttt{p.actor}; no transaction is submitted.
+  \texttt{ExpiredTransactionError} if \texttt{NetworkTime} $\ge$
+  \texttt{p.validUntil}; the caller must call \texttt{prepareTransaction}
+  again. \texttt{NetworkUnavailableError} if the cluster cannot be reached.
+\end{itemize}
+
+\noindent \texttt{refreshStatus}(r):
+\begin{itemize}
+\item transition: Query \texttt{BlockchainNetwork} for \texttt{r.id}.
+  \begin{itemize}
+  \item If the transaction is confirmed successfully: \texttt{status} :=
+    Confirmed and \texttt{balanceChange} := the actor's net token change
+    reported for it.
+  \item If it was processed with an error: \texttt{status} := Failed.
+  \item If it is not found and \texttt{NetworkTime} $<$
+    \texttt{r.prepared.validUntil}: \texttt{status} := Pending. A transaction
+    is not marked failed while it could still be processed
+    (\ref{SA_ExpiryCheck}).
+  \item If it is not found, \texttt{NetworkTime} $\ge$
+    \texttt{r.prepared.validUntil}, and a final query after that time still
+    does not find it: \texttt{status} := Expired.
+  \end{itemize}
+\item output: the updated record.
+\item exception: \texttt{NetworkUnavailableError} if the cluster cannot be
+  reached; the record is returned unchanged by the caller.
+\end{itemize}
+
+\noindent \texttt{getTransactionId}(r):
+\begin{itemize}
+\item output: \texttt{r.id}, the identifier used to look the transaction up on
+  the blockchain (\rref{FR_TransactionVerification}).
+\end{itemize}
+
+\noindent \texttt{retryTransaction}(r):
+\begin{itemize}
+\item output: \texttt{prepareTransaction(r.prepared.action,
+  r.prepared.actor)}, a fresh prepared transaction that must be signed again.
+\item exception: \texttt{DuplicateSubmissionError} if \texttt{r.status}
+  $\notin$ \{Failed, Expired\}, because the original may still be processed
+  (\ref{SA_NoDuplicateSubmission}). The exceptions of
+  \texttt{prepareTransaction} otherwise.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{buildInstructions}(action, actor): the instructions for an
+  action, using the Provider Registry and Request Lifecycle instruction forms.
+\item \texttt{expectedTokenOutflow}(action): the tokens an action moves out of
+  the actor's wallet, as defined in \texttt{prepareTransaction}.
+\item \texttt{validityElapsed}(r): $\top$ if \texttt{NetworkTime} $\ge$
+  \texttt{r.prepared.validUntil}.
+\end{itemize}
+
+
 
 
 
