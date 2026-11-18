@@ -1,0 +1,7 @@
+scenario,providers,biased_providers,seeds,mean_absolute_error,mean_unweighted_absolute_error,paired_change_from_baseline,first_20_mean_absolute_error,last_20_mean_absolute_error,final_biased_reputation_share,runs_weighted_worse_than_unweighted,settled_requests,cancelled_requests,mean_relative_error_percent,mean_unweighted_relative_error_percent
+a_7_all_correct,7,0,100-102,0.184182,0.195833,-0.000000,0.192853,0.192976,0.000000,0,300,0,0.439702,0.449138
+b_7_3_biased,7,3,100-102,0.294130,0.624243,0.109948,0.542994,0.217228,0.000000,0,300,0,0.631583,1.116278
+b_7_4_biased,7,4,100-102,5.629589,5.151890,5.445407,4.899551,6.061986,1.000000,3,300,0,6.545590,5.667873
+b_7_3_subtle_bias,7,3,100-102,0.520493,0.520493,0.336311,0.466259,0.586958,0.431544,1,300,0,0.724756,0.724756
+b_7_3_established_bias,7,3,100-102,5.588714,0.624243,5.404532,4.939660,6.016489,1.000000,3,300,0,6.515478,1.116278
+c_7_1_improving,7,1,100-102,0.219469,0.241544,0.035287,0.250164,0.207227,0.000000,0,300,0,0.492316,0.538852

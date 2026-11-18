@@ -1,12 +1,12 @@
 mod advance_request;
-mod provider_accept;
-mod create_task;
 mod create_request;
+mod create_task;
+mod provider_accept;
+mod provider_commit;
+mod provider_reveal;
 mod register_provider;
 mod settle_request;
 mod unregister_provider;
-mod provider_commit;
-mod provider_reveal;
 
 pub use advance_request::advance_request;
 pub use create_request::create_request;
