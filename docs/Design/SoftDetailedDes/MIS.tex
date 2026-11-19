@@ -60,8 +60,10 @@ urlcolor=cyan          % color of external links
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-November 17 & 1.0 & Added several MIS for modules\\
-Date 2 & 1.1 & Notes\\
+November 17 & 1.0 & Added several MIS modules\\
+November 18 & 1.1 & Expanded module specifications, notation, and appendices\\
+November 18 & 1.2 & Added the module decomposition from MG document\\
+November 18 & 1.2 & Removed unused template content\\
 \bottomrule
 \end{tabularx}
 
@@ -119,7 +121,7 @@ The following table summarizes the data types and symbols used by \progname.
 boolean & $\mathbb{B}$ & a value that is either true ($\top$) or false\\
 character & char & a single symbol or digit\\
 integer & $\mathbb{Z}$ & a number without a fractional component in (-$\infty$, $\infty$)\\
-natural number & $\mathbb{N}$ & a number without a fractional component in [1, $\infty$)\\
+natural number & $\mathbb{N}$ & a number without a fractional component in [0, $\infty$)\\
 real & $\mathbb{R}$ & any number in (-$\infty$, $\infty$)\\
 string & String & a sequence of characters\\
 byte string & byte string & a sequence of bytes, used for keys, hashes,
@@ -161,6 +163,9 @@ TaskDefinition & a task's name, problem description, category, input schema,
   output schema, minimum and maximum number of providers, and acceptance
   period length (\rref{FR_InferenceTaskDefinition},
   \rref{FR_TaskMinimumProviders}, \rref{FR_TaskAcceptancePeriod})\\
+Category, EvaluationMetric & names identifying a task's inference category
+  and optional evaluation metric; both are String\\
+URL & a String identifying a network endpoint\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -548,11 +553,11 @@ recordParticipation & TaskId, Address, $\mathbb{B}$ (slashed) & - &
   -- the reputation and stake of each registered provider
 \end{itemize}
 
-Any other state variables are to be filled in later.
+No other state variables.
 
 \subsubsection{Environment Variables}
 
-To be filled in later.
+None.
 
 \subsubsection{State Invariant}
 
@@ -568,7 +573,7 @@ The rest of the invariant is to be filled in later.
 
 \subsubsection{Assumptions}
 
-To be filled in later.
+None
 
 \subsubsection{Access Routine Semantics}
 
@@ -588,7 +593,8 @@ To be filled in later.
 \item output: \textit{out} := \texttt{tasks[$t$]}; the
   \texttt{minProviders} and \texttt{maxProviders} of \texttt{tasks[$t$]}. How
   the acceptance period is set is to be filled in later.
-\item exception: To be filled in later.
+\item exception: \textit{exc} := (\texttt{tasks[$t$]} does not exist
+  $\Rightarrow$ UnknownTaskError)
 \end{itemize}
 
 \noindent \texttt{registerProvider}($t$, $a$):
@@ -597,41 +603,59 @@ To be filled in later.
   \texttt{reputation} := the baseline reputation and \texttt{stake} := the
   minimum stake (\rref{FR_InferenceTaskRegistration}). How the stake is
   transferred into escrow is to be filled in later.
-\item exception: \textit{exc} := ($a$ is already registered for $t$
-  $\Rightarrow$ AlreadyRegisteredError). Other exceptions are to be filled in
-  later.
+\item exception: \textit{exc} := ($t$ does not exist $\Rightarrow$
+  UnknownTaskError $\mid$ $a$ is already registered for $t$ $\Rightarrow$
+  AlreadyRegisteredError $\mid$ the stake transfer fails $\Rightarrow$
+  TransferFailedError)
 \end{itemize}
 
-\noindent \texttt{withdrawProvider}($t$, $a$), \texttt{unregisterProvider}($t$,
-$a$, burn):
+\noindent \texttt{withdrawProvider}($t$, $a$):
 \begin{itemize}
 \item To be filled in later.
+\item exception: \textit{exc} := ($t$ does not exist $\Rightarrow$
+  UnknownTaskError $\mid$ $a$ is not registered $\Rightarrow$
+  NotRegisteredError $\mid$ $a$ has an active accepted request $\Rightarrow$
+  ActiveRequestsError $\mid$ a required token transfer fails $\Rightarrow$
+  TransferFailedError)
+\end{itemize}
+
+\noindent \texttt{unregisterProvider}($t$, $a$, burn):
+\begin{itemize}
+\item To be filled in later.
+\item exception: \textit{exc} := ($t$ does not exist $\Rightarrow$
+  UnknownTaskError $\mid$ $a$ is not registered $\Rightarrow$
+  NotRegisteredError)
 \end{itemize}
 
 \noindent \texttt{isRegistered}($t$, $a$), \texttt{getRegisteredProviders}($t$):
 \begin{itemize}
 \item output: \textit{out} := whether $a$ is among the providers registered for
   $t$; the set of providers registered for $t$
-\item exception: To be filled in later.
+\item exception: \textit{exc} := ($t$ does not exist $\Rightarrow$
+  UnknownTaskError)
 \end{itemize}
 
 \noindent \texttt{isValidOutput}($t$, $p$):
 \begin{itemize}
 \item output: \textit{out} := $p$ is a finite number. The check against
   \texttt{tasks[$t$].outputSchema} is to be filled in later.
-\item exception: To be filled in later.
+\item exception: \textit{exc} := ($t$ does not exist $\Rightarrow$
+  UnknownTaskError)
 \end{itemize}
 
 \noindent \texttt{getReputation}($t$, $a$):
 \begin{itemize}
 \item output: \textit{out} := \texttt{entries[$t$, $a$].reputation}
-\item exception: To be filled in later.
+\item exception: \textit{exc} := ($t$ does not exist $\Rightarrow$
+  UnknownTaskError $\mid$ no entry exists for $(t,a)$ $\Rightarrow$
+  NoEntryError)
 \end{itemize}
 
 \noindent \texttt{setReputation}($t$, $a$, $r$):
 \begin{itemize}
 \item transition: \texttt{entries[$t$, $a$].reputation} := $r$
-\item exception: \textit{exc} := ($a$ is not registered for $t$ $\Rightarrow$
+\item exception: \textit{exc} := ($t$ does not exist $\Rightarrow$
+  UnknownTaskError $\mid$ $a$ is not registered for $t$ $\Rightarrow$
   NotRegisteredError $\mid$ $r$ is not finite or $r \notin [0, 100]$
   $\Rightarrow$ InvalidReputationError)
 \end{itemize}
@@ -641,6 +665,14 @@ $a$, burn):
 \texttt{recordParticipation}:
 \begin{itemize}
 \item To be filled in later.
+\item exception: \textit{exc} := (the task does not exist $\Rightarrow$
+  UnknownTaskError $\mid$ the required provider entry does not exist
+  $\Rightarrow$ NoEntryError $\mid$ an operation requiring registration has
+  an unregistered provider $\Rightarrow$ NotRegisteredError $\mid$ a stake
+  operation exceeds available stake $\Rightarrow$ InsufficientStakeError
+  $\mid$ a calculation overflows $\Rightarrow$ ArithmeticOverflowError
+  $\mid$ a required transfer fails $\Rightarrow$ TransferFailedError),
+  restricted to the exceptions listed for each operation in Syntax.
 \end{itemize}
 
 \subsubsection{Local Functions}
@@ -649,6 +681,8 @@ To be filled in later.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Marketplace Action Preflight (\mref{mActionPreflight})}
 \label{misPreflight}
 % =====================================================================
@@ -663,15 +697,12 @@ the on-chain program enforces the same rules when the transaction executes
 
 \subsection{Uses}
 
-This module uses no other module's access programs. It reads the blockchain
-through its environment variable \texttt{BlockchainNetwork}, and it refers to
-the exported constants\\
-\texttt{MINIMUM\_REQUEST\_PAYMENT} of the Request
-Lifecycle (\mref{mLifecycle}) and\\
-\texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR} and
-\texttt{MINIMUM\_PROVIDER\_STAKE} of the Provider Registry (\mref{mRegistry}),
-and to the type \texttt{MarketplaceAction} of the Transaction Manager
-(\mref{mTransaction}).
+This module reads the blockchain through its environment variable
+\texttt{BlockchainNetwork}. It uses the \texttt{MINIMUM\_REQUEST\_PAYMENT}
+constant of Request Lifecycle (\mref{mLifecycle}) and the
+\texttt{TaskDefinition} type and \texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR}
+and \texttt{MINIMUM\_PROVIDER\_STAKE} constants of Provider Registry
+(\mref{mRegistry}). It uses no other module's access programs.
 
 \subsection{Syntax}
 
@@ -681,6 +712,11 @@ None.
 
 \subsubsection{Exported Types}
 \begin{itemize}
+\item \texttt{MarketplaceAction} = CreateTask(TaskDefinition) $|$
+  RegisterProvider(TaskId) $|$ UnregisterProvider(TaskId) $|$
+  CreateRequest(TaskId, $\mathbb{N}$) $|$ AcceptRequest(RequestId) $|$
+  RetryReward(RequestId) -- the proposed action checked before transaction
+  preparation
 \item \texttt{IssueCode} = \{InvalidTaskDefinition, UnknownTask,
   UnknownRequest, AmountTooLow, NotEnoughFunds, AlreadyRegistered,
   NotRegistered, HasActiveRequests, WrongPhase, DeadlinePassed,
@@ -718,7 +754,9 @@ None.
 
 \subsubsection{Environment Variables}
 
-To be filled in later.
+\texttt{BlockchainNetwork}: the confirmed on-chain task, request, provider,
+balance, and deadline data read to check proposed actions. This module does
+not modify it.
 
 \subsubsection{State Invariant}
 
@@ -752,7 +790,8 @@ To be filled in later.
   involved (for example, ``This request costs \$5.00, but you have \$3.20
   available.''), and its suggested fix names an action that resolves it (for
   example, ``Deposit more into your account, or lower the amount.'').
-\item exception: To be filled in later.
+\item exception: \textit{exc} := (the blockchain cannot be read
+  $\Rightarrow$ NetworkUnavailableError)
 \end{itemize}
 
 \noindent \texttt{checkRequestInput}($t$, raw):
@@ -763,7 +802,9 @@ To be filled in later.
   InputNotANumber issue for the first field whose value is blank or is not a
   finite number. The suggested fix is to download the example file from the
   task page or type the values in (\rref{FR_RequestValidation}).
-\item exception: To be filled in later.
+\item exception: \textit{exc} := ($t$ does not identify an existing task
+  $\Rightarrow$ UnknownTaskError $\mid$ the blockchain cannot be read
+  $\Rightarrow$ NetworkUnavailableError)
 \end{itemize}
 
 \subsubsection{Local Functions}
@@ -772,6 +813,8 @@ To be filled in later.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Request Lifecycle (\mref{mLifecycle})} \label{misLifecycle}
 % =====================================================================
 
@@ -1116,6 +1159,8 @@ the invariant holds initially, and each access program preserves it.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Prediction Aggregator (\mref{mAggregator})} \label{misAggregator}
 % =====================================================================
 
@@ -1198,6 +1243,8 @@ None.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Rewards Calculator (\mref{mRewards})} \label{misRewards}
 % =====================================================================
 
@@ -1274,6 +1321,8 @@ None.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Penalty Enforcer (\mref{mPenalty})} \label{misPenalty}
 % =====================================================================
 
@@ -1363,6 +1412,8 @@ None.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Reputation Handler (\mref{mReputation})} \label{misReputation}
 % =====================================================================
 
@@ -1449,6 +1500,8 @@ None.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Participation Client (\mref{mParticipation})} \label{misParticipation}
 % =====================================================================
 
@@ -1487,6 +1540,7 @@ modules.
 
 \subsubsection{Exported Types}
 \begin{itemize}
+\item \texttt{ParticipationClient}: an instance for one provider and task
 \item \texttt{ParticipationAction} = \{Commit, Reveal\}
 \item \texttt{ParticipationState} = \{Idle, Committed, Revealed\}
 \end{itemize}
@@ -1644,6 +1698,8 @@ requests, and each access program preserves this.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Token Manager (\mref{mToken})} \label{misToken}
 % =====================================================================
 
@@ -1761,6 +1817,8 @@ None.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Chain Observer (\mref{mChain})} \label{misChain}
 % =====================================================================
 
@@ -1771,7 +1829,10 @@ application. It reads the blockchain and never sends transactions.
 
 \subsection{Uses}
 
-This module uses no other module. It reads the blockchain through its
+This module uses the \texttt{TaskDefinition} type of Provider Registry
+(\mref{mRegistry}), the \texttt{RequestStatus} type of Request Lifecycle
+(\mref{mLifecycle}), and the \texttt{TransactionStatus} type of Transaction
+Manager (\mref{mTransaction}). It reads the blockchain through its
 environment variable \texttt{BlockchainNetwork}.
 
 \subsection{Syntax}
@@ -1782,20 +1843,24 @@ None.
 
 \subsubsection{Exported Types}
 \begin{itemize}
-\item \texttt{TaskInfo} = (\texttt{taskId}, \texttt{definition},
-  \texttt{minimumStake}, \texttt{registeredProviders}: $\mathbb{N}$)
-\item \texttt{ProviderInfo} = (\texttt{address}, \texttt{taskId},
-  \texttt{reputation}: $\mathbb{R}$, \texttt{stake}: $\mathbb{N}$,
-  \texttt{rewardsEarned}: $\mathbb{N}$)
-\item \texttt{RequestInfo} = (\texttt{requestId}, \texttt{taskId},
-  \texttt{requester}, \texttt{payment}, \texttt{status}, \texttt{result}:
-  $\mathbb{R}$ $\cup$ \{$\bot$\}, \texttt{lowest}, \texttt{highest}:
-  $\mathbb{R}$ $\cup$ \{$\bot$\}, \texttt{includedCount}: $\mathbb{N}$,
+\item \texttt{TaskInfo} = (\texttt{taskId}: TaskId,
+  \texttt{definition}: TaskDefinition, \texttt{minimumStake}: $\mathbb{N}$,
+  \texttt{registeredProviders}: $\mathbb{N}$)
+\item \texttt{ProviderInfo} = (\texttt{address}: Address,
+  \texttt{taskId}: TaskId, \texttt{reputation}: $\mathbb{R}$,
+  \texttt{stake}: $\mathbb{N}$, \texttt{rewardsEarned}: $\mathbb{N}$)
+\item \texttt{RequestInfo} = (\texttt{requestId}: RequestId,
+  \texttt{taskId}: TaskId, \texttt{requester}: Address,
+  \texttt{payment}: $\mathbb{N}$, \texttt{status}: RequestStatus,
+  \texttt{acceptedProviders}: set of Address,
+  \texttt{result}, \texttt{lowest}, \texttt{highest}: $\mathbb{R}$ $\cup$
+  \{$\bot$\}, \texttt{includedCount}: $\mathbb{N}$,
   \texttt{elapsed}: Duration $\cup$ \{$\bot$\})
-\item \texttt{PendingTransfer} = (\texttt{requestId}, \texttt{amount}:
-  $\mathbb{N}$, \texttt{deadline}: Timestamp)
-\item \texttt{TransactionInfo} = (\texttt{id}, \texttt{status}, \texttt{time}:
-  Timestamp, \texttt{description}: String, \texttt{tokenChange}: $\mathbb{Z}$)
+\item \texttt{PendingTransfer} = (\texttt{requestId}: RequestId,
+  \texttt{amount}: $\mathbb{N}$, \texttt{deadline}: Timestamp)
+\item \texttt{TransactionInfo} = (\texttt{id}: TransactionId,
+  \texttt{status}: TransactionStatus, \texttt{time}: Timestamp,
+  \texttt{description}: String, \texttt{tokenChange}: $\mathbb{Z}$)
 \item \texttt{Target} = TaskTarget(TaskId) $|$ RequestTarget(RequestId) $|$
   AddressTarget(Address)
 \item \texttt{ChangeEvent} = (\texttt{target}: Target, \texttt{description}:
@@ -1814,6 +1879,8 @@ None.
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \hline
 \endhead
+init & - & - & - \\
+\hline
 listTasks & - & seq of TaskInfo & NetworkUnavailableError \\
 \hline
 getTask & TaskId & TaskInfo & UnknownTaskError, NetworkUnavailableError \\
@@ -1870,12 +1937,18 @@ invariant.
 \subsubsection{Assumptions}
 
 \begin{itemize}
+\item \texttt{init} is called once before any other access program.
 \item The data returned is the blockchain's confirmed state when it is read.
 \item Only on-chain data is returned. Display names and other profile details
   come from the User Information module (\mref{mUserInfo}).
 \end{itemize}
 
 \subsubsection{Access Routine Semantics}
+
+\noindent \texttt{init}():
+\begin{itemize}
+\item transition: \texttt{subscriptions} := $\emptyset$.
+\end{itemize}
 
 \noindent \texttt{subscribe}(target, handler):
 \begin{itemize}
@@ -1937,6 +2010,8 @@ invariant.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Transaction Manager (\mref{mTransaction})} \label{misTransaction}
 % =====================================================================
 
@@ -1950,8 +2025,7 @@ and the blockchain is the public record of submitted transactions.
 
 \begin{itemize}
 \item \textbf{Marketplace Action Preflight (\mref{mActionPreflight}):}
-  \texttt{check}, which returns the list of issues found with a proposed
-  action.
+  \texttt{check} and the \texttt{MarketplaceAction} type.
 \item \textbf{Wallet Service (\mref{mWallet}):} \texttt{getConnectedAddress},
   \texttt{requestSignature}, and the exceptions \texttt{WalletNotConnectedError}
   and \texttt{SignatureRejectedError}.
@@ -1974,13 +2048,10 @@ modules.
 
 \subsubsection{Exported Types}
 \begin{itemize}
-\item \texttt{MarketplaceAction} = CreateTask(TaskDefinition) $|$
-  RegisterProvider(TaskId) $|$ UnregisterProvider(TaskId) $|$
-  CreateRequest(TaskId, $\mathbb{N}$) $|$ AcceptRequest(RequestId) $|$
-  RetryReward(RequestId)
 \item \texttt{TransactionPreview} = (\texttt{description}: String,
   \texttt{tokensTransferred}: $\mathbb{N}$, \texttt{networkFee}: $\mathbb{N}$)
-\item \texttt{PreparedTransaction} = (\texttt{action}, \texttt{actor}: Address,
+\item \texttt{PreparedTransaction} = (\texttt{action}: MarketplaceAction,
+  \texttt{actor}: Address,
   \texttt{preview}: TransactionPreview, \texttt{validUntil}: Timestamp)
 \item \texttt{SignedTransaction} = (\texttt{prepared}: PreparedTransaction,
   \texttt{id}: TransactionId) -- the \texttt{id} is what a user looks up on the
@@ -2111,6 +2182,8 @@ None, since the module has no state variables.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Provider Setup (\mref{mProviderSetup})} \label{misProviderSetup}
 % =====================================================================
 
@@ -2178,11 +2251,25 @@ close & - & - & - \\
 
 \subsubsection{State Variables}
 
-To be filled in later.
+\begin{itemize}
+\item \texttt{ready}: $\mathbb{B}$ -- whether initialization succeeded
+\item \texttt{endpoint}: URL $\cup$ \{$\bot$\} -- the selected blockchain
+  endpoint, or no endpoint before initialization or after closing
+\item \texttt{provider}: Address $\cup$ \{$\bot$\} -- the address of the
+  provider wallet, or no address when the setup is not ready
+\item \texttt{keySource}: KeySource $\cup$ \{$\bot$\} -- the wallet locator
+  used for signing, or no locator when the setup is not ready
+\end{itemize}
 
 \subsubsection{Environment Variables}
 
-To be filled in later.
+\begin{itemize}
+\item \texttt{BlockchainNetwork}: the network at \texttt{endpoint}, used to
+  read registrations and submit signed instructions
+\item \texttt{WalletAccess}: KeySource $\rightarrow$ Address $\cup$
+  \{$\bot$\} -- the external wallet signing service; $\bot$ means the
+  source is unavailable
+\end{itemize}
 
 \subsubsection{State Invariant}
 
@@ -2202,6 +2289,8 @@ To be filled in later.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Request Listener (\mref{mListener})} \label{misListener}
 % =====================================================================
 
@@ -2226,6 +2315,7 @@ None.
 
 \subsubsection{Exported Types}
 \begin{itemize}
+\item \texttt{RequestListener}: an instance watching one task for one provider
 \item \texttt{RequestSnapshot} = (\texttt{id}: RequestId, \texttt{taskId}:
   TaskId, \texttt{payment}: $\mathbb{N}$, \texttt{phase}: RequestStatus,
   \texttt{acceptanceDeadline}, \texttt{commitDeadline},
@@ -2268,11 +2358,22 @@ stop & RequestListener & - & - \\
 
 \subsubsection{State Variables}
 
-To be filled in later.
+Each listener \texttt{l} has these state variables.
+\begin{itemize}
+\item \texttt{l.endpoint}: URL; \texttt{l.taskId}: TaskId;
+  \texttt{l.provider}: Address -- the connection and registration being watched
+\item \texttt{l.watching}: $\mathbb{B}$ -- whether events are still delivered
+\item \texttt{l.snapshots}: RequestId $\rightarrow$ RequestSnapshot $\cup$
+  \{$\bot$\} -- the last observed state of each known request
+\item \texttt{l.handlers}: set of EventHandler -- callbacks registered by
+  \texttt{onEvent}
+\end{itemize}
 
 \subsubsection{Environment Variables}
 
-To be filled in later.
+\texttt{BlockchainNetwork}: the readable on-chain task and request records at
+\texttt{l.endpoint}, together with the connection used to observe changes.
+This module does not modify the network.
 
 \subsubsection{State Invariant}
 
@@ -2292,6 +2393,8 @@ To be filled in later.
 
 
 % =====================================================================
+\newpage
+
 \section{MIS of Model (\mref{mModel})} \label{misModel}
 % =====================================================================
 
@@ -2334,11 +2437,13 @@ predict & InputRecord & $\mathbb{R}$ & ModelError \\
 
 \subsubsection{State Variables}
 
-Defined by the provider.
+None are specified by \progname{}. Any internal model state is defined by
+the provider and is hidden behind \texttt{predict}.
 
 \subsubsection{Environment Variables}
 
-Defined by the provider.
+None are specified by \progname{}. Any environment dependencies of the
+provider's model are outside this interface.
 
 \subsubsection{Assumptions}
 
@@ -2350,17 +2455,15 @@ To be filled in later.
 \begin{itemize}
 \item output: \textit{out} := the model's prediction for input \texttt{x}, a
   single number
-\item exception: To be filled in later.
+\item exception: \textit{exc} := (the provider's model cannot produce a
+  prediction for \texttt{x} $\Rightarrow$ ModelError)
 \end{itemize}
 
 \subsubsection{Local Functions}
 
 Defined by the provider.
 
-
 \newpage
-
-~\newpage
 
 \section{MIS of Request Input Manager (\mref{mInput})} \label{misInput}
 % =====================================================================
@@ -2541,8 +2644,10 @@ the Transaction Manager and shows the user the outcome.
 \item \textbf{Transaction Manager (\mref{mTransaction}):}
   \texttt{prepareTransaction}, \texttt{signTransaction},
   \texttt{submitTransaction}, \texttt{getStatus}, the types
-  \texttt{MarketplaceAction}, \texttt{PreparedTransaction}, and
+  \texttt{PreparedTransaction} and
   \texttt{SignedTransaction}, and the constant \texttt{ERROR\_REPORT\_LIMIT}.
+\item \textbf{Marketplace Action Preflight (\mref{mActionPreflight}):}
+  the \texttt{MarketplaceAction} type.
 \item \textbf{Request Input Manager (\mref{mInput}):} \texttt{storeInput},
   \texttt{grantAccess}, \texttt{deleteInput}, and the type
   \texttt{InputRecord}.
@@ -2810,6 +2915,8 @@ and on giving providers a clear view of how they are doing on each task.
   \texttt{getBalances}, and \texttt{subscribe}.
 \item \textbf{Transaction Manager (\mref{mTransaction}):} the same routines,
   types, and constant as the Requester Interface.
+\item \textbf{Marketplace Action Preflight (\mref{mActionPreflight}):}
+  the \texttt{MarketplaceAction} type.
 \end{itemize}
 
 \subsection{Syntax}
