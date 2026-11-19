@@ -2432,7 +2432,7 @@ here, as was done in the MG.}
   \texttt{MINIMUM\_PROVIDER\_STAKE}. The team decided how each was handled in
   the MIS.
 \item \textbf{Appendices:} The tool drafted this disclosure and a first draft of
-  Aidan's reflection answers, which were then edited.
+  the team's reflection answers, which were then edited.
 \end{itemize}
 
 \subsection{Verification of AI-Generated Content}
@@ -2465,92 +2465,96 @@ graduate attribute of Problem Analysis and Design.
 \begin{enumerate}
   \item What went well while writing this deliverable?
 
-  \textbf{Aidan:} Having the Module Guide finished first made the MIS much
-  easier to write. Each module's secret told me what its interface had to hide,
-  so deciding what belonged in an access program was mostly a matter of asking
+  Having the Module Guide finished before the MIS made this deliverable much
+  easier. Each module's secret told us what its interface had to hide, so
+  deciding what belonged in an access program was mostly a matter of asking
   whether it would expose that secret. For example, the Request Listener
   reports deadlines and phases to the Participation Client, but how it reads
   the blockchain stays inside it. The use hierarchy also answered most of the
-  Uses sections directly. It also helped that the Request Lifecycle section was
-  written before mine, because it listed the routines it expected from the
-  Provider Registry. Writing the Registry against that list kept the two
-  sections consistent instead of having to reconcile them afterwards.
+  Uses sections directly. Splitting the modules between team members worked
+  well too, because the sections written first listed the routines they
+  expected from other modules. For example, the Request Lifecycle section named
+  the routines it needs from the Provider Registry, and the Registry was then
+  written against that list, which kept the two sections consistent instead of
+  having to reconcile them afterwards.
 
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?
 
-  \textbf{Aidan:} The main pain point was that the proof of concept code, the
-  SRS, and the other MIS sections did not always agree. The proof of concept
-  rejects a registration once a task has its maximum number of providers, but
-  the SRS uses that maximum per request, not per task. Voluntary
-  unregistration is not implemented in the code yet, so its rules had to come
-  from the SRS. I resolved this by treating the SRS as the source of truth and
-  the code as a reference for values and validation messages, and by listing
-  each disagreement for the team to confirm. A second pain point was that the
-  sections were written by different people, so interfaces did not always line
-  up. The Participation Client created a Request Listener from only a task,
-  but a listener also needs the provider it is watching for and a way to reach
-  the blockchain. I changed that call and added the routine it needs to
-  Provider Setup.
+  The main pain point was that the proof of concept code, the SRS, and the MIS
+  did not always agree. The proof of concept rejects a registration once a task
+  has its maximum number of providers, but the SRS uses that maximum per
+  request, not per task, and some routines, such as voluntary unregistration,
+  are not implemented yet. We resolved this by specifying the syntax of every
+  module in full, describing the semantics that the proof of concept already
+  implements, and marking the rest as to be filled in later (for Rev -1). 
+  We will fill in the gaps as we develop the system further throughout the semester.
+  A second pain point was that sections
+  written by different people did not always line up. The Participation Client
+  created a Request Listener from only a task, but a listener also needs the
+  provider it is watching for and a way to reach the blockchain, so we changed
+  that call and added the routine it needs to Provider Setup.
 
   \item Which of your design decisions stemmed from speaking to your client(s)
   or a proxy (e.g. your peers, stakeholders, potential users)? For those that
   were not, why, and where did they come from?
 
-  \textbf{Aidan:} The design of the Marketplace Action Preflight came from
-  working with potential users. The issues it reports, and the rule that every
-  issue names the field it belongs to and suggests a fix, follow the error
-  screens we built for the cognitive walkthrough, such as ``Not enough funds''
-  with a way to deposit more, and the rejected upload that names the missing
-  column. Staking, reputation, and the stake returned when a provider leaves a
-  task trace back to our discussions with our supervisor about provider
-  incentives, which shaped the SRS. Most of the remaining decisions, such as
-  how the Registry stores provider entries or what the Request Listener
-  reports to the provider software, did not come from stakeholders. Users do not
-  see them, so they came from the module secrets, the use hierarchy, and the
-  need to keep the modules consistent with each other.
+  The design of the Marketplace Action Preflight came from working with
+  potential users. The issues it reports, and the rule that every issue names
+  the field it belongs to and suggests a fix, follow the error screens we built
+  for the cognitive walkthrough, such as ``Not enough funds'' with a way to
+  deposit more, and the rejected upload that names the missing column.
+  Staking, reputation, and the stake returned when a provider leaves a task
+  trace back to our discussions with our supervisor about provider incentives,
+  which shaped the SRS. Most of the remaining decisions, such as how the
+  Registry stores provider entries or what the Request Listener reports to the
+  provider software, did not come from stakeholders. Users do not see them, so
+  they came from the module secrets, the use hierarchy, and the need to keep
+  the modules consistent with each other.
 
   \item While creating the design doc, what parts of your other documents (e.g.
   requirements, hazard analysis, etc), it any, needed to be changed, and why?
 
-  \textbf{Aidan:} Writing the Registry showed two gaps in the SRS.
+  Writing the Provider Registry showed two gaps in the SRS.
   \rref{FR_ProviderMinimumStakeUnregistration} says to unregister a provider
   whose stake falls below \texttt{MINIMUM\_PROVIDER\_STAKE}, but not whether
   the remaining stake is returned or burned. The SRS also does not say what
   happens to stake that is still reserved for active requests when a provider
   is forced out. Neither is implemented in the proof of concept yet, so the
-  semantics of these routines are left to be filled in once the team decides,
-  and the SRS will need to be updated to match. Within this document, the Participation Client section changed so that it
-  matches the Request Listener's interface.
+  semantics of these routines are left to be filled in once we decide, and the
+  SRS will need to be updated to match. Within this document, the
+  Participation Client section changed so that it matches the Request
+  Listener's interface.
 
   \item What are the limitations of your solution?  Put another way, given
   unlimited resources, what could you do to make the project better? (LO\_ProbSolutions)
 
-  \textbf{Aidan:} The Preflight checks are only advisory. They read the state
-  of the blockchain before a transaction is signed, and that state can change
-  before it executes, so a user can still pass every check and have the
-  transaction rejected. Nothing advances a request on its own, so the Request
-  Listener can only report that a deadline has passed, and providers depend on
-  someone calling \texttt{advancePhase}. The Model interface only supports a
-  single number as output, so tasks that produce several values or categories
-  cannot be specified yet. With more resources, I would run a scheduler that
-  advances requests as soon as their deadlines pass, support richer output
-  schemas, and add a way for providers to back up their salts so that losing
-  their machine between commit and reveal does not cost them their stake.
+  The Preflight checks are only advisory. They are made before a transaction
+  is signed, and the state of the blockchain can change before it executes, so
+  a user can still pass every check and have the transaction rejected. Nothing
+  advances a request on its own, so providers depend on someone calling
+  \texttt{advancePhase} after a deadline passes. The Model interface only
+  supports a single number as output, so tasks that produce several values or
+  categories cannot be specified yet. Several semantics are also still to be
+  filled in, so parts of the design cannot be reviewed until they are
+  implemented. With more resources, we would run a scheduler that advances
+  requests as soon as their deadlines pass, support richer output schemas, and
+  add a way for providers to back up their salts so that losing their machine
+  between commit and reveal does not cost them their stake.
 
   \item Give a brief overview of other design solutions you considered.  What
   are the benefits and tradeoffs of those other designs compared with the chosen
   design?  From all the potential options, why did you select the documented design?
   (LO\_Explores)
 
-  \textbf{Aidan:} One alternative was to put the preflight checks inside the
-  Transaction Manager. That would mean one less module, but the Transaction
-  Manager would then hide two unrelated decisions: how transactions are built
-  and signed, and which user errors are caught early and how they are worded.
-  The wording is likely to change after usability testing, so keeping it in its
-  own module makes that change local. Another option was for Preflight to read
-  the blockchain through the Chain Observer instead of reading it directly.
-  This would avoid repeating the reading logic, but the use hierarchy keeps
+  One alternative was to put the preflight checks inside the Transaction
+  Manager. That would mean one less module, but the Transaction Manager would
+  then hide two unrelated decisions: how transactions are built and signed, and
+  which user errors are caught early and how they are worded. The wording is
+  likely to change after usability testing, so keeping it in its own module
+  makes that change local. Another option was for Preflight to read the
+  blockchain through the Chain Observer instead of reading it directly. This
+  would avoid repeating the reading logic, but the use hierarchy keeps
   Preflight a leaf module, and depending on the Chain Observer would couple it
   to a module that also manages subscriptions. For the Registry, we still have
   to choose between returning a forced-out provider's stake immediately and
