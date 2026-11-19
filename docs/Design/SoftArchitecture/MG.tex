@@ -57,6 +57,7 @@
 November 13 & 0.1 & Updated the system overview, likely and unlikely changes, and module decomposition sections\\
 November 14 & 1.0 & Added module decomposition, list of acronyms and gen AI disclosure\\
 November 15 & 1.0 & Added section 6,8 and 9\\
+November 18 & 1.0 & Added User Interface section \\
 
 \end{tabularx}
 
@@ -1123,7 +1124,102 @@ by the off-chain program, on-chain program, and provider SDK.
 
 \section{User Interfaces}
 
-This section is planned to be completed for Rev 0.
+The user interface is an important design decision for DAIIM, because
+most requesters will not have experience with blockchain or machine learning
+(\nfrref{NFR_Learnability}). The interface is implemented by the Requester
+Interface (\mref{mRequesterUI}) and the Provider Interface
+(\mref{mProviderUI}). The requester interface has been sketched as a Figma
+prototype and as a clickable prototype in \texttt{src/frontend} of the
+repository. This prototype was used for the team's Cognitive Walkthrough, and
+the screens and planned changes from that document are summarized below. Not
+every decision has been made yet, and the provider interface has not been
+prototyped. Changes will be ongoing throughout the project, based on usability 
+surveys further into the timeline of the project.
+
+\subsection{Requester Screens}
+
+Table~\ref{tab:ui-screens} lists the main screens of the requester prototype,
+and Figure~\ref{fig:ui-new-request} shows one of them.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Screen} & \textbf{Purpose} \\
+\midrule
+Home & Explains the steps for getting started. Once signed in, it also shows
+  the user's available and held funds in the navigation bar. \\
+Sign in & Lets the user sign in with Google, a phone number, or an email
+  address, or use their own wallet instead. Implemented through an embedded wallet interface. \\
+Marketplace & Lists the available tasks and providers, and can be browsed
+  without signing in (\rref{FR_PublicAccess}). \\
+Task details & Shows a task's description, inputs, providers, and the minimum
+  payment, with a button to request the task. \\
+Create a task & A form for defining a new task, followed by a confirmation
+  window. \\
+New request & Lets the user upload their data and choose a payment amount. \\
+Confirm payment & Shows what the user is paying for and how much, before they
+  approve the transaction (\rref{FR_TransactionPreview}). \\
+Request progress & Shows each step of the request in plain language, such as
+  ``Finding providers'' and ``Getting predictions''. \\
+Request result & Shows the result and how many providers were included
+  (\rref{FR_ResultSpread}). \\
+Deposit funds & Lets the user add funds to their wallet. Implemented through an embedded wallet interface. \\
+Transaction history & Lists the user's transactions, each with a link to look
+  it up on the blockchain. \\
+Profile and Help & Shows the user's profile and settings, and explains how
+  DAIIM works. \\
+\bottomrule
+\end{tabularx}
+\caption{Main screens of the requester prototype}
+\label{tab:ui-screens}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\fbox{\includegraphics[width=0.85\textwidth]{../../CDs/CognitiveWalkthrough/figures/11-create-task.png}}
+\caption{The ``Create a new task'' screen of the requester prototype}
+\label{fig:ui-create-task}
+\end{figure}
+
+\subsection{Design Decisions}
+
+The following decisions shape the interface so far.
+
+\begin{itemize}
+\item \textbf{Signing in without crypto knowledge.} Users can sign in with
+  Google, a phone number, or an email address through an embedded wallet, and a wallet is created for
+  them in the background (\nfrref{NFR_EmbeddedWalletAccess}). Users who
+  already have a wallet can use it instead.
+\item \textbf{Preview and confirm every transaction.} Before any payment, the
+  user sees the action and the amount in plain language, and after it is
+  recorded, they see a confirmation (\rref{FR_TransactionPreview},
+  \nfrref{NFR_TransactionConfirmation}).
+\item \textbf{Show progress in plain language.} A request's progress is shown
+  as simple steps instead of blockchain phases (\nfrref{NFR_ProgressStatus}).
+\item \textbf{Keep features close to Home.} Every feature can be reached
+  within two clicks of the home page (\nfrref{NFR_TwoClickAccess}).
+\item \textbf{Provider dashboard.} Providers will see their reputation, stake,
+  and rewards for each task, and any held rewards they can retry
+  (\rref{FR_ProviderDashboard}). This screen has not been designed yet.
+\end{itemize}
+
+\subsection{Planned Changes from the Cognitive Walkthrough}
+
+The Cognitive Walkthrough found several problems that will be addressed in the
+final design. The main changes are:
+
+\begin{itemize}
+\item Explain technical terms, such as ``provider'' and ``network fee'', in
+  plain language, and add information icons beside form fields.
+\item Make clickable elements look clickable, such as the profile button and
+  the ``Sign up / Log in'' button.
+\item Make important actions and warnings easier to find, such as creating a
+  task and the warning that a task cannot be deleted.
+\item Give clearer feedback, such as keeping the account setup window open
+  until it is finished, and showing when a new task is still waiting for
+  providers.
+\end{itemize}
 
 \section{Design of Communication Protocols}
 
