@@ -277,18 +277,11 @@ to compare the predictions. There is also a cold-start problem where initially
 there may not be enough trusted providers in the network to correctly evaluate
 one another. 
 
-Another risk is designing the incentive system and token economics so that the network
-is sufficiently decentralized and is resistant to attacks. The system must be fair and accessible for 
-participants so that they are encouraged to take part in the network.
-The system must also be economically sustainable and ensure that
-the distribution of rewards does not create incentives to exploit the system
-or reduce the quality of the aggregated results.
-
 Collusion attacks pose a significant risk to the system. A collusion attack
 occurs when multiple participants, such as inference providers, coordinate
-their actions to manipulate the aggregation algorithm, reputations, and reward
-distribution. For example, providers could submit similar inaccurate
-predictions to make their results appear correct and receive rewards. This is
+their actions to manipulate the aggregation algorithm and reputations. For
+example, providers could submit similar inaccurate predictions to make their
+results appear correct and gain influence. This is
 difficult to detect when there is no ground truth and when the colluding
 providers make up a large portion of the network.
 
@@ -299,59 +292,41 @@ is completely off-chain. The simulation will execute a sequence of rounds in whi
 an inference task for a regression problem is executed by the network. Several types of actors will participate in the network:
 
 \begin{enumerate}
-    \item Honest: attempt to maximize rewards by providing accurate predictions consistently (with some noise);
-    \item Learners: gradually improve their predictions over time;
-    \item Malicious: intentionally provide bad predictions;
-    \item Colluding: a group of providers working together to skew the network.
+    \item Honest: provide accurate predictions consistently (with some noise);
+    \item Learners: gradually improve their predictions over time.
+    \item Biased: consistently provide predictions that are skewed away from the ground truth.
+    \item Correlated: multiple providers use the same biased prediction strategy.
+    \item Colluding: multiple providers coordinate their predictions to manipulate the aggregation algorithm.
 \end{enumerate}
 
 The simulation will start with a simple Machine Learning (ML) task (e.g., predict $y$, where $y = mx + b$), and each round some input data will be randomly generated.
 The different actors will be given some algorithm (good or bad algorithm depending on the actor) to determine their predictions given the input.
-The actors will submit their predictions, and the aggregation algorithm will determine the aggregated result. Actors' reputations will be updated
-and rewards will be distributed after each round. The ground truth will be known to the testers and used only to evaluate the results.
-It will not be available to the aggregation algorithm, reputation updates, or reward distribution. 
-
-Another layer of this simulation is to economically model the system. We will
-assign providers a cost for running their model, transaction fees for submitting
-predictions on-chain, and economic rewards or penalties for participating. These
-values will be calibrated relative to the costs and payments that we expect a
-provider to realistically encounter when performing an inference task. This
-will ensure that the simulation reflects realistic participation decisions
-rather than relying on arbitrary values. We will also vary these values to
-measure how sensitive participation and network performance are to changes in
-costs, fees, rewards, and penalties.
+The actors will submit their predictions, and the aggregation algorithm will determine the aggregated result. Actors' reputations will be updated after each round. The ground truth will be known to the testers and used only to evaluate the results.
 
 We will test various combinations of actors to evaluate the limits of the
 system. These scenarios will vary the proportions of different actors, as well as the number of providers in the
-network. These results will allow us to identify conditions under which the system remains reliable and economically
-viable, as well as conditions under which malicious or colluding providers can
-significantly influence the network.
+network. These results will allow us to identify conditions under which the system remains reliable, as well as conditions under which biased providers can significantly influence the network.
 
 \subsection{Consequences of Failure}
 If the proof of concept fails and one or more of the identified risks are not shown to be sufficiently
-mitigated, this would indicate that the current system is not able to provide accurate
-aggregated predictions, is not economically attractive to participants or is vulnerable to collusion attacks.
-This would require the team to re-evaluate the scope of the project and/or the design of the system.
+mitigated, this would indicate that the current system is not able to provide reliably accurate
+aggregated predictions over the course of several inference requests.This would require the team to re-evaluate the scope of the project and/or the design of the system.
 If the proof of concept is unsuccessful due to a lack of developer resources and/or technical expertise,
 then the team will meet with the supervisor to discuss shrinking the scope. Otherwise, if the cause of
 failure is due to poor system design then the team will meet with the supervisor to
-discuss alternative approaches to consensus, incentive design, and aggregation algorithms. 
+discuss alternative approaches to consensus, reputation tracking and aggregation algorithms.
 
 \subsection{Success Criteria and Failure Response}
 
-This proof of concept will be successful and show that the stated risks can be overcome if:
+The following scenarios assume that honest providers form a majority, so fewer than half of the providers behave maliciously. We will run each scenario for multiple rounds and compare average relative error against the ground truth in early and later rounds. This measures the trend without requiring every individual round to improve. Ground truth is used only to evaluate the results, not to aggregate predictions or update reputations.
 
 {\begin{itemize}
-    \item The system provides accurate aggregated results that improve over time even with some limited number of malicious actors. We define accurate as the aggregated result being within a certain threshold (roughly 90\% of aggregated predictions match the ground truth). For this POC, we assume that the aggregated result will improve even with up to 10\% malicious actors in the network. The exact threshold for these percentages will be determined during the POC implementation and testing.
-    \item It is more profitable to act honestly and attempt to provide good predictions than to be malicious. Good predictions are those that are close to the ground truth (low relative error < 10\%). These good predictions should be rewarded with a non-zero token amount. The exact threshold for this percentage will be determined during the POC implementation and testing.
-    \item The network can be cold-started with the assumption that initially there are a majority of honest providers.
+    \item \textbf{Honest and biased providers:} Starting with equal reputations, a majority of honest providers submit predictions with some noise while a minority consistently submit biased predictions. After several rounds, honest providers should gain reputation on average, biased providers should lose reputation on average, and the aggregate's average relative error should decrease.
+    \item \textbf{Honest providers and learners:} Some providers begin with less accurate predictions and improve over time. Their reputations should increase after their predictions improve, while providers that remain consistently inaccurate should lose reputation. The aggregate's average relative error should decrease as the learners improve.
+    \item \textbf{Honest and correlated or colluding providers:} A minority of providers submit similar inaccurate predictions or coordinate their submissions. Their combined reputation should decrease rather than gain influence from their agreement, and the aggregate's average relative error should decrease over time.
 \end{itemize}}
 
-If the proof of concept is not able to demonstrate that these risks can be addressed then the project's assumptions and scope
-may need to be changed. Before proceeding to full
-implementation, the team will review the findings with the supervisor and
-decide whether to revise the design, broaden the threat
-conditions, or reconsider the project's feasibility.
+We will vary prediction noise, provider behaviour, and initial reputations and report where these expectations hold or fail. We will also compare the aggregate with an unweighted median to show whether reputation weighting helps. The POC will not establish resistance to attacks that have not been simulated. If the tested conditions do not show the expected reputation and error trends, the project's assumptions or scope may need to change. Before proceeding to full implementation, the team will review the findings with the supervisor and decide whether to revise the design, broaden the threat conditions, or reconsider the project's feasibility.
 
 \section{Expected Technology}
 
