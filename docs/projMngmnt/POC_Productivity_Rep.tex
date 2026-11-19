@@ -32,9 +32,38 @@ the report.}
 
 \section{Demo Plans}
 
-\wss{What is your feasibility risk?}
+The main feasibility risk is whether the network can produce an accurate aggregate
+and update provider reputations when ground truth is unavailable to the protocol.
+In particular, biased or coordinated providers may gain influence by agreeing with
+one another, especially when the network starts without established reputations.
 
-\wss{What will you be demonstrating}
+We will demonstrate an off-chain simulation of repeated linear-regression inference
+requests. Honest providers submit noisy predictions, biased providers submit
+inaccurate predictions, and learners improve their predictions over time. We will
+also examine providers that share a bias or coordinate their predictions. In each
+round, providers submit predictions, the protocol aggregates them, and their
+reputations are updated. Ground truth is used afterward to evaluate the outcome;
+it is not used for aggregation or reputation updates.
+
+The demo will examine the following scenarios, under the assumption that honest providers form a
+majority and fewer than half of the providers behave maliciously:
+\begin{itemize}
+    \item With honest and biased providers starting at equal reputations, honest
+    providers should gain reputation on average, biased providers should lose
+    reputation on average, and average relative error between the aggregate and
+    ground truth should decrease over successive rounds.
+    \item When learners improve their predictions, their reputations should rise
+    after the improvement, consistently inaccurate providers should lose
+    reputation, and average relative error should decrease.
+    \item When a minority of providers submit similar inaccurate predictions or
+    coordinate their submissions, their combined reputation should decline
+    rather than increase through agreement, while average relative error should
+    decrease over time.
+\end{itemize}
+
+For each scenario, we will show provider reputations and relative
+error across rounds of the simulation. We will also compare the reputation-weighted
+aggregate with an unweighted median to assess the effect of reputation on the aggregate.
 
 \section{Team Meeting Attendance}
 
