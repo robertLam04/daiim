@@ -54,9 +54,11 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
+November 12 & 0.0 & Added initial MG draft\\
 November 13 & 0.1 & Updated the system overview, likely and unlikely changes, and module decomposition sections\\
 November 14 & 1.0 & Added module decomposition, list of acronyms and gen AI disclosure\\
 November 15 & 1.0 & Added section 6,8 and 9\\
+November 17 & 1.0 & Corrected merged MG content\\
 November 18 & 1.0 & Added User Interface section \\
 
 \end{tabularx}
@@ -1111,7 +1113,8 @@ change.
 Module A uses module B if its correct execution depends on a correct
 implementation of B. In Figure~\ref{FigUH}, an arrow points from the module
 that uses a service to the module that provides it. The diagram groups modules
-by the off-chain program, on-chain program, and provider SDK.
+by the off-chain program, on-chain program, and provider SDK. Type-only and
+constant-only dependencies are listed in the MIS but omitted from this diagram.
 
 \begin{figure}[H]
 \centering
@@ -1139,7 +1142,7 @@ surveys further into the timeline of the project.
 \subsection{Requester Screens}
 
 Table~\ref{tab:ui-screens} lists the main screens of the requester prototype,
-and Figure~\ref{fig:ui-new-request} shows one of them.
+and Figure~\ref{fig:ui-create-task} shows one of them.
 
 \begin{table}[H]
 \centering
