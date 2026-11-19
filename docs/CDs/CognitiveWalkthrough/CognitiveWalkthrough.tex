@@ -2,6 +2,8 @@
 
 \usepackage{tabularx}
 \usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{float}
 \usepackage[letterpaper,left=0.8in,top=1.0in,right=1.0in,bottom=1.0in]{geometry}
 
 \title{Cognitive Walkthrough for \progname}
@@ -12,6 +14,28 @@
 
 \input{../../Comments.text}
 \input{../../Common.text}
+
+% \screen{file}{caption}{label}: a Figma frame, or a placeholder box until figures/<file>.png is added
+\newcommand{\screen}[3]{%
+  \begin{figure}[htbp]
+    \centering
+    \IfFileExists{figures/#1.png}%
+      {\fbox{\includegraphics[width=0.95\textwidth]{figures/#1.png}}}%
+      {\fbox{\parbox[c][0.45\textwidth][c]{0.95\textwidth}{\centering Image to be added: \texttt{figures/#1.png}}}}
+    \caption{#2}
+    \label{fig:#3}
+  \end{figure}}
+
+
+% \stepscreen{file}{caption}: the screen for one step, kept in place under its description
+\newcommand{\stepscreen}[2]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{figures/#1.png}%
+      {\fbox{\includegraphics[width=0.75\textwidth]{figures/#1.png}}}%
+      {\fbox{\parbox[c][0.35\textwidth][c]{0.75\textwidth}{\centering Image to be added: \texttt{figures/#1.png}}}}
+    \caption{#2}
+  \end{figure}}
 
 \begin{document}
 
@@ -26,6 +50,9 @@
 \midrule
 November 15 & Keira & Initial document\\
 November 16 & Keira & Added sections Introduction and Plan \\
+November 16 & Aidan & Added tasks and action steps to Results \\
+November 16 & Aidan & Added prototype screens to each step and as an appendix \\
+November 18 & Keira & Added results and likely changes for Task 1 and 3 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -61,7 +88,7 @@ The plan for conducting the cognitive walkthrough is detailed below.
 
 \subsection{Methodology}
 The cognitive walkthrough will be performed by identifying a typical new user persona and important 
-user tasks, then having a usability expert evaulate the learnability of the prototype by answering the 
+user tasks, then having a usability expert evaluate the learnability of the prototype by answering the 
 following four questions after every action in each task:
 
 \begin{enumerate}
@@ -96,51 +123,818 @@ The user persona chosen to represent a DAIIM inference requester is outlined as 
 \end{itemize}
 
 \subsection{User Tasks}
-For the purposes of performing the cognitive walkthrough, the following four user tasks have been identified:
+For the purposes of performing the cognitive walkthrough, the following five user tasks have been identified as being essential tasks to analyse to justify the learnability of the user interface:
 \begin{enumerate}
 \item Log in/sign up (authenticate wallet) and log out;
 \item Add funds to the wallet;
 \item Create a task definition;
-\item Submit and inference request and view the result;
+\item Submit an inference request and view the result;
 \item View user profile and transaction history.
 \end{enumerate}
 
 \subsection{Prototype}
-\textbf{NEED TO ADD: Maybe just add where to find the prototype in the project repo, or add the figma drawings to an Appendix}
+The walkthrough uses the Figma prototype of the requester web client. Its screens are shown in Appendix~\ref{app:screens}, and each action in Section~\ref{sec:results} refers to the screen involved. A clickable version of the same screens is in \texttt{src/frontend} of the project repository.
 
 
 \section{Results}
-\subsection{Task}
-task description and action decomp
+\label{sec:results}
+Each task below lists its goal, its starting point in the prototype, and the actions a user takes to complete it.
+Each action is then analysed with the four questions from the methodology.
 
-\subsubsection{Action}
-action description
-maybe photo of what the user would see, or point to where it can be found in the Appendix
+\subsection{Task 1: Log in/sign up and log out}
+\textbf{Goal:} Priya creates an account (which also creates her wallet), then logs out.\\
+\textbf{Starting point:} home page, signed out.
 
-\begin{table}[ht]
+\textbf{Actions:}
+\begin{itemize}
+    \item Step 1.1: Click ``Sign up / Log in''.
+    \item Step 1.2: Enter her email and click ``Continue with email''.
+    \item Step 1.3: Enter the 6-digit code and click ``Verify''.
+    \item Step 1.4: Wait for account setup.
+    \item Step 1.5: Open the profile menu.
+    \item Step 1.6: Click ``Log out''.
+\end{itemize}
+
+\subsubsection{Step 1.1: Click ``Sign up / Log in''}
+On the home page, Priya clicks \textbf{Sign up / Log in} in the header. The \textbf{Sign in to DAIIM} window opens and explains that signing in also creates an account for new users. It offers Google, phone and email, plus \textbf{Use my own wallet instead} for users who already have a crypto wallet.
+
+\stepscreen{01-home-signed-out}{Step 1.1: Home page, signed out (Screen 01)}
+
+\begin{table}[H]
     \centering
     \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? & \\
+        Will users try to achieve the right result? & No: While the log in/sign up button is visible, it is not currently clear within the homepage instructions that a user must sign in to be able to access the ability to submit requests and interact with the system beyond viewing the marketplace. There is no association made between the instruction ``Make an account'' and clicking the sign up/log in button. The instructions also assume that the audience is new users, and does not account for returning users needing to be refreshed on how to interact with the system. \\
         \hline
-        Will users notice that the correct action is available? & \\
+        Will users notice that the correct action is available? & Yes: The log in/sign up button is clearly visible in the top right corner. This is familiar to users who have used web applications before, like Priya with web dashboard experience.  The button gets highlighted when a user's cursor is over it. This further supports the association with the correct action (i.e.\ that the button is clickable). \newline \textbf{Note:} The button could stand out more (i.e.\ be a bolder colour), as it somewhat blends into the background currently. Conversely, the button could remain the same colour, but change the navigation bar to make for a better contrast. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? & \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The action is clearly written on the button with familiar text. \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? & \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: After the button is pressed, a window pops up in the centre of the screen with further information on how to continue the sign up/log in process. \\
         \hline
     \end{tabularx}
     \caption{Step 1.1: Click ``Sign up / Log in''}
     \label{tab:cw-step-1-1}
 \end{table}
 
+\subsubsection{Step 1.2: Enter her email and click ``Continue with email''}
+Priya types her email address in the \textbf{Email} field and clicks \textbf{Continue with email}. An invalid address shows ``Enter a valid email address, like you@email.com.'' The \textbf{Enter your code} window opens.
 
+\stepscreen{02-sign-in-choose-method}{Step 1.2: Sign in: choose a method (Screen 02)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & Yes: The information that is required as input is clearly stated within the sign in pop-up window.  \\
+        \hline
+        Will users notice that the correct action is available? & Yes: All options for signing in are contained within the pop-up window and organized logically. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes: All options for sign in methods are clearly labelled, so users like Priya can choose which method best suits them. For a user choosing the option to enter their email, the area where the user must type out their email contains an example email, to indicate the expected action. The button to choose the option to sign in with the email is visible and clearly labelled ``Continue with email.'' \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes: Upon clicking ``Continue with email'' the pop-up window changes to a window asking to verify the email by entering the code sent to the email. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.2: Enter her email and click ``Continue with email''}
+    \label{tab:cw-step-1-2}
+\end{table}
+
+\subsubsection{Step 1.3: Enter the 6-digit code and click ``Verify''}
+Priya types the 6-digit code sent to her email into the code boxes and clicks \textbf{Verify}. A wrong code shows an error, and \textbf{Resend code} sends a new one.
+
+\stepscreen{03-sign-in-enter-code}{Step 1.3: Sign in: enter code (Screen 03)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & Yes: The instructions are clearly stated within the same pop-up window. \\
+        \hline
+        Will users notice that the correct action is available? & Yes: There are 6 boxes, which aligns with the stated expected input of a 6 digit code.  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes: After typing a single digit, the cursor automatically moves to the next box, writing only one digit per box. The user is unable to type values other than integers. The ``Verify'' button remains greyed out and unclickable until all 6 digits have been input.  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes: The pop-up window changes the display to a loading screen and updates the user on the progress of the sign-in process. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.3: Enter the 6-digit code and click ``Verify''}
+    \label{tab:cw-step-1-3}
+\end{table}
+
+\subsubsection{Step 1.4: Wait for account setup}
+The \textbf{Setting up your account} window ticks off ``Email confirmed'' and ``Secure wallet created'' without any action from Priya. She then lands on the signed-in home page, which shows her available and held funds in the header and a getting-started checklist.
+
+\stepscreen{04-sign-in-setting-up}{Step 1.4: Sign in: setting up account (Screen 04)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & No: The loading window displays a good amount of information, but the steps occur in quick succession and the window automatically closes when the user has been successfully logged in. Users may not have enough time to read the different loading messages before they disappear, which can lead to some confusion. Also, the loading line ``Opening DAIIM...'' may be confusing, as the application is already open on their browser. The information regarding the wallet supports users like Priya who do not have experience with blockchain and wallets, by abstracting the technical details while still maintaining a level of transparency.  \\
+        \hline
+        Will users notice that the correct action is available? & Yes: The pop-up window is in the centre of the screen and obvious. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The window clearly states that the account is being set up, and progress is displayed having steps greyed out, and becoming white with a checkmark when they have been accomplished.  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes: After the loading completes, the user is returned to an unobstructed view of the homepage, where a welcome message and confirmation message clearly state the account has been set up. The navigation bar has also changed to show information visible only to signed in users, such as the held and available funds, the requests tab, deposit button, and the user profile picture and name in place of where the sign up/log in button used to be.  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.4: Wait for account setup}
+    \label{tab:cw-step-1-4}
+\end{table}
+
+\subsubsection{Step 1.5: Open the profile menu}
+Priya clicks her profile picture in the top-right corner of the header. A menu opens with \textbf{Settings}, \textbf{Profile}, \textbf{Transaction history}, \textbf{Help} and \textbf{Log out}.
+
+\stepscreen{05-home-signed-in-menu}{Step 1.5: Home page, signed in, with the profile menu open (Screen 05)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & No: It is not immediately obvious that the user must click on their profile picture/name to access the profile menu. However, this mapping is similar to most other web applications. The display of the profile picture and name does demonstrate that this button represents the user's profile. \\
+        \hline
+        Will users notice that the correct action is available? & Yes: The sign up / log in button gets replaced with their name and profile picture in the top right corner. This aligns with the expected mental model of the user, as this follows the familiar structure of other web applications. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & No: The button for the user profile looks different to the other buttons in the navigation bar, and does not highlight when the cursor is over it. This may imply to the user that it is not a clickable button. \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes: The user will see the profile menu pop up. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.5: Open the profile menu}
+    \label{tab:cw-step-1-5}
+\end{table}
+
+\subsubsection{Step 1.6: Click ``Log out''}
+Priya clicks \textbf{Log out} and returns to the signed-out home page. If a payment is still confirming, a warning (``A payment is still confirming'') first asks her to choose \textbf{Stay logged in} or \textbf{Log out anyway}.
+
+\stepscreen{05-home-signed-in-menu}{Step 1.6: Home page, signed in, with the profile menu open (Screen 05)}
+
+\textit{Also see Figure~\ref{fig:screen-23} (log out while a payment is still confirming) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & Yes: Having experience with web browsers and apps, users like Priya will understand that they must perform an action to log out of the application. \\
+        \hline
+        Will users notice that the correct action is available? & Yes: The ``Log out'' option is highly visible, as it is the only text in red. It is also at the bottom of the list of actions in the user profile menu, so it is organized to be easy to find. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The phrase ``Log out'' is familiar amongst users with experience with web dashboards, like Priya. \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes: Upon selecting ``Log out,'' the application returns to the home screen and removes all navigation bar options that should only be visible to signed in users. The profile menu button is replaced by the ``Sign up / Log in'' button. \newline \textbf{Note:} There is no confirmation message to get the user to confirm that they want to log out. There are no safety mechanisms to prevent mistakenly selecting the log out option. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 1.6: Click ``Log out''}
+    \label{tab:cw-step-1-6}
+\end{table}
+
+\subsection{Task 2: Add funds to the wallet}
+\textbf{Goal:} Priya adds \$25 to her account so she can pay for inference requests.\\
+\textbf{Starting point:} home page, signed in, with \$0.00 available.
+
+\textbf{Actions:}
+\begin{itemize}
+    \item Step 2.1: Click ``Deposit''.
+    \item Step 2.2: Choose an amount.
+    \item Step 2.3: Choose a payment method.
+    \item Step 2.4: Click ``Deposit \$25.00''.
+    \item Step 2.5: Read the confirmation and click ``Done''.
+\end{itemize}
+
+\subsubsection{Step 2.1: Click ``Deposit''}
+From the signed-in home page, Priya clicks the \textbf{Deposit} button in the header. The same action is available from step 2 (``Deposit funds'') of the getting-started checklist on the home page. The \textbf{Deposit funds} window opens.
+
+\stepscreen{05-home-signed-in-menu}{Step 2.1: Home page, signed in, with the profile menu open (Screen 05)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & Yes; the application shows a deposit button clearly in view in the top right, and there is also a deposit funds button in the homepage on initial registration. \\
+        \hline
+        Will users notice that the correct action is available? & Yes; the deposit button is prominently displayed and easy to find. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes; the deposit button is labeled clearly and the action leads to the expected outcome. \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes; the user sees a confirmation message and their wallet balance updates. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 2.1: Click ``Deposit''}
+    \label{tab:cw-step-2-1}
+\end{table}
+
+\subsubsection{Step 2.2: Choose an amount}
+Priya chooses how much to add, in CAD, by clicking one of the preset amounts (\$10, \$25 or \$50; \$25 is selected by default). For a different amount she clicks \textbf{Other} and types it, e.g.\ 15.00. Amounts outside \$0.01 to \$1,000 show an error.
+
+\stepscreen{20-deposit-funds}{Step 2.2: Deposit funds (Screen 20)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 2.2: Choose an amount}
+    \label{tab:cw-step-2-2}
+\end{table}
+
+\subsubsection{Step 2.3: Choose a payment method}
+Under \textbf{Pay with}, Priya selects \textbf{Credit or debit card} (selected by default) or \textbf{From another crypto wallet}, which shows her wallet address and a QR code. The window shows the fee (\$0.00) and notes that the test version uses practice money.
+
+\stepscreen{20-deposit-funds}{Step 2.3: Deposit funds (Screen 20)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 2.3: Choose a payment method}
+    \label{tab:cw-step-2-3}
+\end{table}
+
+\subsubsection{Step 2.4: Click ``Deposit \$25.00''}
+Priya clicks the \textbf{Deposit} button, which shows the chosen amount (e.g.\ ``Deposit \$25.00''). The button shows ``Processing\ldots'' while the deposit is recorded.
+
+\stepscreen{20-deposit-funds}{Step 2.4: Deposit funds (Screen 20)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 2.4: Click ``Deposit \$25.00''}
+    \label{tab:cw-step-2-4}
+\end{table}
+
+\subsubsection{Step 2.5: Read the confirmation and click ``Done''}
+The confirmation window shows ``\$25.00 deposited'', the new available funds, and a proof-of-deposit link. The available funds in the header are already updated. Priya clicks \textbf{Done} to return to the page she was on. If she left an unfinished request to deposit, the button reads \textbf{Back to my request} instead. \textbf{View history} opens the transaction history, where the deposit is listed.
+
+\stepscreen{21-deposit-complete}{Step 2.5: Deposit complete (Screen 21)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 2.5: Read the confirmation and click ``Done''}
+    \label{tab:cw-step-2-5}
+\end{table}
+
+\subsection{Task 3: Create a task definition}
+\textbf{Goal:} Priya defines a new prediction task that providers can serve.\\
+\textbf{Starting point:} Marketplace page, signed in.
+
+\textbf{Actions:}
+\begin{itemize}
+    \item Step 3.1: Click ``+ New task''.
+    \item Step 3.2: Name and describe the task.
+    \item Step 3.3: Define the output and inputs.
+    \item Step 3.4: Set the provider settings.
+    \item Step 3.5: Click ``Review and create'' and confirm.
+    \item Step 3.6: Read the confirmation and click ``View task''.
+\end{itemize}
+
+\subsubsection{Step 3.1: Click ``+ New task''}
+On the Marketplace page, Priya clicks \textbf{+ New task}. The \textbf{Create a new task} form opens.
+
+\stepscreen{08b-marketplace-signed-in}{Step 3.1: Marketplace, signed in (Screen 08b)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & No: Priya's goal is to receive forecasts, and the getting-started checklist on the homepage only directs her to ``Pick a task'' from the Marketplace. Nothing on the homepage or in the Marketplace explains what a task is, or that a user can define their own task when none of the existing ones fit their needs. Users like Priya, with no experience with Web3 applications, may not realise that creating a task is something a requester can do. \newline \textbf{Note:} The message shown when a search returns no results does suggest creating a new task, which helps users who cannot find what they are looking for. \\
+        \hline
+        Will users notice that the correct action is available? & Yes: The ``+ New task'' button is clearly visible in the top right corner of the Marketplace, beside the search bar. It is filled in purple, so it stands out from the other buttons on the page. When signed out, the button is faded and labelled ``Sign in to create'', which tells the user why it is not yet available. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The action is clearly written on the button with familiar text, and the ``+'' symbol is commonly used in web applications to indicate creating something new. The button gets highlighted when a user's cursor is over it. \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes: After the button is pressed, the ``Create a new task'' form opens, with a clear heading and labelled fields. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.1: Click ``+ New task''}
+    \label{tab:cw-step-3-1}
+\end{table}
+
+\subsubsection{Step 3.2: Name and describe the task}
+Priya fills in \textbf{Task name} (e.g.\ ``Snowmelt streamflow forecast''), \textbf{What should be predicted?} in one sentence, and picks a \textbf{Category} such as Hydrology.
+
+\stepscreen{11-create-task}{Step 3.2: Create a task (Screen 11)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & Yes: The heading ``Create a new task'' and the field labels clearly state the information that is required. The label ``What should be predicted?'' is phrased as a question in plain language, which matches how users like Priya think about their goal. \\
+        \hline
+        Will users notice that the correct action is available? & Yes: The fields are the first items on the left side of the form, and are organized top to bottom in the order they should be filled in. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes: Each text field contains an example (e.g.\ ``Snowmelt streamflow forecast'') to indicate the expected input. The Category field is a drop-down with a short list of choices, so the user does not have to come up with their own category. \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes: The typed text appears in each field, and the selected category is displayed in the drop-down. \newline \textbf{Note:} The fields are not checked until ``Review and create'' is clicked, so the user does not find out about a missing field until the end of the form. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.2: Name and describe the task}
+    \label{tab:cw-step-3-2}
+\end{table}
+
+\subsubsection{Step 3.3: Define the output and inputs}
+Priya enters the \textbf{Output} unit (e.g.\ m\textsuperscript{3}/s). Under \textbf{Inputs requesters will provide} she names each input (e.g.\ snowpack\_cm), clicking \textbf{+ Add input} for each extra one. Duplicate names show an error.
+
+\stepscreen{11-create-task}{Step 3.3: Create a task (Screen 11)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & No: The ``Output'' and ``Inputs requesters will provide'' sections assume an understanding of how prediction models take in inputs and return an output. Priya has no programming experience, and the example input names (snowpack\_cm, temp\_avg\_c) use a naming style that is familiar to programmers but not to users like Priya. It is not explained whether the names must follow this format, or how the inputs relate to the data she will upload when she submits a request. \\
+        \hline
+        Will users notice that the correct action is available? & Yes: The Output field is directly below Category, and the inputs section is at the top of the right column with a clear heading. \newline \textbf{Note:} The form is split into two columns, so users reading top to bottom may reach the end of the left column and not immediately continue on the right. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & No: The Output field is labelled ``One number $\cdot$ unit'', which implies that only the unit should be typed, but this is not clearly stated. ``+ Add input'' is displayed as a small underlined link rather than a button like the other actions on the page, so it may not be associated with adding another input. Each input is also fixed to the type ``number'', with no option to change it and no explanation of why. \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes: Clicking ``+ Add input'' adds a new empty input field below the existing ones, and extra inputs can be removed with the ``x'' beside them. \newline \textbf{Note:} Errors such as duplicate input names are only shown after ``Review and create'' is clicked, rather than as the user types. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.3: Define the output and inputs}
+    \label{tab:cw-step-3-3}
+\end{table}
+
+\subsubsection{Step 3.4: Set the provider settings}
+Priya sets \textbf{Min providers} (at least 2), \textbf{Max providers}, and \textbf{Time for providers to join}.
+
+\stepscreen{11-create-task}{Step 3.4: Create a task (Screen 11)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & No: The concept of a provider is not explained on this page. Users like Priya may not know what a provider is, how many she should choose, or how the number affects the cost or reliability of her results. ``Time for providers to join'' is also unclear, as it does not say what happens when the time runs out. \newline \textbf{Note:} Using familiar terms like "Number of responses" or "Number of predictions" may be more intuitive for users like Priya than "Number of providers"  \\
+        \hline
+        Will users notice that the correct action is available? & Yes: The provider settings are grouped together below the inputs section, and default values are already filled in, so the user can continue without changing them. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The fields are labelled with short, familiar terms (``Min'', ``Max''), and the join time is a drop-down with set choices, which prevents invalid input. \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & No: There is no feedback when the values are entered. If min providers is less than 2, or max providers is smaller than min providers, the error only appears after ``Review and create'' is clicked. The requirement that min providers must be at least 2 is only stated in small grey text under the buttons. The error message does explain why (``so no single provider decides the result''), and this explanation would be more useful if it was shown next to the fields from the start. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.4: Set the provider settings}
+    \label{tab:cw-step-3-4}
+\end{table}
+
+\subsubsection{Step 3.5: Click ``Review and create'' and confirm}
+Priya clicks \textbf{Review and create}. Missing or invalid fields are highlighted with a message. Otherwise the \textbf{Please confirm your new task} window summarises the task, and she clicks \textbf{Confirm} (or \textbf{Back} to edit).
+
+\stepscreen{11-create-task}{Step 3.5: Create a task (Screen 11)}
+
+\textit{The confirmation window is in the clickable prototype only; it is not yet a Figma frame.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & Yes: Having experience with online forms, users like Priya will understand that they must submit the form once it is filled in. The label ``Review and create'' also tells the user that they will have a chance to check the details before the task is created. \\
+        \hline
+        Will users notice that the correct action is available? & Yes: The ``Review and create'' button is filled in purple, matching the other main actions in the application, and is placed beside ``Cancel'' at the bottom of the form. \newline \textbf{Note:} The warning that a task ``is recorded publicly and can't be deleted'' is in small grey text under the buttons and is easy to miss. It is repeated in the confirmation window, which helps. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The confirmation window summarises the task details, so the user can check them before clicking ``Confirm''. \newline \textbf{Note:} The ``Back'' button is outlined in red, which may suggest that it cancels or deletes the task rather than returning to edit it. The line ``Network fee covered by DAIIM'' may also be confusing to users like Priya with no blockchain experience, although ``Cost: \$0.00'' makes it clear that she will not be charged. \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes: If a field is missing or invalid, it is outlined in red with a message underneath explaining how to fix it. After ``Confirm'' is clicked, the button changes to ``Recording\ldots'' and both buttons are greyed out, showing that the task is being created. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.5: Click ``Review and create'' and confirm}
+    \label{tab:cw-step-3-5}
+\end{table}
+
+\subsubsection{Step 3.6: Read the confirmation and click ``View task''}
+The \textbf{Task created} page confirms the task was published, with a proof link. Priya clicks \textbf{View task} to see it as it appears in the Marketplace.
+
+\textit{Not yet a Figma frame; shown in the clickable prototype only.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? & Yes: After creating a task, users like Priya will want to check that it was created correctly and see how it appears to others in the Marketplace. \\
+        \hline
+        Will users notice that the correct action is available? & Yes: The ``Task created'' heading is shown in green with a checkmark, and ``View task'' is the filled purple button on the page, beside ``Request this task''. \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The phrase ``View task'' is clearly written on the button with familiar text. \newline \textbf{Note:} The ``Proof'' link shows a shortened code (4kTz\ldots Qm8r) with no explanation. Priya has no experience with blockchain, so she will not know what the proof is or why she would click it. \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? & Yes: The task page opens and shows the task as it is listed in the Marketplace. \newline \textbf{Note:} The page shows ``Registered providers (0)'' while the ``Request this task'' button is still available. The confirmation page says requests can be sent once enough providers have joined, but the task page does not repeat this, so Priya may try to request a task that no providers can serve yet. \\
+        \hline
+    \end{tabularx}
+    \caption{Step 3.6: Read the confirmation and click ``View task''}
+    \label{tab:cw-step-3-6}
+\end{table}
+
+\subsection{Task 4: Submit an inference request and view the result}
+\textbf{Goal:} Priya requests a 24-hour river level forecast and reads the result.\\
+\textbf{Starting point:} Marketplace page, signed in, with funds available.
+
+\textbf{Actions:}
+\begin{itemize}
+    \item Step 4.1: Open the ``River level forecast (24 h)'' task.
+    \item Step 4.2: Click ``Request this task''.
+    \item Step 4.3: Upload her data.
+    \item Step 4.4: Enter a payment amount.
+    \item Step 4.5: Submit and confirm the payment.
+    \item Step 4.6: Follow the request's progress.
+    \item Step 4.7: Read the result.
+\end{itemize}
+
+\subsubsection{Step 4.1: Open the ``River level forecast (24 h)'' task}
+On the Marketplace page, Priya clicks the \textbf{River level forecast (24 h)} card. The task page shows the inputs her data must follow, the output, the registered providers, and the minimum payment.
+
+\stepscreen{08b-marketplace-signed-in}{Step 4.1: Marketplace, signed in (Screen 08b)}
+
+\textit{Also see Figure~\ref{fig:screen-09} (task details) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.1: Open the ``River level forecast (24 h)'' task}
+    \label{tab:cw-step-4-1}
+\end{table}
+
+\subsubsection{Step 4.2: Click ``Request this task''}
+Priya clicks \textbf{Request this task}. The new request form opens in \textbf{My requests} with step 1 (\textbf{Select the task}) already filled in.
+
+\stepscreen{09-task-details}{Step 4.2: Task details (Screen 09)}
+
+\textit{Also see Figure~\ref{fig:screen-12} (my requests: new request form) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.2: Click ``Request this task''}
+    \label{tab:cw-step-4-2}
+\end{table}
+
+\subsubsection{Step 4.3: Upload her data}
+In step 2 (\textbf{Input your data}), Priya clicks \textbf{+ Upload data} and chooses her CSV of readings. If the columns do not match the task, the upload is rejected with an explanation of how to fix it. She can instead click \textbf{or type values instead} and then \textbf{Use these values}.
+
+\stepscreen{12-new-request-form}{Step 4.3: My requests: new request form (Screen 12)}
+
+\textit{Also see Figure~\ref{fig:screen-13} (new request: upload rejected) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.3: Upload her data}
+    \label{tab:cw-step-4-3}
+\end{table}
+
+\subsubsection{Step 4.4: Enter a payment amount}
+In step 3 (\textbf{Enter payment amount}), Priya types an amount above the task's minimum, or clicks \textbf{suggested \$2.50}. An amount at or below the minimum shows ``Amount too low''; an amount above her available funds shows ``Not enough funds'' with a link to deposit.
+
+\stepscreen{12-new-request-form}{Step 4.4: My requests: new request form (Screen 12)}
+
+\textit{Also see Figure~\ref{fig:screen-14} (new request: not enough funds) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.4: Enter a payment amount}
+    \label{tab:cw-step-4-4}
+\end{table}
+
+\subsubsection{Step 4.5: Submit and confirm the payment}
+Priya clicks \textbf{Confirm payment and submit request}. The \textbf{Please confirm and approve the transfer of funds} window shows the amount, and she clicks \textbf{Confirm}. If the payment fails, a \textbf{Payment not completed} window offers \textbf{Try again} or \textbf{Back to form}, and nothing is charged.
+
+\stepscreen{15-confirm-payment}{Step 4.5: Confirm payment (Screen 15)}
+
+\textit{Also see Figure~\ref{fig:screen-16} (payment failed) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.5: Submit and confirm the payment}
+    \label{tab:cw-step-4-5}
+\end{table}
+
+\subsubsection{Step 4.6: Follow the request's progress}
+The request page shows a timeline: Task submitted, Finding providers, Getting predictions, Aggregating results, Finalizing. The header shows the payment as held. The page notes she can leave and the request keeps running in Recents.
+
+\stepscreen{17-request-in-progress}{Step 4.6: Request in progress (Screen 17)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.6: Follow the request's progress}
+    \label{tab:cw-step-4-6}
+\end{table}
+
+\subsubsection{Step 4.7: Read the result}
+When the request completes, the page shows the forecast (e.g.\ 2.84 m) with the range across providers (2.61--3.02 m), the amount paid, and a proof of payment. If not enough providers join, the request is cancelled, the payment is refunded, and she can \textbf{Try again with a higher amount} or \textbf{Choose another task}.
+
+\stepscreen{18-request-result}{Step 4.7: Request result (Screen 18)}
+
+\textit{Also see Figure~\ref{fig:screen-19} (request cancelled and refunded) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 4.7: Read the result}
+    \label{tab:cw-step-4-7}
+\end{table}
+
+\subsection{Task 5: View user profile and transaction history}
+\textbf{Goal:} Priya checks her account details and what she has spent.\\
+\textbf{Starting point:} any page, signed in.
+
+\textbf{Actions:}
+\begin{itemize}
+    \item Step 5.1: Open the profile menu.
+    \item Step 5.2: Click ``Profile'' and review her details.
+    \item Step 5.3: Open ``Transaction history''.
+    \item Step 5.4: Filter the history.
+\end{itemize}
+
+\subsubsection{Step 5.1: Open the profile menu}
+Priya clicks her profile picture in the top-right corner of the header to open the menu.
+
+\stepscreen{05-home-signed-in-menu}{Step 5.1: Home page, signed in, with the profile menu open (Screen 05)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 5.1: Open the profile menu}
+    \label{tab:cw-step-5-1}
+\end{table}
+
+\subsubsection{Step 5.2: Click ``Profile'' and review her details}
+Priya clicks \textbf{Profile}. The page shows her \textbf{Display name}, email, wallet, and \textbf{Notifications} settings, with \textbf{Save changes} and \textbf{Export wallet}.
+
+\stepscreen{06-profile}{Step 5.2: Profile and settings (Screen 06)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 5.2: Click ``Profile'' and review her details}
+    \label{tab:cw-step-5-2}
+\end{table}
+
+\subsubsection{Step 5.3: Open ``Transaction history''}
+Priya opens the menu again and clicks \textbf{Transaction history}. The page lists her deposits, payments and refunds with dates, amounts and proof links.
+
+\stepscreen{05-home-signed-in-menu}{Step 5.3: Home page, signed in, with the profile menu open (Screen 05)}
+
+\textit{Also see Figure~\ref{fig:screen-22} (transaction history) in Appendix~\ref{app:screens}.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 5.3: Open ``Transaction history''}
+    \label{tab:cw-step-5-3}
+\end{table}
+
+\subsubsection{Step 5.4: Filter the history}
+Priya clicks \textbf{Deposits}, \textbf{Payments} or \textbf{Refunds} to narrow the list, or \textbf{All} to see everything.
+
+\stepscreen{22-transaction-history}{Step 5.4: Transaction history (Screen 22)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{5.5cm}|X|}
+        \hline
+        \textbf{Analysis Question} & \textbf{Group Determination} \\
+        \hline
+        Will users try to achieve the right result? &  \\
+        \hline
+        Will users notice that the correct action is available? &  \\
+        \hline
+        Will users associate the correct action with the result they're trying to achieve? &  \\
+        \hline
+        After the action is performed, will users see that progress is made toward the goal? &  \\
+        \hline
+    \end{tabularx}
+    \caption{Step 5.4: Filter the history}
+    \label{tab:cw-step-5-4}
+\end{table}
 
 
 \section{Planned Changes}
-changes identified for the final UI design, specific fixes
+\subsection{Task 1}
+\begin{enumerate}
+    \item Make the "Make an account" step open the sign-in window (1.1).
+    \item Add a message for returning users within the explanation of the steps. Add more information about what it means to make an account and sign in with an existing account (1.1).
+    \item Give the "Sign up / Log in" button better contrast against the navigation bar (1.1).
+    \item Keep the setup window open until it's finished, with a "Continue" button, and replace "Opening DAIIM…" (1.4).
+    \item Make the profile button look clickable, with a hover highlight and a drop-down arrow (1.5).
+\end{enumerate}
+
+\subsection{Task 2}
+\begin{enumerate}
+    \item 
+\end{enumerate}
+
+\subsection{Task 3}
+\begin{enumerate}
+    \item Make the "Create a task" functionality information more findable. For example, add it to the navigation bar, instead of having it embedded in the marketplace or requests tab (3.1).
+    \item Fix the formatting of the form. For example, use a single column, or have the rows better aligned (3.3).
+    \item Add information icons beside each field, which allows for a description of the field and expectations to pop up when the cursor is hovered over the icon (3.2-3.4).
+    \item Use a less jargon-based term for providers (3.4).
+    \item Make the "can't be deleted" warning more visible (3.5)
+    \item Make "Confirm" the main button and drop the "network fee" jargon (3.5)
+    \item Show "Waiting for providers" on a new task and disable requests until enough have joined (3.6)
+\end{enumerate}
+
+\subsection{Task 4}
+\begin{enumerate}
+    \item 
+\end{enumerate}
+
+\subsection{Task 5}
+\begin{enumerate}
+    \item 
+\end{enumerate}
 
 
 \section{Conclusion}
@@ -151,5 +945,36 @@ how changes will be checked for usability in the future
 one or two paragraphs
 
 
+
+\newpage
+\appendix
+\section{Prototype Screens}
+\label{app:screens}
+The figures below are the frames of the Figma prototype (``DAIIM Requester UI -- Cognitive Walkthrough'') used for the walkthrough. Each action in the Results section refers to the screen the user sees when performing it. The same screens are implemented as a clickable prototype in \texttt{src/frontend} of the project repository.
+
+\screen{01-home-signed-out}{Screen 01: Home page, signed out}{screen-01}
+\screen{02-sign-in-choose-method}{Screen 02: Sign in: choose a method}{screen-02}
+\screen{03-sign-in-enter-code}{Screen 03: Sign in: enter code}{screen-03}
+\screen{04-sign-in-setting-up}{Screen 04: Sign in: setting up account}{screen-04}
+\screen{05-home-signed-in-menu}{Screen 05: Home page, signed in, with the profile menu open}{screen-05}
+\screen{06-profile}{Screen 06: Profile and settings}{screen-06}
+\screen{07-help}{Screen 07: Help}{screen-07}
+\screen{08a-marketplace-signed-out}{Screen 08a: Marketplace, signed out}{screen-08a}
+\screen{08b-marketplace-signed-in}{Screen 08b: Marketplace, signed in}{screen-08b}
+\screen{09-task-details}{Screen 09: Task details}{screen-09}
+\screen{10-provider-details}{Screen 10: Provider details}{screen-10}
+\screen{11-create-task}{Screen 11: Create a task}{screen-11}
+\screen{12-new-request-form}{Screen 12: My requests: new request form}{screen-12}
+\screen{13-upload-rejected}{Screen 13: New request: upload rejected}{screen-13}
+\screen{14-not-enough-funds}{Screen 14: New request: not enough funds}{screen-14}
+\screen{15-confirm-payment}{Screen 15: Confirm payment}{screen-15}
+\screen{16-payment-failed}{Screen 16: Payment failed}{screen-16}
+\screen{17-request-in-progress}{Screen 17: Request in progress}{screen-17}
+\screen{18-request-result}{Screen 18: Request result}{screen-18}
+\screen{19-request-cancelled}{Screen 19: Request cancelled and refunded}{screen-19}
+\screen{20-deposit-funds}{Screen 20: Deposit funds}{screen-20}
+\screen{21-deposit-complete}{Screen 21: Deposit complete}{screen-21}
+\screen{22-transaction-history}{Screen 22: Transaction history}{screen-22}
+\screen{23-logout-payment-confirming}{Screen 23: Log out while a payment is still confirming}{screen-23}
 
 \end{document}
