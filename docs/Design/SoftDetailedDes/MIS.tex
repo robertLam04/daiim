@@ -19,6 +19,7 @@
 \usepackage[section]{placeins}
 \usepackage{caption}
 \usepackage{fullpage}
+\usepackage{seqsplit}
 
 \hypersetup{
 bookmarks=true,     % show bookmarks bar?
@@ -42,6 +43,8 @@ urlcolor=cyan          % color of external links
 \newcommand{\mref}[1]{M\ref{#1}}
 \newcommand{\rref}[1]{FR\ref{#1}}
 \newcommand{\nfrref}[1]{NFR\ref{#1}}
+\let\unbreakabletexttt\texttt
+\renewcommand{\texttt}[1]{\unbreakabletexttt{\seqsplit{#1}}}
 
 \begin{document}
 
@@ -487,58 +490,58 @@ modules.
 
 \begin{longtable}{p{3.4cm} p{4.2cm} p{2.8cm} p{5cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endhead
-createTask & Address (creator), TaskDefinition & TaskId &
-  InvalidTaskSettingsError \\
+\seqsplit{createTask} & Address (creator), \seqsplit{TaskDefinition} & TaskId &
+  \seqsplit{InvalidTaskSettingsError} \\
 \hline
-getTask & TaskId & TaskDefinition & UnknownTaskError \\
+getTask & TaskId & \seqsplit{TaskDefinition} & \seqsplit{UnknownTaskError} \\
 \hline
-getTaskParameters & TaskId & TaskParameters & UnknownTaskError \\
+\seqsplit{getTaskParameters} & TaskId & \seqsplit{TaskParameters} & \seqsplit{UnknownTaskError} \\
 \hline
-registerProvider & TaskId, Address & - & UnknownTaskError,
-  AlreadyRegisteredError, TransferFailedError \\
+\seqsplit{registerProvider} & TaskId, Address & - & \seqsplit{UnknownTaskError},
+  \seqsplit{AlreadyRegisteredError}, \seqsplit{TransferFailedError} \\
 \hline
-withdrawProvider & TaskId, Address & - & UnknownTaskError, NotRegisteredError,
-  ActiveRequestsError, TransferFailedError \\
+\seqsplit{withdrawProvider} & TaskId, Address & - & \seqsplit{UnknownTaskError}, \seqsplit{NotRegisteredError},
+  \seqsplit{ActiveRequestsError}, \seqsplit{TransferFailedError} \\
 \hline
-unregisterProvider & TaskId, Address, $\mathbb{B}$ (burn remaining) & - &
-  UnknownTaskError, NotRegisteredError \\
+\seqsplit{unregisterProvider} & TaskId, Address, $\mathbb{B}$ (burn remaining) & - &
+  \seqsplit{UnknownTaskError}, \seqsplit{NotRegisteredError} \\
 \hline
-isRegistered & TaskId, Address & $\mathbb{B}$ & UnknownTaskError \\
+\seqsplit{isRegistered} & TaskId, Address & $\mathbb{B}$ & \seqsplit{UnknownTaskError} \\
 \hline
-getRegisteredProviders & TaskId & set of Address & UnknownTaskError \\
+\seqsplit{getRegisteredProviders} & TaskId & set of Address & \seqsplit{UnknownTaskError} \\
 \hline
-isValidOutput & TaskId, $\mathbb{R}$ & $\mathbb{B}$ & UnknownTaskError \\
+\seqsplit{isValidOutput} & TaskId, $\mathbb{R}$ & $\mathbb{B}$ & \seqsplit{UnknownTaskError} \\
 \hline
-getReputation & TaskId, Address & $\mathbb{R}$ & UnknownTaskError,
-  NoEntryError \\
+\seqsplit{getReputation} & TaskId, Address & $\mathbb{R}$ & \seqsplit{UnknownTaskError},
+  \seqsplit{NoEntryError} \\
 \hline
-setReputation & TaskId, Address, $\mathbb{R}$ & - & UnknownTaskError,
-  NotRegisteredError, InvalidReputationError \\
+\seqsplit{setReputation} & TaskId, Address, $\mathbb{R}$ & - & \seqsplit{UnknownTaskError},
+  \seqsplit{NotRegisteredError}, \seqsplit{InvalidReputationError} \\
 \hline
-getStake, getReservedStake & TaskId, Address & $\mathbb{N}$ &
-  UnknownTaskError, NoEntryError \\
+getStake, \seqsplit{getReservedStake} & TaskId, Address & $\mathbb{N}$ &
+  \seqsplit{UnknownTaskError}, \seqsplit{NoEntryError} \\
 \hline
-reserveStake & TaskId, Address, $\mathbb{N}$ & - & UnknownTaskError,
-  NotRegisteredError, InsufficientStakeError, ArithmeticOverflowError \\
+\seqsplit{reserveStake} & TaskId, Address, $\mathbb{N}$ & - & \seqsplit{UnknownTaskError},
+  \seqsplit{NotRegisteredError}, \seqsplit{InsufficientStakeError}, \seqsplit{ArithmeticOverflowError} \\
 \hline
-releaseStake & TaskId, Address, $\mathbb{N}$ & - & UnknownTaskError,
-  NoEntryError, TransferFailedError \\
+\seqsplit{releaseStake} & TaskId, Address, $\mathbb{N}$ & - & \seqsplit{UnknownTaskError},
+  \seqsplit{NoEntryError}, \seqsplit{TransferFailedError} \\
 \hline
-deductStake & TaskId, Address, $\mathbb{N}$ & - & UnknownTaskError,
-  NoEntryError, InsufficientStakeError, TransferFailedError \\
+\seqsplit{deductStake} & TaskId, Address, $\mathbb{N}$ & - & \seqsplit{UnknownTaskError},
+  \seqsplit{NoEntryError}, \seqsplit{InsufficientStakeError}, \seqsplit{TransferFailedError} \\
 \hline
-getSlashHistory & TaskId, Address & seq of $\mathbb{B}$ & UnknownTaskError,
-  NoEntryError \\
+\seqsplit{getSlashHistory} & TaskId, Address & seq of $\mathbb{B}$ & \seqsplit{UnknownTaskError},
+  \seqsplit{NoEntryError} \\
 \hline
-recordParticipation & TaskId, Address, $\mathbb{B}$ (slashed) & - &
-  UnknownTaskError, NoEntryError \\
+\seqsplit{recordParticipation} & TaskId, Address, $\mathbb{B}$ (slashed) & - &
+  \seqsplit{UnknownTaskError}, \seqsplit{NoEntryError} \\
 \hline
 \end{longtable}
 
@@ -735,13 +738,13 @@ None.
 \begin{center}
 \begin{tabular}{p{3.2cm} p{4.4cm} p{2.8cm} p{4.6cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
-check & MarketplaceAction, Address (actor) & seq of Issue &
-  NetworkUnavailableError \\
+check & \seqsplit{MarketplaceAction}, Address (actor) & seq of Issue &
+  \seqsplit{NetworkUnavailableError} \\
 \hline
-checkRequestInput & TaskId, RawInput & seq of Issue &
-  UnknownTaskError, NetworkUnavailableError \\
+\seqsplit{checkRequestInput} & TaskId, RawInput & seq of Issue &
+  \seqsplit{UnknownTaskError}, \seqsplit{NetworkUnavailableError} \\
 \hline
 \end{tabular}
 \end{center}
@@ -875,45 +878,45 @@ modules.
 
 \begin{longtable}{p{3.2cm} p{4cm} p{3.2cm} p{5.1cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endhead
-computeCommitment & RequestId, Address, $\mathbb{R}$, Salt & Hash & - \\
+\seqsplit{computeCommitment} & RequestId, Address, $\mathbb{R}$, Salt & Hash & - \\
 \hline
-createRequest & TaskId, Address, $\mathbb{N}$ & RequestId &
-  UnknownTaskError, InvalidPaymentError, TransferFailedError \\
+\seqsplit{createRequest} & TaskId, Address, $\mathbb{N}$ & RequestId &
+  \seqsplit{UnknownTaskError}, \seqsplit{InvalidPaymentError}, \seqsplit{TransferFailedError} \\
 \hline
-acceptRequest & RequestId, Address & - &
-  UnknownRequestError, WrongPhaseError, DeadlinePassedError,
-  NotRegisteredError, AlreadyAcceptedError, InsufficientStakeError \\
+\seqsplit{acceptRequest} & RequestId, Address & - &
+  \seqsplit{UnknownRequestError}, \seqsplit{WrongPhaseError}, \seqsplit{DeadlinePassedError},
+  \seqsplit{NotRegisteredError}, \seqsplit{AlreadyAcceptedError}, \seqsplit{InsufficientStakeError} \\
 \hline
-submitCommitment & RequestId, Address, Hash & - &
-  UnknownRequestError, WrongPhaseError, DeadlinePassedError,
-  NotAcceptedError, AlreadyCommittedError \\
+\seqsplit{submitCommitment} & RequestId, Address, Hash & - &
+  \seqsplit{UnknownRequestError}, \seqsplit{WrongPhaseError}, \seqsplit{DeadlinePassedError},
+  \seqsplit{NotAcceptedError}, \seqsplit{AlreadyCommittedError} \\
 \hline
-revealPrediction & RequestId, Address, $\mathbb{R}$, Salt & - &
-  UnknownRequestError, WrongPhaseError, DeadlinePassedError,
-  NoCommitmentError, AlreadyRevealedError \\
+\seqsplit{revealPrediction} & RequestId, Address, $\mathbb{R}$, Salt & - &
+  \seqsplit{UnknownRequestError}, \seqsplit{WrongPhaseError}, \seqsplit{DeadlinePassedError},
+  \seqsplit{NoCommitmentError}, \seqsplit{AlreadyRevealedError} \\
 \hline
-advancePhase & RequestId & - & UnknownRequestError,
-  ArithmeticOverflowError \\
+\seqsplit{advancePhase} & RequestId & - & \seqsplit{UnknownRequestError},
+  \seqsplit{ArithmeticOverflowError} \\
 \hline
-retryTransfer & RequestId, Address & - & UnknownRequestError,
-  WrongPhaseError, DeadlinePassedError, NoUnresolvedTransferError,
-  TransferFailedError \\
+\seqsplit{retryTransfer} & RequestId, Address & - & \seqsplit{UnknownRequestError},
+  \seqsplit{WrongPhaseError}, \seqsplit{DeadlinePassedError}, \seqsplit{NoUnresolvedTransferError},
+  \seqsplit{TransferFailedError} \\
 \hline
-getStatus & RequestId & RequestStatus & UnknownRequestError \\
+getStatus & RequestId & \seqsplit{RequestStatus} & \seqsplit{UnknownRequestError} \\
 \hline
-getOutcome & RequestId, Address & ParticipationOutcome &
-  UnknownRequestError, NotAcceptedError \\
+\seqsplit{getOutcome} & RequestId, Address & \seqsplit{ParticipationOutcome} &
+  \seqsplit{UnknownRequestError}, \seqsplit{NotAcceptedError} \\
 \hline
 getResult & RequestId & $\mathbb{R} \times \mathbb{R} \times \mathbb{R}
   \times \mathbb{N}$ (result, lowest, highest, count) &
-  UnknownRequestError, ResultUnavailableError \\
+  \seqsplit{UnknownRequestError}, \seqsplit{ResultUnavailableError} \\
 \hline
 \end{longtable}
 
@@ -1184,14 +1187,14 @@ None.
 \begin{center}
 \begin{tabular}{p{3cm} p{4.8cm} p{2.6cm} p{5cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
-weightedMedian & seq of $\mathbb{R}$ (predictions), seq of $\mathbb{R}$
-  (reputations) & $\mathbb{R}$ & EmptyInputError, LengthMismatchError,
-  InvalidReputationError, ArithmeticOverflowError, AggregationError \\
+\seqsplit{weightedMedian} & seq of $\mathbb{R}$ (predictions), seq of $\mathbb{R}$
+  (reputations) & $\mathbb{R}$ & \seqsplit{EmptyInputError}, \seqsplit{LengthMismatchError},
+  \seqsplit{InvalidReputationError}, \seqsplit{ArithmeticOverflowError}, \seqsplit{AggregationError} \\
 \hline
-resultSpread & seq of $\mathbb{R}$ (predictions) & $\mathbb{R} \times
-  \mathbb{R}$ & EmptyInputError \\
+\seqsplit{resultSpread} & seq of $\mathbb{R}$ (predictions) & $\mathbb{R} \times
+  \mathbb{R}$ & \seqsplit{EmptyInputError} \\
 \hline
 \end{tabular}
 \end{center}
@@ -1269,13 +1272,13 @@ None.
 \begin{center}
 \begin{tabular}{p{3cm} p{5.2cm} p{3.2cm} p{4cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
-calculateRewards & $\mathbb{N}$ (total reward), seq of $\mathbb{R}$
+\seqsplit{calculateRewards} & $\mathbb{N}$ (total reward), seq of $\mathbb{R}$
   (reputations before), seq of $\mathbb{R}$ (reputations after) & seq of
-  $\mathbb{N}$ (shares) $\times$ $\mathbb{N}$ (remainder) & EmptyInputError,
-  LengthMismatchError, NoEligibleProvidersError, ArithmeticOverflowError,
-  RewardValidationError \\
+  $\mathbb{N}$ (shares) $\times$ $\mathbb{N}$ (remainder) & \seqsplit{EmptyInputError},
+  \seqsplit{LengthMismatchError}, \seqsplit{NoEligibleProvidersError}, \seqsplit{ArithmeticOverflowError},
+  \seqsplit{RewardValidationError} \\
 \hline
 \end{tabular}
 \end{center}
@@ -1362,10 +1365,10 @@ This module uses no other module.
 \begin{center}
 \begin{tabular}{p{2.6cm} p{5.5cm} p{3cm} p{4cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
-penaltyFor & ParticipationOutcome, $\mathbb{N}$ (stake), seq of
-  $\mathbb{B}$ (slash history) & PenaltyDecision & ArithmeticOverflowError \\
+\seqsplit{penaltyFor} & \seqsplit{ParticipationOutcome}, $\mathbb{N}$ (stake), seq of
+  $\mathbb{B}$ (slash history) & \seqsplit{PenaltyDecision} & \seqsplit{ArithmeticOverflowError} \\
 \hline
 \end{tabular}
 \end{center}
@@ -1443,12 +1446,12 @@ This module uses no other module.
 \begin{center}
 \begin{tabular}{p{3cm} p{5.2cm} p{2.8cm} p{4cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
-updateReputations & seq of $\mathbb{R}$ (predictions), seq of $\mathbb{R}$
+\seqsplit{updateReputations} & seq of $\mathbb{R}$ (predictions), seq of $\mathbb{R}$
   (reputations), $\mathbb{R}$ (aggregate) & seq of $\mathbb{R}$ &
-  EmptyInputError, LengthMismatchError, InvalidReputationError,
-  ArithmeticOverflowError \\
+  \seqsplit{EmptyInputError}, \seqsplit{LengthMismatchError}, \seqsplit{InvalidReputationError},
+  \seqsplit{ArithmeticOverflowError} \\
 \hline
 \end{tabular}
 \end{center}
@@ -1549,28 +1552,28 @@ modules.
 
 \begin{longtable}{p{3cm} p{4cm} p{3.4cm} p{5cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endhead
-create & ProviderSetup, TaskId & ParticipationClient &
-  SetupNotReadyError, NotRegisteredError \\
+create & \seqsplit{ProviderSetup}, TaskId & \seqsplit{ParticipationClient} &
+  \seqsplit{SetupNotReadyError}, \seqsplit{NotRegisteredError} \\
 \hline
-commitPrediction & ParticipationClient, RequestId & - & UnknownRequestError,
-  WrongPhaseError, NotAcceptedError, AlreadyCommittedError, AccessDeniedError,
-  ModelError, InvalidPredictionError, SubmissionFailedError \\
+\seqsplit{commitPrediction} & \seqsplit{ParticipationClient}, RequestId & - & \seqsplit{UnknownRequestError},
+  \seqsplit{WrongPhaseError}, \seqsplit{NotAcceptedError}, \seqsplit{AlreadyCommittedError}, \seqsplit{AccessDeniedError},
+  \seqsplit{ModelError}, \seqsplit{InvalidPredictionError}, \seqsplit{SubmissionFailedError} \\
 \hline
-revealPrediction & ParticipationClient, RequestId & - & UnknownRequestError,
-  WrongPhaseError, NoCommitmentError, AlreadyRevealedError,
-  SubmissionFailedError \\
+\seqsplit{revealPrediction} & \seqsplit{ParticipationClient}, RequestId & - & \seqsplit{UnknownRequestError},
+  \seqsplit{WrongPhaseError}, \seqsplit{NoCommitmentError}, \seqsplit{AlreadyRevealedError},
+  \seqsplit{SubmissionFailedError} \\
 \hline
-pendingActions & ParticipationClient & seq of (RequestId $\times$
-  ParticipationAction) & - \\
+\seqsplit{pendingActions} & \seqsplit{ParticipationClient} & seq of (RequestId $\times$
+  \seqsplit{ParticipationAction}) & - \\
 \hline
-getParticipationState & ParticipationClient, RequestId & ParticipationState &
+\seqsplit{getParticipationState} & \seqsplit{ParticipationClient}, RequestId & \seqsplit{ParticipationState} &
   - \\
 \hline
 \end{longtable}
@@ -1735,17 +1738,17 @@ This module uses no other module.
 \begin{center}
 \begin{tabular}{p{2.4cm} p{4.8cm} p{3cm} p{4.6cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 transfer & Endpoint (source), Endpoint (destination), $\mathbb{N}$ (amount)
-  & - & TransferFailedError, ArithmeticOverflowError \\
+  & - & \seqsplit{TransferFailedError}, \seqsplit{ArithmeticOverflowError} \\
 \hline
 mint & Endpoint (destination), $\mathbb{N}$ (amount) & - &
-  ArithmeticOverflowError \\
+  \seqsplit{ArithmeticOverflowError} \\
 \hline
 balanceOf & Endpoint & $\mathbb{N}$ & - \\
 \hline
-getTotals & - & TokenTotals & - \\
+getTotals & - & \seqsplit{TokenTotals} & - \\
 \hline
 \end{tabular}
 \end{center}
@@ -1872,44 +1875,44 @@ None.
 
 \begin{longtable}{p{3.4cm} p{3.6cm} p{3.4cm} p{4.6cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endhead
 init & - & - & - \\
 \hline
-listTasks & - & seq of TaskInfo & NetworkUnavailableError \\
+listTasks & - & seq of TaskInfo & \seqsplit{NetworkUnavailableError} \\
 \hline
-getTask & TaskId & TaskInfo & UnknownTaskError, NetworkUnavailableError \\
+getTask & TaskId & TaskInfo & \seqsplit{UnknownTaskError}, \seqsplit{NetworkUnavailableError} \\
 \hline
-listProviders & TaskId & seq of ProviderInfo & UnknownTaskError,
-  NetworkUnavailableError \\
+\seqsplit{listProviders} & TaskId & seq of \seqsplit{ProviderInfo} & \seqsplit{UnknownTaskError},
+  \seqsplit{NetworkUnavailableError} \\
 \hline
-getProviderInfo & TaskId, Address & ProviderInfo & UnknownTaskError,
-  NetworkUnavailableError \\
+\seqsplit{getProviderInfo} & TaskId, Address & \seqsplit{ProviderInfo} & \seqsplit{UnknownTaskError},
+  \seqsplit{NetworkUnavailableError} \\
 \hline
-getRequestInfo & RequestId & RequestInfo & UnknownRequestError,
-  NetworkUnavailableError \\
+\seqsplit{getRequestInfo} & RequestId & \seqsplit{RequestInfo} & \seqsplit{UnknownRequestError},
+  \seqsplit{NetworkUnavailableError} \\
 \hline
-listRequests & Address (requester) & seq of RequestInfo &
-  NetworkUnavailableError \\
+\seqsplit{listRequests} & Address (requester) & seq of \seqsplit{RequestInfo} &
+  \seqsplit{NetworkUnavailableError} \\
 \hline
-getPendingTransfers & Address (provider) & seq of PendingTransfer &
-  NetworkUnavailableError \\
+\seqsplit{getPendingTransfers} & Address (provider) & seq of \seqsplit{PendingTransfer} &
+  \seqsplit{NetworkUnavailableError} \\
 \hline
-getTransactionHistory & Address & seq of TransactionInfo &
-  NetworkUnavailableError \\
+\seqsplit{getTransactionHistory} & Address & seq of \seqsplit{TransactionInfo} &
+  \seqsplit{NetworkUnavailableError} \\
 \hline
-getBalances & Address & $\mathbb{N} \times \mathbb{N}$ (tokens, network
-  currency) & NetworkUnavailableError \\
+\seqsplit{getBalances} & Address & $\mathbb{N} \times \mathbb{N}$ (tokens, network
+  currency) & \seqsplit{NetworkUnavailableError} \\
 \hline
-subscribe & Target, ChangeHandler & - & UnknownTaskError,
-  UnknownRequestError \\
+subscribe & Target, \seqsplit{ChangeHandler} & - & \seqsplit{UnknownTaskError},
+  \seqsplit{UnknownRequestError} \\
 \hline
-unsubscribe & Target, ChangeHandler & - & - \\
+unsubscribe & Target, \seqsplit{ChangeHandler} & - & - \\
 \hline
 \end{longtable}
 
@@ -2066,26 +2069,26 @@ suggested fix (\nfrref{NFR_ErrorVisibility}).
 
 \begin{longtable}{p{3cm} p{3.8cm} p{3.2cm} p{5cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endhead
-prepareTransaction & MarketplaceAction, Address (actor), SignedTransaction
-  $\cup$ \{$\bot$\} (earlier attempt) & PreparedTransaction &
-  PreflightFailedError, InsufficientFundsError, SimulationMismatchError,
-  DuplicateSubmissionError, NetworkUnavailableError \\
+\seqsplit{prepareTransaction} & \seqsplit{MarketplaceAction}, Address (actor), \seqsplit{SignedTransaction}
+  $\cup$ \{$\bot$\} (earlier attempt) & \seqsplit{PreparedTransaction} &
+  \seqsplit{PreflightFailedError}, \seqsplit{InsufficientFundsError}, \seqsplit{SimulationMismatchError},
+  \seqsplit{DuplicateSubmissionError}, \seqsplit{NetworkUnavailableError} \\
 \hline
-signTransaction & PreparedTransaction & SignedTransaction &
-  WalletNotConnectedError, SignatureRejectedError, ExpiredTransactionError \\
+\seqsplit{signTransaction} & \seqsplit{PreparedTransaction} & \seqsplit{SignedTransaction} &
+  \seqsplit{WalletNotConnectedError}, \seqsplit{SignatureRejectedError}, \seqsplit{ExpiredTransactionError} \\
 \hline
-submitTransaction & SignedTransaction & - & ExpiredTransactionError,
-  NetworkUnavailableError \\
+\seqsplit{submitTransaction} & \seqsplit{SignedTransaction} & - & \seqsplit{ExpiredTransactionError},
+  \seqsplit{NetworkUnavailableError} \\
 \hline
-getStatus & SignedTransaction & TransactionStatus &
-  NetworkUnavailableError \\
+getStatus & \seqsplit{SignedTransaction} & \seqsplit{TransactionStatus} &
+  \seqsplit{NetworkUnavailableError} \\
 \hline
 \end{longtable}
 
@@ -2225,22 +2228,22 @@ None.
 \begin{center}
 \begin{tabular}{p{3.6cm} p{2.8cm} p{2.8cm} p{5.4cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
-init & SetupConfig & - & InvalidConfigError, WalletUnavailableError,
-  NetworkUnavailableError, ProfileUnavailableError \\
+init & \seqsplit{SetupConfig} & - & \seqsplit{InvalidConfigError}, \seqsplit{WalletUnavailableError},
+  \seqsplit{NetworkUnavailableError}, \seqsplit{ProfileUnavailableError} \\
 \hline
 isReady & - & $\mathbb{B}$ & - \\
 \hline
-getProviderAddress & - & Address & NotReadyError \\
+\seqsplit{getProviderAddress} & - & Address & \seqsplit{NotReadyError} \\
 \hline
-getNetworkEndpoint & - & URL & NotReadyError \\
+\seqsplit{getNetworkEndpoint} & - & URL & \seqsplit{NotReadyError} \\
 \hline
-getRegisteredTasks & - & set of TaskId & NotReadyError,
-  NetworkUnavailableError \\
+\seqsplit{getRegisteredTasks} & - & set of TaskId & \seqsplit{NotReadyError},
+  \seqsplit{NetworkUnavailableError} \\
 \hline
-signAndSend & Instruction & TransactionId & NotReadyError,
-  InsufficientFundsError, SubmissionFailedError, NetworkUnavailableError \\
+\seqsplit{signAndSend} & Instruction & \seqsplit{TransactionId} & \seqsplit{NotReadyError},
+  \seqsplit{InsufficientFundsError}, \seqsplit{SubmissionFailedError}, \seqsplit{NetworkUnavailableError} \\
 \hline
 close & - & - & - \\
 \hline
@@ -2337,19 +2340,19 @@ None.
 \begin{center}
 \begin{tabular}{p{3.2cm} p{4.2cm} p{3cm} p{4.4cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
-create & URL (endpoint), TaskId, Address (provider) & RequestListener &
-  UnknownTaskError, NetworkUnavailableError \\
+create & URL (endpoint), TaskId, Address (provider) & \seqsplit{RequestListener} &
+  \seqsplit{UnknownTaskError}, \seqsplit{NetworkUnavailableError} \\
 \hline
-activeRequests & RequestListener & seq of RequestId & - \\
+\seqsplit{activeRequests} & \seqsplit{RequestListener} & seq of RequestId & - \\
 \hline
-getSnapshot & RequestListener, RequestId & RequestSnapshot &
-  UnknownRequestError \\
+\seqsplit{getSnapshot} & \seqsplit{RequestListener}, RequestId & \seqsplit{RequestSnapshot} &
+  \seqsplit{UnknownRequestError} \\
 \hline
-onEvent & RequestListener, EventHandler & - & - \\
+onEvent & \seqsplit{RequestListener}, \seqsplit{EventHandler} & - & - \\
 \hline
-stop & RequestListener & - & - \\
+stop & \seqsplit{RequestListener} & - & - \\
 \hline
 \end{tabular}
 \end{center}
@@ -2426,9 +2429,9 @@ None.
 \begin{center}
 \begin{tabular}{p{2.6cm} p{4cm} p{2.8cm} p{4cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
-predict & InputRecord & $\mathbb{R}$ & ModelError \\
+predict & \seqsplit{InputRecord} & $\mathbb{R}$ & \seqsplit{ModelError} \\
 \hline
 \end{tabular}
 \end{center}
@@ -2503,21 +2506,21 @@ None.
 
 \begin{longtable}{p{2.6cm} p{4.6cm} p{2.2cm} p{5cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endhead
-storeInput & RequestId, Address, InputRecord & - & AlreadyStoredError,
-  StorageUnavailableError \\
-grantAccess & RequestId, Address, set of Address & - &
-  InputUnavailableError, NotRequesterError \\
-getInputAccess & RequestId, Address & InputAccess & InputUnavailableError,
-  AccessDeniedError \\
-deleteInput & RequestId, Address & - & InputUnavailableError,
-  NotRequesterError \\
+\seqsplit{storeInput} & RequestId, Address, \seqsplit{InputRecord} & - & \seqsplit{AlreadyStoredError},
+  \seqsplit{StorageUnavailableError} \\
+\seqsplit{grantAccess} & RequestId, Address, set of Address & - &
+  \seqsplit{InputUnavailableError}, \seqsplit{NotRequesterError} \\
+\seqsplit{getInputAccess} & RequestId, Address & \seqsplit{InputAccess} & \seqsplit{InputUnavailableError},
+  \seqsplit{AccessDeniedError} \\
+\seqsplit{deleteInput} & RequestId, Address & - & \seqsplit{InputUnavailableError},
+  \seqsplit{NotRequesterError} \\
 \hline
 \end{longtable}
 
@@ -2675,23 +2678,23 @@ exceptions. Instead, an exception from a used module is shown to the user with
 
 \begin{longtable}{p{3.4cm} p{6.6cm} p{1.2cm} p{1.8cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endhead
 init & - & - & - \\
-startSession & Address & - & - \\
+\seqsplit{startSession} & Address & - & - \\
 signOut & - & - & - \\
 display & View, TaskId $\cup$ RequestId $\cup$ \{$\bot$\} & - & - \\
-createTask & TaskDefinition & - & - \\
-submitRequest & TaskId, InputRecord, $\mathbb{N}$ (payment) & - & - \\
-confirmTransaction & - & - & - \\
-cancelTransaction & - & - & - \\
-retryTransaction & - & - & - \\
-updateProfile & ProfileDetails & - & - \\
+\seqsplit{createTask} & \seqsplit{TaskDefinition} & - & - \\
+\seqsplit{submitRequest} & TaskId, \seqsplit{InputRecord}, $\mathbb{N}$ (payment) & - & - \\
+\seqsplit{confirmTransaction} & - & - & - \\
+\seqsplit{cancelTransaction} & - & - & - \\
+\seqsplit{retryTransaction} & - & - & - \\
+\seqsplit{updateProfile} & \seqsplit{ProfileDetails} & - & - \\
 \hline
 \end{longtable}
 
@@ -2939,24 +2942,24 @@ user with \texttt{showError} instead of being raised.
 
 \begin{longtable}{p{3.4cm} p{6.6cm} p{1.2cm} p{1.8cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endhead
 init & - & - & - \\
-startSession & Address & - & - \\
+\seqsplit{startSession} & Address & - & - \\
 signOut & - & - & - \\
 display & View, TaskId $\cup$ \{$\bot$\} & - & - \\
 register & TaskId & - & - \\
 unregister & TaskId & - & - \\
-retryReward & RequestId & - & - \\
-confirmTransaction & - & - & - \\
-cancelTransaction & - & - & - \\
-retryTransaction & - & - & - \\
-updateProfile & ProfileDetails & - & - \\
+\seqsplit{retryReward} & RequestId & - & - \\
+\seqsplit{confirmTransaction} & - & - & - \\
+\seqsplit{cancelTransaction} & - & - & - \\
+\seqsplit{retryTransaction} & - & - & - \\
+\seqsplit{updateProfile} & \seqsplit{ProfileDetails} & - & - \\
 \hline
 \end{longtable}
 
@@ -3093,26 +3096,26 @@ None.
 
 \begin{longtable}{p{3.6cm} p{2.8cm} p{1.8cm} p{5.6cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endhead
 init & - & - & - \\
-connectExtension & - & - & AlreadyConnectedError, NoWalletFoundError,
-  ConnectionRejectedError \\
-startEmbeddedSignIn & SignInMethod & - & AlreadyConnectedError,
-  UnsupportedMethodError, InvalidContactError,
-  WalletProviderUnavailableError \\
-completeEmbeddedSignIn & String (code) & $\mathbb{B}$ & NoSignInStartedError,
-  InvalidCodeError, WalletCreationFailedError \\
-verifyOwnership & - & Address & WalletNotConnectedError,
-  SignatureRejectedError, OwnershipNotVerifiedError \\
-getConnectedAddress & - & Address & WalletNotConnectedError \\
-requestSignature & TransactionData & Signature & WalletNotConnectedError,
-  SignatureRejectedError \\
+\seqsplit{connectExtension} & - & - & \seqsplit{AlreadyConnectedError}, \seqsplit{NoWalletFoundError},
+  \seqsplit{ConnectionRejectedError} \\
+\seqsplit{startEmbeddedSignIn} & \seqsplit{SignInMethod} & - & \seqsplit{AlreadyConnectedError},
+  \seqsplit{UnsupportedMethodError}, \seqsplit{InvalidContactError},
+  \seqsplit{WalletProviderUnavailableError} \\
+\seqsplit{completeEmbeddedSignIn} & String (code) & $\mathbb{B}$ & \seqsplit{NoSignInStartedError},
+  \seqsplit{InvalidCodeError}, \seqsplit{WalletCreationFailedError} \\
+\seqsplit{verifyOwnership} & - & Address & \seqsplit{WalletNotConnectedError},
+  \seqsplit{SignatureRejectedError}, \seqsplit{OwnershipNotVerifiedError} \\
+\seqsplit{getConnectedAddress} & - & Address & \seqsplit{WalletNotConnectedError} \\
+\seqsplit{requestSignature} & \seqsplit{TransactionData} & Signature & \seqsplit{WalletNotConnectedError},
+  \seqsplit{SignatureRejectedError} \\
 disconnect & - & - & - \\
 \hline
 \end{longtable}
@@ -3288,21 +3291,21 @@ None.
 
 \begin{longtable}{p{3.4cm} p{4.2cm} p{2.4cm} p{4.4cm}}
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{\seqsplit{Exceptions}} \\
 \hline
 \endhead
-init & - & - & StorageUnavailableError \\
-findOrCreateProfile & Address & Profile & StorageUnavailableError \\
-getProfile & Address & Profile & UnknownUserError \\
-updateDetails & Address, ProfileDetails & - & UnknownUserError,
-  InvalidDetailsError \\
-addHistoryEntry & Address, RequestId, String & - & UnknownUserError,
-  DuplicateEntryError \\
-getPublicProfile & Address & PublicProfile & - \\
+init & - & - & \seqsplit{StorageUnavailableError} \\
+\seqsplit{findOrCreateProfile} & Address & Profile & \seqsplit{StorageUnavailableError} \\
+\seqsplit{getProfile} & Address & Profile & \seqsplit{UnknownUserError} \\
+\seqsplit{updateDetails} & Address, \seqsplit{ProfileDetails} & - & \seqsplit{UnknownUserError},
+  \seqsplit{InvalidDetailsError} \\
+\seqsplit{addHistoryEntry} & Address, RequestId, String & - & \seqsplit{UnknownUserError},
+  \seqsplit{DuplicateEntryError} \\
+\seqsplit{getPublicProfile} & Address & \seqsplit{PublicProfile} & - \\
 \hline
 \end{longtable}
 
