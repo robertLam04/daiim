@@ -492,6 +492,356 @@ to be implemented.
 
 
 % =====================================================================
+\section{MIS of Provider Registry (\mref{mRegistry})} \label{misRegistry}
+% =====================================================================
+
+\subsection{Module}
+
+Provider Registry (\mref{mRegistry}). An abstract data type whose instances are
+inference tasks, each identified by a \texttt{TaskId}, together with the
+provider entries registered for each task. Implemented in the on-chain program.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{Token Manager (\mref{mToken}):} \texttt{transfer}, the endpoints
+  \texttt{Wallet}, \texttt{StakeEscrow}, and \texttt{Burn}, and
+  \texttt{TransferFailedError}.
+\end{itemize}
+
+The routine names above are the interface this MIS assumes from the other
+modules.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+\begin{itemize}
+\item \texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR}: $\mathbb{N}$ = 2 -- the smallest
+  minimum number of providers a task may specify (\rref{FR_MinimumProvidersFloor})
+\item \texttt{MINIMUM\_PROVIDER\_STAKE}: $\mathbb{N}$ -- the stake a provider
+  must keep for a task to remain registered for it
+  (\rref{FR_ProviderMinimumStakeUnregistration})
+\item \texttt{DEFAULT\_BASELINE\_REPUTATION}: $\mathbb{R}$ = 10,
+  \texttt{DEFAULT\_EXIT\_THRESHOLD}: $\mathbb{R}$ = 5 -- the values used when a
+  task definition does not set its own (the proof of concept's defaults)
+\end{itemize}
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{Schema}: a list of named fields, each with a type. The input
+  schema lists the values a requester supplies. The output schema describes one
+  prediction, which for a regression task is a single real number.
+\item \texttt{TaskDefinition} = (\texttt{name}, \texttt{description}: String,
+  \texttt{category}: Category, \texttt{metric}: EvaluationMetric $\cup$
+  \{$\bot$\}, \texttt{inputSchema}, \texttt{outputSchema}: Schema,
+  \texttt{trainingData}: String $\cup$ \{$\bot$\}, \texttt{minProviders},
+  \texttt{maxProviders}: $\mathbb{N}$, \texttt{acceptancePeriod}: Duration,
+  \texttt{minimumStake}: $\mathbb{N}$, \texttt{baselineReputation},
+  \texttt{exitThreshold}: $\mathbb{R}$) (\rref{FR_InferenceTaskDefinition},
+  \rref{FR_TaskMinimumProviders}, \rref{FR_TaskAcceptancePeriod})
+\item \texttt{TaskParameters} = (\texttt{minProviders}, \texttt{maxProviders}:
+  $\mathbb{N}$, \texttt{acceptancePeriod}: Duration)
+\item \texttt{ExitMode} = \{None, Return, Burn\}
+\item \texttt{ProviderEntry} = (\texttt{registered}: $\mathbb{B}$,
+  \texttt{reputation}: $\mathbb{R}$, \texttt{stake}, \texttt{reserved}:
+  $\mathbb{N}$, \texttt{slashHistory}: seq of $\mathbb{B}$, \texttt{exit}:
+  ExitMode)
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{3.4cm} p{4.2cm} p{2.8cm} p{5cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+createTask & Address (creator), TaskDefinition & TaskId &
+  InvalidTaskSettingsError \\
+\hline
+getTask & TaskId & TaskDefinition & UnknownTaskError \\
+\hline
+getTaskParameters & TaskId & TaskParameters & UnknownTaskError \\
+\hline
+registerProvider & TaskId, Address & - & UnknownTaskError,
+  AlreadyRegisteredError, TransferFailedError \\
+\hline
+withdrawProvider & TaskId, Address & - & UnknownTaskError, NotRegisteredError,
+  ActiveRequestsError, TransferFailedError \\
+\hline
+unregisterProvider & TaskId, Address, $\mathbb{B}$ (burn remaining) & - &
+  UnknownTaskError, NotRegisteredError \\
+\hline
+isRegistered & TaskId, Address & $\mathbb{B}$ & UnknownTaskError \\
+\hline
+getRegisteredProviders & TaskId & set of Address & UnknownTaskError \\
+\hline
+isValidOutput & TaskId, $\mathbb{R}$ & $\mathbb{B}$ & UnknownTaskError \\
+\hline
+getReputation & TaskId, Address & $\mathbb{R}$ & UnknownTaskError,
+  NoEntryError \\
+\hline
+setReputation & TaskId, Address, $\mathbb{R}$ & - & UnknownTaskError,
+  NotRegisteredError, InvalidReputationError \\
+\hline
+getStake, getReservedStake & TaskId, Address & $\mathbb{N}$ &
+  UnknownTaskError, NoEntryError \\
+\hline
+reserveStake & TaskId, Address, $\mathbb{N}$ & - & UnknownTaskError,
+  NotRegisteredError, InsufficientStakeError, ArithmeticOverflowError \\
+\hline
+releaseStake & TaskId, Address, $\mathbb{N}$ & - & UnknownTaskError,
+  NoEntryError, TransferFailedError \\
+\hline
+deductStake & TaskId, Address, $\mathbb{N}$ & - & UnknownTaskError,
+  NoEntryError, InsufficientStakeError, TransferFailedError \\
+\hline
+getSlashHistory & TaskId, Address & seq of $\mathbb{B}$ & UnknownTaskError,
+  NoEntryError \\
+\hline
+recordParticipation & TaskId, Address, $\mathbb{B}$ (slashed) & - &
+  UnknownTaskError, NoEntryError \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item \texttt{tasks}: TaskId $\rightarrow$ TaskDefinition -- each task's
+  definition and the providers registered for it
+\item \texttt{entries}: (TaskId $\times$ Address) $\rightarrow$ ProviderEntry
+  -- the reputation and stake of each registered provider
+\end{itemize}
+
+Any other state variables are to be filled in later.
+
+\subsubsection{Environment Variables}
+
+To be filled in later.
+
+\subsubsection{State Invariant}
+
+For every task $t$ and entry $e$ = \texttt{entries[$t$, $a$]}:
+\begin{itemize}
+\item $\texttt{tasks}[t].\texttt{minProviders} \ge
+  \texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR}$ and
+  $\texttt{tasks}[t].\texttt{maxProviders} \ge
+  \texttt{tasks}[t].\texttt{minProviders}$
+\item $0 \le e.\texttt{reputation} \le 100$ (\rref{FR_ReputationRange})
+\end{itemize}
+The rest of the invariant is to be filled in later.
+
+\subsubsection{Assumptions}
+
+To be filled in later.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{createTask}(creator, d):
+\begin{itemize}
+\item transition: A new task is created with definition \texttt{d} and no
+  registered providers.
+\item output: \textit{out} := the new task's \texttt{TaskId}
+\item exception: \textit{exc} := (\texttt{d.minProviders} $<$
+  \texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR} or \texttt{d.maxProviders} $<$
+  \texttt{d.minProviders} $\Rightarrow$ InvalidTaskSettingsError)
+  (\rref{FR_MinimumProvidersFloor})
+\end{itemize}
+
+\noindent \texttt{getTask}($t$), \texttt{getTaskParameters}($t$):
+\begin{itemize}
+\item output: \textit{out} := \texttt{tasks[$t$]}; the
+  \texttt{minProviders} and \texttt{maxProviders} of \texttt{tasks[$t$]}. How
+  the acceptance period is set is to be filled in later.
+\item exception: To be filled in later.
+\end{itemize}
+
+\noindent \texttt{registerProvider}($t$, $a$):
+\begin{itemize}
+\item transition: \texttt{entries[$t$, $a$]} := a registered entry with
+  \texttt{reputation} := the baseline reputation and \texttt{stake} := the
+  minimum stake (\rref{FR_InferenceTaskRegistration}). How the stake is
+  transferred into escrow is to be filled in later.
+\item exception: \textit{exc} := ($a$ is already registered for $t$
+  $\Rightarrow$ AlreadyRegisteredError). Other exceptions are to be filled in
+  later.
+\end{itemize}
+
+\noindent \texttt{withdrawProvider}($t$, $a$), \texttt{unregisterProvider}($t$,
+$a$, burn):
+\begin{itemize}
+\item To be filled in later.
+\end{itemize}
+
+\noindent \texttt{isRegistered}($t$, $a$), \texttt{getRegisteredProviders}($t$):
+\begin{itemize}
+\item output: \textit{out} := whether $a$ is among the providers registered for
+  $t$; the set of providers registered for $t$
+\item exception: To be filled in later.
+\end{itemize}
+
+\noindent \texttt{isValidOutput}($t$, $p$):
+\begin{itemize}
+\item output: \textit{out} := $p$ is a finite number. The check against
+  \texttt{tasks[$t$].outputSchema} is to be filled in later.
+\item exception: To be filled in later.
+\end{itemize}
+
+\noindent \texttt{getReputation}($t$, $a$):
+\begin{itemize}
+\item output: \textit{out} := \texttt{entries[$t$, $a$].reputation}
+\item exception: To be filled in later.
+\end{itemize}
+
+\noindent \texttt{setReputation}($t$, $a$, $r$):
+\begin{itemize}
+\item transition: \texttt{entries[$t$, $a$].reputation} := $r$
+\item exception: \textit{exc} := ($a$ is not registered for $t$ $\Rightarrow$
+  NotRegisteredError $\mid$ $r$ is not finite or $r \notin [0, 100]$
+  $\Rightarrow$ InvalidReputationError)
+\end{itemize}
+
+\noindent \texttt{getStake}, \texttt{getReservedStake}, \texttt{reserveStake},
+\texttt{releaseStake}, \texttt{deductStake}, \texttt{getSlashHistory},
+\texttt{recordParticipation}:
+\begin{itemize}
+\item To be filled in later.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+To be filled in later.
+
+
+% =====================================================================
+\section{MIS of Marketplace Action Preflight (\mref{mActionPreflight})}
+\label{misPreflight}
+% =====================================================================
+
+\subsection{Module}
+
+Marketplace Action Preflight (\mref{mActionPreflight}). A library implemented
+in the off-chain application. It reports problems with a proposed action before
+a transaction is prepared, so the user can fix them. Its checks are advisory:
+the on-chain program enforces the same rules when the transaction executes
+(\ref{SA_OnChainFundsCheck}).
+
+\subsection{Uses}
+
+This module uses no other module's access programs. It reads the blockchain
+through its environment variable \texttt{BlockchainNetwork}, and it refers to
+the exported constants\\
+\texttt{MINIMUM\_REQUEST\_PAYMENT} of the Request
+Lifecycle (\mref{mLifecycle}) and\\
+\texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR} and
+\texttt{MINIMUM\_PROVIDER\_STAKE} of the Provider Registry (\mref{mRegistry}),
+and to the type \texttt{MarketplaceAction} of the Transaction Manager
+(\mref{mTransaction}).
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{IssueCode} = \{InvalidTaskDefinition, UnknownTask,
+  UnknownRequest, AmountTooLow, NotEnoughFunds, AlreadyRegistered,
+  NotRegistered, HasActiveRequests, WrongPhase, DeadlinePassed,
+  AlreadyAccepted, RequestFull, InsufficientStake, NoUnresolvedTransfer,
+  InputMissingField, InputUnexpectedField, InputNotANumber\}
+\item \texttt{Issue} = (\texttt{code}: IssueCode, \texttt{field}: String
+  $\cup$ \{$\bot$\}, \texttt{description}: String, \texttt{suggestedFix}:
+  String) -- the field is the form field the issue belongs to, if any
+  (\nfrref{NFR_ErrorVisibility})
+\item \texttt{RawInput}: set of (String $\times$ String) -- the field names and
+  values a requester supplied, read from an uploaded file or typed in
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3.2cm} p{4.4cm} p{2.8cm} p{4.6cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+check & MarketplaceAction, Address (actor) & seq of Issue &
+  NetworkUnavailableError \\
+\hline
+checkRequestInput & TaskId, RawInput & seq of Issue &
+  UnknownTaskError, NetworkUnavailableError \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None.
+
+\subsubsection{Environment Variables}
+
+To be filled in later.
+
+\subsubsection{State Invariant}
+
+None, since the module has no state variables.
+
+\subsubsection{Assumptions}
+
+To be filled in later.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{check}(action, actor):
+\begin{itemize}
+\item output: \textit{out} := the issues found for \texttt{action}, or
+  $\langle\rangle$ if none:
+  \begin{itemize}
+  \item \texttt{CreateTask(d)}: an InvalidTaskDefinition issue, naming its
+    field, for each of these: \texttt{d.name} is blank; \texttt{d.description}
+    is blank; the output unit is blank; the input schema is empty or two inputs
+    share a name; \texttt{d.minProviders} is not a whole number $\ge$
+    \texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR} (\rref{FR_MinimumProvidersFloor});
+    \texttt{d.maxProviders} is not a whole number $\ge$ \texttt{d.minProviders}
+  \item \texttt{CreateRequest($t$, payment)}: AmountTooLow if payment is not
+    more than the task's minimum payment; otherwise NotEnoughFunds if payment is
+    more than the actor's available funds (\rref{FR_RequestPayment},
+    \ref{SA_BalanceCheck})
+  \item \texttt{RegisterProvider}, \texttt{UnregisterProvider},
+    \texttt{AcceptRequest}, and \texttt{RetryReward}: to be filled in later
+  \end{itemize}
+  Each issue's description states the rule that failed with the values
+  involved (for example, ``This request costs \$5.00, but you have \$3.20
+  available.''), and its suggested fix names an action that resolves it (for
+  example, ``Deposit more into your account, or lower the amount.'').
+\item exception: To be filled in later.
+\end{itemize}
+
+\noindent \texttt{checkRequestInput}($t$, raw):
+\begin{itemize}
+\item output: \textit{out} := an InputMissingField issue for each field of
+  $t$\texttt{.inputSchema} missing from raw and an InputUnexpectedField issue
+  for each name in raw that is not in the schema. If there are none, an
+  InputNotANumber issue for the first field whose value is blank or is not a
+  finite number. The suggested fix is to download the example file from the
+  task page or type the values in (\rref{FR_RequestValidation}).
+\item exception: To be filled in later.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+To be filled in later.
+
+
+% =====================================================================
 \section{MIS of Request Lifecycle (\mref{mLifecycle})} \label{misLifecycle}
 % =====================================================================
 
@@ -1181,7 +1531,7 @@ registered task. Implemented in the provider SDK.
 \subsection{Uses}
 
 \begin{itemize}
-\item \textbf{Provider Setup (\mref{mProviderSetup}):} \texttt{isReady},
+\item \textbf{Provider Setup (\mref{mProviderSetup}):} \texttt{isReady}, \texttt{getNetworkEndpoint},
   \texttt{getProviderAddress}, \texttt{getRegisteredTasks}, and
   \texttt{signAndSend}.
 \item \textbf{Request Listener (\mref{mListener}):} \texttt{create},
@@ -1291,7 +1641,8 @@ requests, and each access program preserves this.
 \item transition: A new client \texttt{c} with \texttt{c.setup} := setup,
   \texttt{c.taskId} := taskId, \texttt{c.provider} :=
   \texttt{setup.getProviderAddress()}, and \texttt{c.listener} :=
-  \texttt{RequestListener.create(taskId)}. \texttt{c.state} and
+  \texttt{RequestListener.create(setup.getNetworkEndpoint(), taskId,
+  c.provider)}. \texttt{c.state} and
   \texttt{c.pending} are restored from \texttt{SecureLocalStore}, or are empty
   if it holds nothing for this task.
 \item output: \textit{out} := \texttt{c}
@@ -1828,6 +2179,253 @@ None, since the module has no state variables.
   wallet.
 \end{itemize}
 
+
+% =====================================================================
+\section{MIS of Provider Setup (\mref{mProviderSetup})} \label{misProviderSetup}
+% =====================================================================
+
+\subsection{Module}
+
+Provider Setup (\mref{mProviderSetup}). An abstract object implemented in the
+provider SDK. It holds the provider client's connection to the blockchain and
+access to the provider's wallet, so that other provider SDK modules need not
+know how either is set up.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{User Information (\mref{mUserInfo}):}
+  \texttt{findOrCreateProfile}, which links the provider's verified address to
+  the same user profile used in the web application.
+\end{itemize}
+
+The routine names above are the interface this MIS assumes from the other
+modules.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{SetupConfig} = (\texttt{networkEndpoint}: URL,
+  \texttt{keySource}: the location of the provider's wallet key, such as a key
+  file or a hardware wallet)
+\item \texttt{Instruction}: an unsigned on-chain program instruction, such as
+  \texttt{submitCommitment} or \texttt{revealPrediction}
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3.6cm} p{2.8cm} p{2.8cm} p{5.4cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+init & SetupConfig & - & InvalidConfigError, WalletUnavailableError,
+  NetworkUnavailableError, ProfileUnavailableError \\
+\hline
+isReady & - & $\mathbb{B}$ & - \\
+\hline
+getProviderAddress & - & Address & NotReadyError \\
+\hline
+getNetworkEndpoint & - & URL & NotReadyError \\
+\hline
+getRegisteredTasks & - & set of TaskId & NotReadyError,
+  NetworkUnavailableError \\
+\hline
+signAndSend & Instruction & TransactionId & NotReadyError,
+  InsufficientFundsError, SubmissionFailedError, NetworkUnavailableError \\
+\hline
+close & - & - & - \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+To be filled in later.
+
+\subsubsection{Environment Variables}
+
+To be filled in later.
+
+\subsubsection{State Invariant}
+
+To be filled in later.
+
+\subsubsection{Assumptions}
+
+To be filled in later.
+
+\subsubsection{Access Routine Semantics}
+
+To be filled in later.
+
+\subsubsection{Local Functions}
+
+To be filled in later.
+
+
+% =====================================================================
+\section{MIS of Request Listener (\mref{mListener})} \label{misListener}
+% =====================================================================
+
+\subsection{Module}
+
+Request Listener (\mref{mListener}). An abstract data type whose instances each
+watch the requests of one task on behalf of one provider. Implemented in the
+provider SDK. It reads the blockchain and never sends transactions.
+
+\subsection{Uses}
+
+This module uses no other module. It reads the blockchain through its
+environment variable \texttt{BlockchainNetwork}, and it uses the type
+\texttt{RequestStatus} and the constants \texttt{COMMIT\_PERIOD} and
+\texttt{REVEAL\_PERIOD} of the Request Lifecycle (\mref{mLifecycle}).
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{RequestSnapshot} = (\texttt{id}: RequestId, \texttt{taskId}:
+  TaskId, \texttt{payment}: $\mathbb{N}$, \texttt{phase}: RequestStatus,
+  \texttt{acceptanceDeadline}, \texttt{commitDeadline},
+  \texttt{latestRevealDeadline}: Timestamp, \texttt{revealDeadline}: Timestamp
+  $\cup$ \{$\bot$\}, \texttt{acceptedCount}: $\mathbb{N}$, \texttt{accepted}:
+  $\mathbb{B}$, \texttt{deadlinePassed}: $\mathbb{B}$) -- what
+  \rref{FR_RequestBroadcast} requires a provider to be told about a request.
+  \texttt{accepted} says whether this listener's provider accepted the
+  request. \texttt{deadlinePassed} says whether the deadline of the recorded
+  phase has passed but the phase has not yet been advanced on-chain.
+\item \texttt{ListenerEvent} = NewRequest(RequestSnapshot) $|$
+  PhaseChanged(RequestSnapshot) $|$ RequestEnded(RequestSnapshot) $|$
+  ConnectionLost $|$ ConnectionRestored
+\item \texttt{EventHandler}: a function that accepts a \texttt{ListenerEvent}
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3.2cm} p{4.2cm} p{3cm} p{4.4cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+create & URL (endpoint), TaskId, Address (provider) & RequestListener &
+  UnknownTaskError, NetworkUnavailableError \\
+\hline
+activeRequests & RequestListener & seq of RequestId & - \\
+\hline
+getSnapshot & RequestListener, RequestId & RequestSnapshot &
+  UnknownRequestError \\
+\hline
+onEvent & RequestListener, EventHandler & - & - \\
+\hline
+stop & RequestListener & - & - \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+To be filled in later.
+
+\subsubsection{Environment Variables}
+
+To be filled in later.
+
+\subsubsection{State Invariant}
+
+To be filled in later.
+
+\subsubsection{Assumptions}
+
+To be filled in later.
+
+\subsubsection{Access Routine Semantics}
+
+To be filled in later.
+
+\subsubsection{Local Functions}
+
+To be filled in later.
+
+
+% =====================================================================
+\section{MIS of Model (\mref{mModel})} \label{misModel}
+% =====================================================================
+
+\subsection{Module}
+
+Model (\mref{mModel}). An abstract data type implemented by each inference
+provider, not by \progname{}. This section specifies only the interface the
+Participation Client (\mref{mParticipation}) requires of a model. How the model
+produces its predictions is the provider's secret.
+
+\subsection{Uses}
+
+None that \progname{} specifies.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{InputRecord}: String $\rightarrow$ $\mathbb{R}$ -- one value for
+  each field of the task's input schema
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{2.6cm} p{4cm} p{2.8cm} p{4cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+predict & InputRecord & $\mathbb{R}$ & ModelError \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+Defined by the provider.
+
+\subsubsection{Environment Variables}
+
+Defined by the provider.
+
+\subsubsection{Assumptions}
+
+To be filled in later.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{predict}(x):
+\begin{itemize}
+\item output: \textit{out} := the model's prediction for input \texttt{x}, a
+  single number
+\item exception: To be filled in later.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+Defined by the provider.
 
 
 \newpage
@@ -2777,36 +3375,61 @@ keeps it true.
 
 \section{Appendix --- Generative AI Use Disclosure}
 
-\wss{ChatGPT (version 5) was used to brainstorm ideas for the template for this disclose section.}
-
 \subsection{AI Tools Used}
 
-\wss{Give the name of the AI tool(s) used and the version.}
+\begin{itemize}
+\item Claude Opus 5.5 (Anthropic), used through Claude Code.
+\end{itemize}
+
+\wss{Other team members: add any other AI tools you used for your MIS sections
+here, as was done in the MG.}
 
 \subsection{How and Where Used}
 
-\wss{Explain what the tool(s) were used for.  Examples include: brainstorming,
-explaining a technical concept, reviewing the document, generating or modifying
-text, generating or modifying diagrams, identifying errors or omissions or
-inconsistencies.}
-
-\wss{For each of the uses, identify which parts of the document were affected.}
-
-\wss{You do not need to report every interaction, but you should disclose the 
-uses that materially contributed to your work}
+\begin{itemize}
+\item \textbf{MIS of the Provider Registry, Marketplace Action Preflight,
+  Provider Setup, Request Listener, and Model:} The tool was given the module
+  decomposition, the SRS, the Module Guide and its use hierarchy, the MIS
+  sections already written for the other modules, and the proof of concept
+  code. It read the on-chain program (\texttt{src/crates/protocol}), the
+  simulation's provider agents (\texttt{src/crates/sim}), and the frontend
+  prototype (\texttt{src/frontend}), and used them to draft each module's
+  exported types, access programs, state variables, and semantics. For
+  example, the Preflight issues and their messages were taken from the
+  validation in the prototype's request and task creation pages, and the
+  Registry's default parameters were taken from the proof of concept's
+  protocol parameters.
+\item \textbf{Consistency between modules:} The tool checked the routine names
+  the Request Lifecycle, Participation Client, and Transaction Manager sections
+  already assumed from these modules, so that the new sections export them.
+  It also proposed one change to the Participation Client section, so that the
+  Request Listener is created with the network endpoint and provider address
+  it needs.
+\item \textbf{Gaps between the SRS and the code:} The tool listed places where
+  the code and the SRS disagree or the SRS is silent, such as registrations
+  being capped at a task's maximum number of providers in the proof of
+  concept, and what happens to a provider's stake when it falls below
+  \texttt{MINIMUM\_PROVIDER\_STAKE}. The team decided how each was handled in
+  the MIS.
+\item \textbf{Appendices:} The tool drafted this disclosure and a first draft of
+  the team's reflection answers, which were then edited.
+\end{itemize}
 
 \subsection{Verification of AI-Generated Content}
 
-\wss{\begin{itemize}
-    \item Describe how the team checked AI-generated or AI-assisted material
-    before including it in the document.
-    \item In particular, verify factual claims, technical assertions,
-    requirements, calculations, references, and other information for which an
-    AI system may produce incorrect or fabricated results.
-    \item \textbf{The team is responsible for the accuracy, completeness,
-consistency, and appropriateness of the submitted document, regardless of
-whether material was generated by a human or an AI system.}
-\end{itemize}}
+Every line of the AI-assisted sections was read and reviewed by at least one
+team member before it was included. Each access program was checked against
+the SRS requirement it cites and against the module's secret and services in
+the Module Guide, so that the specification does not add behaviour the team has
+not agreed to. The Uses sections were compared with the use hierarchy in the
+Module Guide, and the routine names were compared with the sections of the
+modules that call them. Where the specification follows the SRS rather than
+the proof of concept code, this was a deliberate choice and is noted in the
+reflection. The \LaTeX{} document was compiled to check that the sections and
+cross-references rendered correctly. The team remains responsible for the
+accuracy, completeness, and consistency of this document, regardless of
+whether material was first drafted by a team member or with the help of an AI
+tool.
 
 \newpage{}
 
@@ -2820,20 +3443,105 @@ graduate attribute of Problem Analysis and Design.
 \input{../../Reflection.text}
 
 \begin{enumerate}
-  \item What went well while writing this deliverable? 
+  \item What went well while writing this deliverable?
+
+  Having the Module Guide finished before the MIS made this deliverable much
+  easier. Each module's secret told us what its interface had to hide, so
+  deciding what belonged in an access program was mostly a matter of asking
+  whether it would expose that secret. For example, the Request Listener
+  reports deadlines and phases to the Participation Client, but how it reads
+  the blockchain stays inside it. The use hierarchy also answered most of the
+  Uses sections directly. Splitting the modules between team members worked
+  well too, because the sections written first listed the routines they
+  expected from other modules. For example, the Request Lifecycle section named
+  the routines it needs from the Provider Registry, and the Registry was then
+  written against that list, which kept the two sections consistent instead of
+  having to reconcile them afterwards.
+
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?
+
+  The main pain point was that the proof of concept code, the SRS, and the MIS
+  did not always agree. The proof of concept rejects a registration once a task
+  has its maximum number of providers, but the SRS uses that maximum per
+  request, not per task, and some routines, such as voluntary unregistration,
+  are not implemented yet. We resolved this by specifying the syntax of every
+  module in full, describing the semantics that the proof of concept already
+  implements, and marking the rest as to be filled in later (for Rev -1). 
+  We will fill in the gaps as we develop the system further throughout the semester.
+  A second pain point was that sections
+  written by different people did not always line up. The Participation Client
+  created a Request Listener from only a task, but a listener also needs the
+  provider it is watching for and a way to reach the blockchain, so we changed
+  that call and added the routine it needs to Provider Setup.
+
   \item Which of your design decisions stemmed from speaking to your client(s)
   or a proxy (e.g. your peers, stakeholders, potential users)? For those that
   were not, why, and where did they come from?
+
+  The design of the Marketplace Action Preflight came from working with
+  potential users. The issues it reports, and the rule that every issue names
+  the field it belongs to and suggests a fix, follow the error screens we built
+  for the cognitive walkthrough, such as ``Not enough funds'' with a way to
+  deposit more, and the rejected upload that names the missing column.
+  Staking, reputation, and the stake returned when a provider leaves a task
+  trace back to our discussions with our supervisor about provider incentives,
+  which shaped the SRS. Most of the remaining decisions, such as how the
+  Registry stores provider entries or what the Request Listener reports to the
+  provider software, did not come from stakeholders. Users do not see them, so
+  they came from the module secrets, the use hierarchy, and the need to keep
+  the modules consistent with each other.
+
   \item While creating the design doc, what parts of your other documents (e.g.
   requirements, hazard analysis, etc), it any, needed to be changed, and why?
+
+  Writing the Provider Registry showed two gaps in the SRS.
+  \rref{FR_ProviderMinimumStakeUnregistration} says to unregister a provider
+  whose stake falls below \texttt{MINIMUM\_PROVIDER\_STAKE}, but not whether
+  the remaining stake is returned or burned. The SRS also does not say what
+  happens to stake that is still reserved for active requests when a provider
+  is forced out. Neither is implemented in the proof of concept yet, so the
+  semantics of these routines are left to be filled in once we decide, and the
+  SRS will need to be updated to match. Within this document, the
+  Participation Client section changed so that it matches the Request
+  Listener's interface.
+
   \item What are the limitations of your solution?  Put another way, given
   unlimited resources, what could you do to make the project better? (LO\_ProbSolutions)
+
+  The Preflight checks are only advisory. They are made before a transaction
+  is signed, and the state of the blockchain can change before it executes, so
+  a user can still pass every check and have the transaction rejected. Nothing
+  advances a request on its own, so providers depend on someone calling
+  \texttt{advancePhase} after a deadline passes. The Model interface only
+  supports a single number as output, so tasks that produce several values or
+  categories cannot be specified yet. Several semantics are also still to be
+  filled in, so parts of the design cannot be reviewed until they are
+  implemented. With more resources, we would run a scheduler that advances
+  requests as soon as their deadlines pass, support richer output schemas, and
+  add a way for providers to back up their salts so that losing their machine
+  between commit and reveal does not cost them their stake.
+
   \item Give a brief overview of other design solutions you considered.  What
   are the benefits and tradeoffs of those other designs compared with the chosen
   design?  From all the potential options, why did you select the documented design?
   (LO\_Explores)
+
+  One alternative was to put the preflight checks inside the Transaction
+  Manager. That would mean one less module, but the Transaction Manager would
+  then hide two unrelated decisions: how transactions are built and signed, and
+  which user errors are caught early and how they are worded. The wording is
+  likely to change after usability testing, so keeping it in its own module
+  makes that change local. Another option was for Preflight to read the
+  blockchain through the Chain Observer instead of reading it directly. This
+  would avoid repeating the reading logic, but the use hierarchy keeps
+  Preflight a leaf module, and depending on the Chain Observer would couple it
+  to a module that also manages subscriptions. For the Registry, we still have
+  to choose between returning a forced-out provider's stake immediately and
+  waiting until its reservations for active requests are released. Returning
+  it immediately is simpler, but that stake may still be needed to compensate
+  other providers, so this is left to be filled in later.
+
   \item (After you have implemented another team's module, which means this
   isn't filled in until after the original deadline). What did you learn by
   implementing another team's module? Were all the details you needed in the
@@ -2846,6 +3554,8 @@ graduate attribute of Problem Analysis and Design.
   Your reflection should be about concepts learned in your SE education, such as modular decomposition, cohesion, coupling, information hiding, etc.  You should critique the quality and utility of the specification you received.
 
   You should create a PR for your implemented module.  A link to the PR should be part of your reflection.
+
+  \wss{To be completed after implementing another team's module.}
 
 \end{enumerate}
 
