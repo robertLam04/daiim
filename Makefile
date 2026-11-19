@@ -41,12 +41,14 @@ all: $(patsubst %.tex, %.pdf, $(wildcard **/*.tex))
 	$(call COMPILE_TEX,$<)
 	$(call COMPILE_TEX,$<)
 
-# These documents import labels from the SRS auxiliary file. Making the SRS
+# These documents import labels from the SRS (and, for the MIS, the MG)
+# auxiliary files. Making the SRS
 # PDF a prerequisite ensures its .aux file exists before either document is
 # compiled, including on a clean CI runner.
 docs/VnVPlan/VnVPlan.pdf: docs/SRS/SRS.pdf
 docs/HazardAnalysis/HazardAnalysis.pdf: docs/SRS/SRS.pdf
 docs/Design/SoftArchitecture/MG.pdf: docs/SRS/SRS.pdf
+docs/Design/SoftDetailedDes/MIS.pdf: docs/SRS/SRS.pdf docs/Design/SoftArchitecture/MG.pdf
 
 # Clean generated files
 clean:

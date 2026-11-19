@@ -35,6 +35,8 @@ urlcolor=cyan          % color of external links
 \externaldocument{../SoftArchitecture/MG}
 
 \input{../../Comments.text}
+\renewcommand{\authornote}[3]{}
+\renewcommand{\todo}[1]{}
 \input{../../Common.text}
 
 \newcommand{\mref}[1]{M\ref{#1}}
@@ -67,9 +69,7 @@ Date 2 & 1.1 & Notes\\
 
 \section{Symbols, Abbreviations and Acronyms}
 
-See SRS Documentation at \wss{give url}
-
-\wss{Also add any additional symbols, abbreviations or acronyms}
+See SRS Documentation at \url{https://github.com/robertLam04/daiim/blob/main/pdfs/SRS/SRS.pdf}
 
 \newpage
 
@@ -81,17 +81,24 @@ See SRS Documentation at \wss{give url}
 
 \section{Introduction}
 
-The following document details the Module Interface Specifications for
-\wss{Fill in your project name and description}
+The following document details the Module Interface Specifications for the Decentralized Artificial Intelligence Inference Marketplace (DAIIM).
+DAIIM is a web-based marketplace where users can define inference tasks, submit
+inference requests, and receive a result that combines the predictions of
+multiple independent providers. DAIIM is made up of four main parts. The
+on-chain program records tasks and provider registrations, and enforces the
+rules for each request, including acceptance, commitments and reveals,
+aggregation, stakes, penalties, reputation, and rewards. The off-chain
+application manages user profiles and wallets, prepares transactions, stores
+and protects request input data, and reads information from the blockchain.
+The provider SDK allows providers to take part in requests using their own
+models, and the web frontend allows requesters and providers to interact with
+the marketplace.
 
 Complementary documents include the System Requirement Specifications
 and Module Guide.  The full documentation and implementation can be
-found at \url{...}.  \wss{provide the url for your repo}
+found at \url{https://github.com/robertLam04/daiim}.  
 
 \section{Notation}
-
-\wss{You should describe your notation.  You can use what is below as
-  a starting point.}
 
 The structure of the MIS for modules comes from \citet{HoffmanAndStrooper1995},
 with the addition that template modules have been adapted from
@@ -100,30 +107,69 @@ with the addition that template modules have been adapted from
 multiple assignment statement and conditional rules follow the form $(c_1
 \Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n )$.
 
-The following table summarizes the primitive data types used by \progname. 
+The following table summarizes the data types and symbols used by \progname.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.2}
-\noindent 
-\begin{tabular}{l l p{7.5cm}} 
-\toprule 
-\textbf{Data Type} & \textbf{Notation} & \textbf{Description}\\ 
+\noindent
+\begin{tabular}{l l p{8cm}}
+\toprule
+\textbf{Type/Symbol} & \textbf{Notation} & \textbf{Description}\\
 \midrule
+boolean & $\mathbb{B}$ & a value that is either true ($\top$) or false\\
 character & char & a single symbol or digit\\
-integer & $\mathbb{Z}$ & a number without a fractional component in (-$\infty$, $\infty$) \\
-natural number & $\mathbb{N}$ & a number without a fractional component in [1, $\infty$) \\
+integer & $\mathbb{Z}$ & a number without a fractional component in (-$\infty$, $\infty$)\\
+natural number & $\mathbb{N}$ & a number without a fractional component in [1, $\infty$)\\
 real & $\mathbb{R}$ & any number in (-$\infty$, $\infty$)\\
+string & String & a sequence of characters\\
+byte string & byte string & a sequence of bytes, used for keys, hashes,
+  signatures, and encrypted data\\
+sequence & seq of $T$ & an ordered list of elements of type $T$; $\langle\rangle$
+  is the empty sequence\\
+set & set of $T$ & an unordered collection of elements of type $T$ with no
+  repeats; $\emptyset$ is the empty set\\
+tuple & $(\texttt{f}: A, \texttt{g}: B)$ & a list of values, possibly of
+  different types; \texttt{t.f} is the value named \texttt{f} in tuple
+  \texttt{t}\\
+mapping & $A \rightarrow B$ & a function from type $A$ to type $B$;
+  \texttt{m[a]} is the value \texttt{m} gives for \texttt{a}\\
+choice & $X(A) \mid Y(B)$ & a value that is either an $X$ holding an $A$, or a
+  $Y$ holding a $B$\\
+no value & $\bot$ & no value; $T \cup \{\bot\}$ is a value of type $T$ or no
+  value\\
+size & $|s|$ & the number of elements in a sequence or set $s$\\
 \bottomrule
-\end{tabular} 
+\end{tabular}
 \end{center}
 
 \noindent
-The specification of \progname \ uses some derived data types: sequences, strings, and
-tuples. Sequences are lists filled with elements of the same data type. Strings
-are sequences of characters. Tuples contain a list of values, potentially of
-different types. In addition, \progname \ uses functions, which
-are defined by the data types of their inputs and outputs. Local functions are
-described by giving their type signature followed by their specification.
+The following types are shared by several modules.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\noindent
+\begin{tabular}{l p{10.5cm}}
+\toprule
+\textbf{Type} & \textbf{Description}\\
+\midrule
+Address & the public address of a wallet on the blockchain\\
+TaskId, RequestId & the unique identifier of an inference task or request\\
+TransactionId & the identifier used to look up a transaction on the
+  blockchain\\
+Timestamp, Duration & a point in time, and a length of time\\
+TaskDefinition & a task's name, problem description, category, input schema,
+  output schema, minimum and maximum number of providers, and acceptance
+  period length (\rref{FR_InferenceTaskDefinition},
+  \rref{FR_TaskMinimumProviders}, \rref{FR_TaskAcceptancePeriod})\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Other types are defined in the Exported Types of the module that introduces
+them. Local functions are described by giving their type signature followed by
+their specification.
+
 
 \section{Module Decomposition}
 Modules are decomposed according to the principle of ``information hiding''
@@ -375,32 +421,291 @@ to be implemented.
 \end{description}
 ~\newpage
 
-\section{MIS of \wss{Module Name}} \label{Module} \wss{Use labels for
-  cross-referencing}
-
-\wss{You can reference SRS labels, such as R\ref{R_Inputs}.}
-
-\wss{It is also possible to use \LaTeX for hypperlinks to external documents.}
+% =====================================================================
+\section{MIS of Provider Registry (\mref{mRegistry})} \label{misRegistry}
+% =====================================================================
 
 \subsection{Module}
 
-\wss{Short name for the module}
+Provider Registry (\mref{mRegistry}). An abstract data type whose instances are
+inference tasks, each identified by a \texttt{TaskId}, together with the
+provider entries registered for each task. Implemented in the on-chain program.
 
 \subsection{Uses}
 
+\begin{itemize}
+\item \textbf{Token Manager (\mref{mToken}):} \texttt{transfer}, the endpoints
+  \texttt{Wallet}, \texttt{StakeEscrow}, and \texttt{Burn}, and
+  \texttt{TransferFailedError}.
+\end{itemize}
+
+The routine names above are the interface this MIS assumes from the other
+modules.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+\begin{itemize}
+\item \texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR}: $\mathbb{N}$ = 2 -- the smallest
+  minimum number of providers a task may specify (\rref{FR_MinimumProvidersFloor})
+\item \texttt{MINIMUM\_PROVIDER\_STAKE}: $\mathbb{N}$ -- the stake a provider
+  must keep for a task to remain registered for it
+  (\rref{FR_ProviderMinimumStakeUnregistration})
+\item \texttt{DEFAULT\_BASELINE\_REPUTATION}: $\mathbb{R}$ = 10,
+  \texttt{DEFAULT\_EXIT\_THRESHOLD}: $\mathbb{R}$ = 5 -- the values used when a
+  task definition does not set its own (the proof of concept's defaults)
+\end{itemize}
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{Schema}: a list of named fields, each with a type. The input
+  schema lists the values a requester supplies. The output schema describes one
+  prediction, which for a regression task is a single real number.
+\item \texttt{TaskDefinition} = (\texttt{name}, \texttt{description}: String,
+  \texttt{category}: Category, \texttt{metric}: EvaluationMetric $\cup$
+  \{$\bot$\}, \texttt{inputSchema}, \texttt{outputSchema}: Schema,
+  \texttt{trainingData}: String $\cup$ \{$\bot$\}, \texttt{minProviders},
+  \texttt{maxProviders}: $\mathbb{N}$, \texttt{acceptancePeriod}: Duration,
+  \texttt{minimumStake}: $\mathbb{N}$, \texttt{baselineReputation},
+  \texttt{exitThreshold}: $\mathbb{R}$) (\rref{FR_InferenceTaskDefinition},
+  \rref{FR_TaskMinimumProviders}, \rref{FR_TaskAcceptancePeriod})
+\item \texttt{TaskParameters} = (\texttt{minProviders}, \texttt{maxProviders}:
+  $\mathbb{N}$, \texttt{acceptancePeriod}: Duration)
+\item \texttt{ExitMode} = \{None, Return, Burn\}
+\item \texttt{ProviderEntry} = (\texttt{registered}: $\mathbb{B}$,
+  \texttt{reputation}: $\mathbb{R}$, \texttt{stake}, \texttt{reserved}:
+  $\mathbb{N}$, \texttt{slashHistory}: seq of $\mathbb{B}$, \texttt{exit}:
+  ExitMode)
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{3.4cm} p{4.2cm} p{2.8cm} p{5cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+createTask & Address (creator), TaskDefinition & TaskId &
+  InvalidTaskSettingsError \\
+\hline
+getTask & TaskId & TaskDefinition & UnknownTaskError \\
+\hline
+getTaskParameters & TaskId & TaskParameters & UnknownTaskError \\
+\hline
+registerProvider & TaskId, Address & - & UnknownTaskError,
+  AlreadyRegisteredError, TransferFailedError \\
+\hline
+withdrawProvider & TaskId, Address & - & UnknownTaskError, NotRegisteredError,
+  ActiveRequestsError, TransferFailedError \\
+\hline
+unregisterProvider & TaskId, Address, $\mathbb{B}$ (burn remaining) & - &
+  UnknownTaskError, NotRegisteredError \\
+\hline
+isRegistered & TaskId, Address & $\mathbb{B}$ & UnknownTaskError \\
+\hline
+getRegisteredProviders & TaskId & set of Address & UnknownTaskError \\
+\hline
+isValidOutput & TaskId, $\mathbb{R}$ & $\mathbb{B}$ & UnknownTaskError \\
+\hline
+getReputation & TaskId, Address & $\mathbb{R}$ & UnknownTaskError,
+  NoEntryError \\
+\hline
+setReputation & TaskId, Address, $\mathbb{R}$ & - & UnknownTaskError,
+  NotRegisteredError, InvalidReputationError \\
+\hline
+getStake, getReservedStake & TaskId, Address & $\mathbb{N}$ &
+  UnknownTaskError, NoEntryError \\
+\hline
+reserveStake & TaskId, Address, $\mathbb{N}$ & - & UnknownTaskError,
+  NotRegisteredError, InsufficientStakeError, ArithmeticOverflowError \\
+\hline
+releaseStake & TaskId, Address, $\mathbb{N}$ & - & UnknownTaskError,
+  NoEntryError, TransferFailedError \\
+\hline
+deductStake & TaskId, Address, $\mathbb{N}$ & - & UnknownTaskError,
+  NoEntryError, InsufficientStakeError, TransferFailedError \\
+\hline
+getSlashHistory & TaskId, Address & seq of $\mathbb{B}$ & UnknownTaskError,
+  NoEntryError \\
+\hline
+recordParticipation & TaskId, Address, $\mathbb{B}$ (slashed) & - &
+  UnknownTaskError, NoEntryError \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item \texttt{tasks}: TaskId $\rightarrow$ TaskDefinition -- each task's
+  definition and the providers registered for it
+\item \texttt{entries}: (TaskId $\times$ Address) $\rightarrow$ ProviderEntry
+  -- the reputation and stake of each registered provider
+\end{itemize}
+
+Any other state variables are to be filled in later.
+
+\subsubsection{Environment Variables}
+
+To be filled in later.
+
+\subsubsection{State Invariant}
+
+For every task $t$ and entry $e$ = \texttt{entries[$t$, $a$]}:
+\begin{itemize}
+\item $\texttt{tasks}[t].\texttt{minProviders} \ge
+  \texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR}$ and
+  $\texttt{tasks}[t].\texttt{maxProviders} \ge
+  \texttt{tasks}[t].\texttt{minProviders}$
+\item $0 \le e.\texttt{reputation} \le 100$ (\rref{FR_ReputationRange})
+\end{itemize}
+The rest of the invariant is to be filled in later.
+
+\subsubsection{Assumptions}
+
+To be filled in later.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{createTask}(creator, d):
+\begin{itemize}
+\item transition: A new task is created with definition \texttt{d} and no
+  registered providers.
+\item output: \textit{out} := the new task's \texttt{TaskId}
+\item exception: \textit{exc} := (\texttt{d.minProviders} $<$
+  \texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR} or \texttt{d.maxProviders} $<$
+  \texttt{d.minProviders} $\Rightarrow$ InvalidTaskSettingsError)
+  (\rref{FR_MinimumProvidersFloor})
+\end{itemize}
+
+\noindent \texttt{getTask}($t$), \texttt{getTaskParameters}($t$):
+\begin{itemize}
+\item output: \textit{out} := \texttt{tasks[$t$]}; the
+  \texttt{minProviders} and \texttt{maxProviders} of \texttt{tasks[$t$]}. How
+  the acceptance period is set is to be filled in later.
+\item exception: To be filled in later.
+\end{itemize}
+
+\noindent \texttt{registerProvider}($t$, $a$):
+\begin{itemize}
+\item transition: \texttt{entries[$t$, $a$]} := a registered entry with
+  \texttt{reputation} := the baseline reputation and \texttt{stake} := the
+  minimum stake (\rref{FR_InferenceTaskRegistration}). How the stake is
+  transferred into escrow is to be filled in later.
+\item exception: \textit{exc} := ($a$ is already registered for $t$
+  $\Rightarrow$ AlreadyRegisteredError). Other exceptions are to be filled in
+  later.
+\end{itemize}
+
+\noindent \texttt{withdrawProvider}($t$, $a$), \texttt{unregisterProvider}($t$,
+$a$, burn):
+\begin{itemize}
+\item To be filled in later.
+\end{itemize}
+
+\noindent \texttt{isRegistered}($t$, $a$), \texttt{getRegisteredProviders}($t$):
+\begin{itemize}
+\item output: \textit{out} := whether $a$ is among the providers registered for
+  $t$; the set of providers registered for $t$
+\item exception: To be filled in later.
+\end{itemize}
+
+\noindent \texttt{isValidOutput}($t$, $p$):
+\begin{itemize}
+\item output: \textit{out} := $p$ is a finite number. The check against
+  \texttt{tasks[$t$].outputSchema} is to be filled in later.
+\item exception: To be filled in later.
+\end{itemize}
+
+\noindent \texttt{getReputation}($t$, $a$):
+\begin{itemize}
+\item output: \textit{out} := \texttt{entries[$t$, $a$].reputation}
+\item exception: To be filled in later.
+\end{itemize}
+
+\noindent \texttt{setReputation}($t$, $a$, $r$):
+\begin{itemize}
+\item transition: \texttt{entries[$t$, $a$].reputation} := $r$
+\item exception: \textit{exc} := ($a$ is not registered for $t$ $\Rightarrow$
+  NotRegisteredError $\mid$ $r$ is not finite or $r \notin [0, 100]$
+  $\Rightarrow$ InvalidReputationError)
+\end{itemize}
+
+\noindent \texttt{getStake}, \texttt{getReservedStake}, \texttt{reserveStake},
+\texttt{releaseStake}, \texttt{deductStake}, \texttt{getSlashHistory},
+\texttt{recordParticipation}:
+\begin{itemize}
+\item To be filled in later.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+To be filled in later.
+
+
+% =====================================================================
+\section{MIS of Marketplace Action Preflight (\mref{mActionPreflight})}
+\label{misPreflight}
+% =====================================================================
+
+\subsection{Module}
+
+Marketplace Action Preflight (\mref{mActionPreflight}). A library implemented
+in the off-chain application. It reports problems with a proposed action before
+a transaction is prepared, so the user can fix them. Its checks are advisory:
+the on-chain program enforces the same rules when the transaction executes
+(\ref{SA_OnChainFundsCheck}).
+
+\subsection{Uses}
+
+This module uses no other module's access programs. It reads the blockchain
+through its environment variable \texttt{BlockchainNetwork}, and it refers to
+the exported constants\\
+\texttt{MINIMUM\_REQUEST\_PAYMENT} of the Request
+Lifecycle (\mref{mLifecycle}) and\\
+\texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR} and
+\texttt{MINIMUM\_PROVIDER\_STAKE} of the Provider Registry (\mref{mRegistry}),
+and to the type \texttt{MarketplaceAction} of the Transaction Manager
+(\mref{mTransaction}).
 
 \subsection{Syntax}
 
 \subsubsection{Exported Constants}
 
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{IssueCode} = \{InvalidTaskDefinition, UnknownTask,
+  UnknownRequest, AmountTooLow, NotEnoughFunds, AlreadyRegistered,
+  NotRegistered, HasActiveRequests, WrongPhase, DeadlinePassed,
+  AlreadyAccepted, RequestFull, InsufficientStake, NoUnresolvedTransfer,
+  InputMissingField, InputUnexpectedField, InputNotANumber\}
+\item \texttt{Issue} = (\texttt{code}: IssueCode, \texttt{field}: String
+  $\cup$ \{$\bot$\}, \texttt{description}: String, \texttt{suggestedFix}:
+  String) -- the field is the form field the issue belongs to, if any
+  (\nfrref{NFR_ErrorVisibility})
+\item \texttt{RawInput}: set of (String $\times$ String) -- the field names and
+  values a requester supplied, read from an uploaded file or typed in
+\end{itemize}
+
 \subsubsection{Exported Access Programs}
 
 \begin{center}
-\begin{tabular}{p{2cm} p{4cm} p{4cm} p{2cm}}
+\begin{tabular}{p{3.2cm} p{4.4cm} p{2.8cm} p{4.6cm}}
 \hline
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \hline
-\wss{accessProg} & - & - & - \\
+check & MarketplaceAction, Address (actor) & seq of Issue &
+  NetworkUnavailableError \\
+\hline
+checkRequestInput & TaskId, RawInput & seq of Issue &
+  UnknownTaskError, NetworkUnavailableError \\
 \hline
 \end{tabular}
 \end{center}
@@ -409,42 +714,61 @@ to be implemented.
 
 \subsubsection{State Variables}
 
-\wss{Not all modules will have state variables.  State variables give the module
-  a memory.}
+None.
 
 \subsubsection{Environment Variables}
 
-\wss{This section is not necessary for all modules.  Its purpose is to capture
-  when the module has external interaction with the environment, such as for a
-  device driver, screen interface, keyboard, file, etc.}
+To be filled in later.
+
+\subsubsection{State Invariant}
+
+None, since the module has no state variables.
 
 \subsubsection{Assumptions}
 
-\wss{Try to minimize assumptions and anticipate programmer errors via
-  exceptions, but for practical purposes assumptions are sometimes appropriate.}
+To be filled in later.
 
 \subsubsection{Access Routine Semantics}
 
-\noindent \wss{accessProg}():
+\noindent \texttt{check}(action, actor):
 \begin{itemize}
-\item transition: \wss{if appropriate} 
-\item output: \wss{if appropriate} 
-\item exception: \wss{if appropriate} 
+\item output: \textit{out} := the issues found for \texttt{action}, or
+  $\langle\rangle$ if none:
+  \begin{itemize}
+  \item \texttt{CreateTask(d)}: an InvalidTaskDefinition issue, naming its
+    field, for each of these: \texttt{d.name} is blank; \texttt{d.description}
+    is blank; the output unit is blank; the input schema is empty or two inputs
+    share a name; \texttt{d.minProviders} is not a whole number $\ge$
+    \texttt{MINIMUM\_TASK\_PROVIDERS\_FLOOR} (\rref{FR_MinimumProvidersFloor});
+    \texttt{d.maxProviders} is not a whole number $\ge$ \texttt{d.minProviders}
+  \item \texttt{CreateRequest($t$, payment)}: AmountTooLow if payment is not
+    more than the task's minimum payment; otherwise NotEnoughFunds if payment is
+    more than the actor's available funds (\rref{FR_RequestPayment},
+    \ref{SA_BalanceCheck})
+  \item \texttt{RegisterProvider}, \texttt{UnregisterProvider},
+    \texttt{AcceptRequest}, and \texttt{RetryReward}: to be filled in later
+  \end{itemize}
+  Each issue's description states the rule that failed with the values
+  involved (for example, ``This request costs \$5.00, but you have \$3.20
+  available.''), and its suggested fix names an action that resolves it (for
+  example, ``Deposit more into your account, or lower the amount.'').
+\item exception: To be filled in later.
 \end{itemize}
 
-\wss{A module without environment variables or state variables is unlikely to
-  have a state transition.  In this case a state transition can only occur if
-  the module is changing the state of another module.}
-
-\wss{Modules rarely have both a transition and an output.  In most cases you
-  will have one or the other.}
+\noindent \texttt{checkRequestInput}($t$, raw):
+\begin{itemize}
+\item output: \textit{out} := an InputMissingField issue for each field of
+  $t$\texttt{.inputSchema} missing from raw and an InputUnexpectedField issue
+  for each name in raw that is not in the schema. If there are none, an
+  InputNotANumber issue for the first field whose value is blank or is not a
+  finite number. The suggested fix is to download the example file from the
+  task page or type the values in (\rref{FR_RequestValidation}).
+\item exception: To be filled in later.
+\end{itemize}
 
 \subsubsection{Local Functions}
 
-\wss{As appropriate} \wss{These functions are for the purpose of specification.
-  They are not necessarily something that is going to be implemented
-  explicitly.  Even if they are implemented, they are not exported; they only
-  have local scope.}
+To be filled in later.
 
 
 % =====================================================================
@@ -1137,7 +1461,7 @@ registered task. Implemented in the provider SDK.
 \subsection{Uses}
 
 \begin{itemize}
-\item \textbf{Provider Setup (\mref{mProviderSetup}):} \texttt{isReady},
+\item \textbf{Provider Setup (\mref{mProviderSetup}):} \texttt{isReady}, \texttt{getNetworkEndpoint},
   \texttt{getProviderAddress}, \texttt{getRegisteredTasks}, and
   \texttt{signAndSend}.
 \item \textbf{Request Listener (\mref{mListener}):} \texttt{create},
@@ -1247,7 +1571,8 @@ requests, and each access program preserves this.
 \item transition: A new client \texttt{c} with \texttt{c.setup} := setup,
   \texttt{c.taskId} := taskId, \texttt{c.provider} :=
   \texttt{setup.getProviderAddress()}, and \texttt{c.listener} :=
-  \texttt{RequestListener.create(taskId)}. \texttt{c.state} and
+  \texttt{RequestListener.create(setup.getNetworkEndpoint(), taskId,
+  c.provider)}. \texttt{c.state} and
   \texttt{c.pending} are restored from \texttt{SecureLocalStore}, or are empty
   if it holds nothing for this task.
 \item output: \textit{out} := \texttt{c}
@@ -1785,6 +2110,1189 @@ None, since the module has no state variables.
 \end{itemize}
 
 
+% =====================================================================
+\section{MIS of Provider Setup (\mref{mProviderSetup})} \label{misProviderSetup}
+% =====================================================================
+
+\subsection{Module}
+
+Provider Setup (\mref{mProviderSetup}). An abstract object implemented in the
+provider SDK. It holds the provider client's connection to the blockchain and
+access to the provider's wallet, so that other provider SDK modules need not
+know how either is set up.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{User Information (\mref{mUserInfo}):}
+  \texttt{findOrCreateProfile}, which links the provider's verified address to
+  the same user profile used in the web application.
+\end{itemize}
+
+The routine names above are the interface this MIS assumes from the other
+modules.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{SetupConfig} = (\texttt{networkEndpoint}: URL,
+  \texttt{keySource}: the location of the provider's wallet key, such as a key
+  file or a hardware wallet)
+\item \texttt{Instruction}: an unsigned on-chain program instruction, such as
+  \texttt{submitCommitment} or \texttt{revealPrediction}
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3.6cm} p{2.8cm} p{2.8cm} p{5.4cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+init & SetupConfig & - & InvalidConfigError, WalletUnavailableError,
+  NetworkUnavailableError, ProfileUnavailableError \\
+\hline
+isReady & - & $\mathbb{B}$ & - \\
+\hline
+getProviderAddress & - & Address & NotReadyError \\
+\hline
+getNetworkEndpoint & - & URL & NotReadyError \\
+\hline
+getRegisteredTasks & - & set of TaskId & NotReadyError,
+  NetworkUnavailableError \\
+\hline
+signAndSend & Instruction & TransactionId & NotReadyError,
+  InsufficientFundsError, SubmissionFailedError, NetworkUnavailableError \\
+\hline
+close & - & - & - \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+To be filled in later.
+
+\subsubsection{Environment Variables}
+
+To be filled in later.
+
+\subsubsection{State Invariant}
+
+To be filled in later.
+
+\subsubsection{Assumptions}
+
+To be filled in later.
+
+\subsubsection{Access Routine Semantics}
+
+To be filled in later.
+
+\subsubsection{Local Functions}
+
+To be filled in later.
+
+
+% =====================================================================
+\section{MIS of Request Listener (\mref{mListener})} \label{misListener}
+% =====================================================================
+
+\subsection{Module}
+
+Request Listener (\mref{mListener}). An abstract data type whose instances each
+watch the requests of one task on behalf of one provider. Implemented in the
+provider SDK. It reads the blockchain and never sends transactions.
+
+\subsection{Uses}
+
+This module uses no other module. It reads the blockchain through its
+environment variable \texttt{BlockchainNetwork}, and it uses the type
+\texttt{RequestStatus} and the constants \texttt{COMMIT\_PERIOD} and
+\texttt{REVEAL\_PERIOD} of the Request Lifecycle (\mref{mLifecycle}).
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{RequestSnapshot} = (\texttt{id}: RequestId, \texttt{taskId}:
+  TaskId, \texttt{payment}: $\mathbb{N}$, \texttt{phase}: RequestStatus,
+  \texttt{acceptanceDeadline}, \texttt{commitDeadline},
+  \texttt{latestRevealDeadline}: Timestamp, \texttt{revealDeadline}: Timestamp
+  $\cup$ \{$\bot$\}, \texttt{acceptedCount}: $\mathbb{N}$, \texttt{accepted}:
+  $\mathbb{B}$, \texttt{deadlinePassed}: $\mathbb{B}$) -- what
+  \rref{FR_RequestBroadcast} requires a provider to be told about a request.
+  \texttt{accepted} says whether this listener's provider accepted the
+  request. \texttt{deadlinePassed} says whether the deadline of the recorded
+  phase has passed but the phase has not yet been advanced on-chain.
+\item \texttt{ListenerEvent} = NewRequest(RequestSnapshot) $|$
+  PhaseChanged(RequestSnapshot) $|$ RequestEnded(RequestSnapshot) $|$
+  ConnectionLost $|$ ConnectionRestored
+\item \texttt{EventHandler}: a function that accepts a \texttt{ListenerEvent}
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3.2cm} p{4.2cm} p{3cm} p{4.4cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+create & URL (endpoint), TaskId, Address (provider) & RequestListener &
+  UnknownTaskError, NetworkUnavailableError \\
+\hline
+activeRequests & RequestListener & seq of RequestId & - \\
+\hline
+getSnapshot & RequestListener, RequestId & RequestSnapshot &
+  UnknownRequestError \\
+\hline
+onEvent & RequestListener, EventHandler & - & - \\
+\hline
+stop & RequestListener & - & - \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+To be filled in later.
+
+\subsubsection{Environment Variables}
+
+To be filled in later.
+
+\subsubsection{State Invariant}
+
+To be filled in later.
+
+\subsubsection{Assumptions}
+
+To be filled in later.
+
+\subsubsection{Access Routine Semantics}
+
+To be filled in later.
+
+\subsubsection{Local Functions}
+
+To be filled in later.
+
+
+% =====================================================================
+\section{MIS of Model (\mref{mModel})} \label{misModel}
+% =====================================================================
+
+\subsection{Module}
+
+Model (\mref{mModel}). An abstract data type implemented by each inference
+provider, not by \progname{}. This section specifies only the interface the
+Participation Client (\mref{mParticipation}) requires of a model. How the model
+produces its predictions is the provider's secret.
+
+\subsection{Uses}
+
+None that \progname{} specifies.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{InputRecord}: String $\rightarrow$ $\mathbb{R}$ -- one value for
+  each field of the task's input schema
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{2.6cm} p{4cm} p{2.8cm} p{4cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+predict & InputRecord & $\mathbb{R}$ & ModelError \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+Defined by the provider.
+
+\subsubsection{Environment Variables}
+
+Defined by the provider.
+
+\subsubsection{Assumptions}
+
+To be filled in later.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{predict}(x):
+\begin{itemize}
+\item output: \textit{out} := the model's prediction for input \texttt{x}, a
+  single number
+\item exception: To be filled in later.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+Defined by the provider.
+
+
+\newpage
+
+~\newpage
+
+\section{MIS of Request Input Manager (\mref{mInput})} \label{misInput}
+% =====================================================================
+
+\subsection{Module}
+
+Request Input Manager (\mref{mInput}). An abstract data type whose instances are
+the stored inputs of inference requests, each identified by a
+\texttt{RequestId}. Implemented in the off-chain application. This module
+stores the input data for each inference request in encrypted form, and only
+gives it to the requester and the providers that accepted the request. The
+input data is kept off-chain and is never written to the blockchain
+(\rref{FR_InputNotOnChain}).
+
+\subsection{Uses}
+
+None.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{InputRecord}: the input data of one request, in the format given
+  by the task's input schema
+\item \texttt{EncryptionKey}: byte string -- the key used to encrypt one
+  request's input
+\item \texttt{Ciphertext}: byte string -- an encrypted input
+\item \texttt{InputAccess} = (\texttt{ciphertext}: Ciphertext, \texttt{key}:
+  EncryptionKey) -- what an allowed user needs to read a request's input
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{2.6cm} p{4.6cm} p{2.2cm} p{5cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+storeInput & RequestId, Address, InputRecord & - & AlreadyStoredError,
+  StorageUnavailableError \\
+grantAccess & RequestId, Address, set of Address & - &
+  InputUnavailableError, NotRequesterError \\
+getInputAccess & RequestId, Address & InputAccess & InputUnavailableError,
+  AccessDeniedError \\
+deleteInput & RequestId, Address & - & InputUnavailableError,
+  NotRequesterError \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+Each stored input \texttt{s} has these state variables.
+
+\begin{itemize}
+\item \texttt{s.id}: RequestId -- the request the input belongs to
+\item \texttt{s.requester}: Address -- the requester who stored it
+\item \texttt{s.key}: EncryptionKey -- the key made only for this input
+\item \texttt{s.providers}: set of Address -- the providers allowed to read it
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item \texttt{InputStore}: RequestId $\rightarrow$ Ciphertext $\cup$
+  \{$\bot$\} -- the off-chain storage that holds encrypted inputs
+\end{itemize}
+
+\subsubsection{State Invariant}
+
+For every stored input \texttt{s}, its encrypted data is in storage
+(\texttt{InputStore[s.id]} $\neq$ $\bot$), and storage holds no data for a
+request that has no stored input. A new stored input is created together with
+its data, and the two are deleted together, so every access program keeps this
+true.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item This module does not read the blockchain. The Requester Interface
+  (\mref{mRequesterUI}) calls \texttt{grantAccess} with the accepted providers
+  once the acceptance period has ended, and calls \texttt{deleteInput} once the
+  request is completed, failed, or cancelled.
+\item Callers have already proven that they control the \texttt{Address} they
+  pass in, using their wallet, and all communication uses TLS (\ref{SA_TLS}).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{storeInput}(id, requester, input):
+\begin{itemize}
+\item transition: Creates a new stored input \texttt{s} for request
+  \texttt{id}, with \texttt{s.requester} := \texttt{requester},
+  \texttt{s.key} := a new key made only for this request, and
+  \texttt{s.providers} := $\emptyset$. Its data is saved encrypted:
+  \texttt{InputStore[id]} := \texttt{encrypt(input, s.key)}
+  (\nfrref{NFR_DataEncryption}).
+\item exception: \textit{exc} := AlreadyStoredError if request \texttt{id}
+  already has a stored input; StorageUnavailableError if \texttt{InputStore}
+  cannot be reached
+\end{itemize}
+
+\noindent \texttt{grantAccess}(id, requester, providers):
+\begin{itemize}
+\item transition: For the stored input \texttt{s} of request \texttt{id},
+  \texttt{s.providers} := \texttt{providers}, so these providers can now read
+  the input (\rref{FR_RequestInputDistribution}).
+\item exception: \textit{exc} := InputUnavailableError if request \texttt{id}
+  has no stored input; NotRequesterError if \texttt{requester} $\neq$
+  \texttt{s.requester}
+\end{itemize}
+
+\noindent \texttt{getInputAccess}(id, a):
+\begin{itemize}
+\item output: \textit{out} := (\texttt{InputStore[id]}, \texttt{s.key}) for
+  the stored input \texttt{s} of request \texttt{id}
+  (\rref{FR_InputAccessRestriction})
+\item exception: \textit{exc} := InputUnavailableError if request \texttt{id}
+  has no stored input; AccessDeniedError if \texttt{a} is not
+  \texttt{s.requester} and \texttt{a} $\notin$ \texttt{s.providers}
+\end{itemize}
+
+\noindent \texttt{deleteInput}(id, requester):
+\begin{itemize}
+\item transition: The stored input of request \texttt{id} is removed, along
+  with its key, and \texttt{InputStore[id]} := $\bot$
+  (\rref{FR_InputDeletion}).
+\item exception: \textit{exc} := InputUnavailableError if request \texttt{id}
+  has no stored input; NotRequesterError if \texttt{requester} $\neq$
+  \texttt{s.requester}
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{encrypt}(input, k): Ciphertext -- \texttt{input} encrypted with
+  the key \texttt{k}, using an industry-standard encryption algorithm
+  (\nfrref{NFR_InputDataAccess})
+\end{itemize}
+
+\newpage
+
+\section{MIS of Requester Interface (\mref{mRequesterUI})} \label{misRequesterUI}
+% =====================================================================
+
+\subsection{Module}
+
+Requester Interface (\mref{mRequesterUI}). An abstract object implemented
+in the \progname{} frontend. This module is the web client that
+requesters use to browse tasks, create tasks, submit inference requests, and
+view their results. Most requesters will not have experience
+with blockchain or machine learning (\nfrref{NFR_Learnability}), so this module
+explains each action in plain language before the user is asked to approve it.
+It does not carry out marketplace actions itself. Instead, it passes them to
+the Transaction Manager and shows the user the outcome.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{User Information (\mref{mUserInfo}):}
+  \texttt{findOrCreateProfile}, \texttt{getProfile}, \texttt{updateDetails},
+  \texttt{addHistoryEntry}, \texttt{getPublicProfile}, and the types
+  \texttt{Profile} and \texttt{ProfileDetails}.
+\item \textbf{Chain Observer (\mref{mChain}):} \texttt{listTasks},
+  \texttt{getTask}, \texttt{listProviders}, \texttt{getRequestInfo}
+  (including the request's accepted providers), \texttt{listRequests},
+  \texttt{getTransactionHistory}, \texttt{getBalances}, \texttt{subscribe},
+  and \texttt{unsubscribe}.
+\item \textbf{Transaction Manager (\mref{mTransaction}):}
+  \texttt{prepareTransaction}, \texttt{signTransaction},
+  \texttt{submitTransaction}, \texttt{getStatus}, the types
+  \texttt{MarketplaceAction}, \texttt{PreparedTransaction}, and
+  \texttt{SignedTransaction}, and the constant \texttt{ERROR\_REPORT\_LIMIT}.
+\item \textbf{Request Input Manager (\mref{mInput}):} \texttt{storeInput},
+  \texttt{grantAccess}, \texttt{deleteInput}, and the type
+  \texttt{InputRecord}.
+\end{itemize}
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{View} = \{Home, Marketplace, Task, CreateTask, NewRequest,
+  Request, History, TransactionHistory, Profile\} -- the pages of the web
+  client
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+Each access program, other than \texttt{init}, is started by the user, for
+example by clicking a button or submitting a form. None of them raise
+exceptions. Instead, an exception from a used module is shown to the user with
+\texttt{showError}.
+
+\begin{longtable}{p{3.4cm} p{6.6cm} p{1.2cm} p{1.8cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+init & - & - & - \\
+startSession & Address & - & - \\
+signOut & - & - & - \\
+display & View, TaskId $\cup$ RequestId $\cup$ \{$\bot$\} & - & - \\
+createTask & TaskDefinition & - & - \\
+submitRequest & TaskId, InputRecord, $\mathbb{N}$ (payment) & - & - \\
+confirmTransaction & - & - & - \\
+cancelTransaction & - & - & - \\
+retryTransaction & - & - & - \\
+updateProfile & ProfileDetails & - & - \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item \texttt{session}: (\texttt{address}: Address, \texttt{profile}: Profile)
+  $\cup$ \{$\bot$\} -- the signed-in user, or $\bot$ if no one is signed in
+\item \texttt{pending}: (\texttt{prepared}: PreparedTransaction,
+  \texttt{action}: MarketplaceAction, \texttt{input}: InputRecord $\cup$
+  \{$\bot$\}) $\cup$ \{$\bot$\} -- the transaction waiting for the user to
+  confirm it
+\item \texttt{tracked}: set of SignedTransaction -- the transactions the user
+  has approved whose status is still being shown
+\item \texttt{failed}: (\texttt{action}: MarketplaceAction, \texttt{earlier}:
+  SignedTransaction $\cup$ \{$\bot$\}, \texttt{input}: InputRecord $\cup$
+  \{$\bot$\}) $\cup$ \{$\bot$\} -- the latest action that has not succeeded
+  yet, kept so that the user can retry it
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item \texttt{Screen}: (\texttt{view}: View, \texttt{messages}: seq of String)
+  -- the browser window, showing one page and any messages for the user
+\end{itemize}
+
+\subsubsection{State Invariant}
+
+If no one is signed in, there is no transaction waiting to be confirmed
+(\texttt{session} = $\bot$ $\Rightarrow$ \texttt{pending} = $\bot$). This is
+true after \texttt{init}, and every access program keeps it true.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item \texttt{init} is called once when the web client is opened, before any
+  other access program.
+\item \texttt{startSession} is only called with an address whose wallet has
+  already been connected and verified with the Wallet Service
+  (\mref{mWallet}). Signing in itself, including creating embedded wallets, is
+  handled by the Wallet Service and not by this module.
+\item The web client runs on a current version of a modern browser
+  (\nfrref{NFR_BrowserSupport}), and all communication uses TLS
+  (\ref{SA_TLS}).
+\item Every page can be reached from Home in at most 2 clicks
+  (\nfrref{NFR_TwoClickAccess}).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{init}():
+\begin{itemize}
+\item transition: \texttt{session}, \texttt{pending}, \texttt{failed} :=
+  $\bot$, $\bot$, $\bot$, \texttt{tracked} := $\emptyset$, and
+  \texttt{Screen} shows Home.
+\end{itemize}
+
+\noindent \texttt{startSession}(a):
+\begin{itemize}
+\item transition: \texttt{session} := (\texttt{a},
+  \texttt{findOrCreateProfile(a)}), so the user sees the same profile every
+  time they sign in (\rref{FR_WalletAuthentication}), and \texttt{Screen}
+  shows Home.
+\end{itemize}
+
+\noindent \texttt{signOut}():
+\begin{itemize}
+\item transition: If one of the user's transactions is still pending,
+  \texttt{Screen} first warns the user and lets them stay signed in.
+  Otherwise, sets \texttt{session} and \texttt{pending} to $\bot$, and
+  \texttt{Screen} shows Home.
+\end{itemize}
+
+\noindent \texttt{display}(v, item):
+\begin{itemize}
+\item transition: \texttt{Screen} shows the page \texttt{v} with the
+  following information. If the page needs the user to be signed in and
+  \texttt{session} = $\bot$, \texttt{Screen} asks the user to sign in instead.
+  \begin{itemize}
+  \item Marketplace: every task from \texttt{listTasks}, with its definition,
+    minimum provider stake, and number of registered providers
+    (\rref{FR_TaskBrowsing}), and each task's providers from
+    \texttt{listProviders} with their reputation and
+    \texttt{getPublicProfile} (\rref{FR_PublicAccess},
+    \nfrref{NFR_PublicPagesPrivacy}). This page does not need the user to be
+    signed in.
+  \item Task: the task \texttt{item} from \texttt{getTask} and its providers
+    from \texttt{listProviders}.
+  \item CreateTask and NewRequest: the forms for creating a task and for
+    submitting a request.
+  \item Request: if the user submitted the request \texttt{item}, its status
+    from \texttt{getRequestInfo} and, once available, the result, the lowest
+    and highest included predictions, the number of predictions included, and
+    the time elapsed (\rref{FR_FinalResultDelivery},
+    \rref{FR_ResultSpread}).
+  \item History: the user's requests from \texttt{listRequests}, with the
+    status, the result once available, and the name saved in their profile
+    (\rref{FR_RequestHistory}).
+  \item TransactionHistory: the user's transactions from
+    \texttt{getTransactionHistory}, each with the identifier needed to look it
+    up on the blockchain (\rref{FR_TransactionVerification}).
+  \item Profile: the user's profile from \texttt{getProfile}.
+  \item Home: the steps for getting started and, if the user is signed in,
+    their balances from \texttt{getBalances}.
+  \end{itemize}
+\end{itemize}
+
+\noindent \texttt{createTask}(d):
+\begin{itemize}
+\item transition: Prepares the action of creating a task with definition
+  \texttt{d}, using \texttt{prepare(CreateTask(d), $\bot$, $\bot$)}
+  (\rref{FR_InferenceTaskCreation}).
+\end{itemize}
+
+\noindent \texttt{submitRequest}(t, input, payment):
+\begin{itemize}
+\item transition: If \texttt{input} does not match the input schema of task
+  \texttt{t} (\texttt{conforms(input, schema(t))} is false), \texttt{Screen}
+  shows an error, so the request is rejected before the user is asked to pay
+  (\rref{FR_RequestValidation}). Otherwise, prepares the request with
+  \texttt{prepare(CreateRequest(t, payment), input, $\bot$)}
+  (\rref{FR_RequestSubmission}, \rref{FR_RequestPayment}).
+\end{itemize}
+
+\noindent \texttt{confirmTransaction}():
+\begin{itemize}
+\item transition: Signs the pending transaction with \texttt{signTransaction}
+  and sends it with \texttt{submitTransaction}. The signed transaction is
+  added to \texttt{tracked}, \texttt{failed} keeps the action until it
+  succeeds, and \texttt{pending} := $\bot$. \texttt{Screen} shows the
+  transaction's status and identifier (\rref{FR_TransactionStatus},
+  \rref{FR_TransactionVerification}, \nfrref{NFR_ProgressStatus}), and the
+  module subscribes to changes for the user's address with \texttt{onChange}.
+\end{itemize}
+
+\noindent \texttt{cancelTransaction}():
+\begin{itemize}
+\item transition: \texttt{pending} := $\bot$. Nothing is signed or sent.
+\end{itemize}
+
+\noindent \texttt{retryTransaction}():
+\begin{itemize}
+\item transition: Prepares the failed action again with
+  \texttt{prepare(failed.action, failed.input, failed.earlier)}. The earlier
+  attempt is passed on so that the same action is not sent twice
+  (\ref{SA_FailureRetry}).
+\end{itemize}
+
+\noindent \texttt{updateProfile}(d):
+\begin{itemize}
+\item transition: Saves the new details with
+  \texttt{updateDetails(session.address, d)}, and \texttt{Screen} confirms
+  that they were saved.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{prepare}(action, input, earlier): if no one is signed in,
+  \texttt{Screen} asks the user to sign in. Otherwise, prepares the
+  transaction with \texttt{prepareTransaction(action, session.address,
+  earlier)}, keeps it in \texttt{pending}, and \texttt{Screen} shows its
+  preview: the action, the tokens being transferred, and the network fee
+  (\rref{FR_TransactionPreview}).
+\item \texttt{onChange}(event): updates the status shown for each transaction
+  in \texttt{tracked} with \texttt{getStatus}.
+  \begin{itemize}
+  \item When a transaction is confirmed, it is removed from \texttt{tracked},
+    \texttt{finish} is run, \texttt{failed} := $\bot$, and \texttt{Screen}
+    shows a plain-language confirmation of what was recorded and the updated
+    balances (\nfrref{NFR_TransactionConfirmation}).
+  \item When a transaction fails or expires, it is removed from
+    \texttt{tracked} and \texttt{Screen} shows the error with the option to
+    retry (\ref{SA_FailureRetry}).
+  \item When the acceptance period of one of the user's requests ends, the
+    accepted providers are given access to its input with
+    \texttt{grantAccess} (\rref{FR_RequestInputDistribution}).
+  \item When one of the user's requests is completed, failed, or cancelled,
+    its input is deleted with \texttt{deleteInput}
+    (\rref{FR_InputDeletion}).
+  \end{itemize}
+\item \texttt{finish}(s): if the transaction \texttt{s} created a request,
+  stores its input with \texttt{storeInput}, saves the task name in the user's
+  history with \texttt{addHistoryEntry}, subscribes to the request with
+  \texttt{onChange}, and \texttt{Screen} shows the Request page.
+\item \texttt{schema}(t): the input schema in the definition of task
+  \texttt{t}, from \texttt{getTask}.
+\item \texttt{conforms}(input, schema): true if \texttt{input} matches
+  \texttt{schema}, and false otherwise.
+\item \texttt{showError}(e): \texttt{Screen} shows the name, description, and
+  suggested fix of the exception \texttt{e} within \texttt{ERROR\_REPORT\_LIMIT}
+  of the failure (\nfrref{NFR_ErrorVisibility}, \ref{SA_ErrorMessageTime}).
+\end{itemize}
+
+\newpage
+
+\section{MIS of Provider Interface (\mref{mProviderUI})} \label{misProviderUI}
+% =====================================================================
+
+\subsection{Module}
+
+Provider Interface (\mref{mProviderUI}). An abstract object implemented in
+the \progname{} frontend. This module is the web client that
+providers use to register for tasks, manage their stake, and keep track of
+their reputation and rewards. Providers take part in requests through the
+provider SDK, not through this module, so this module focuses on registration
+and on giving providers a clear view of how they are doing on each task.
+
+\subsection{Uses}
+
+\begin{itemize}
+\item \textbf{User Information (\mref{mUserInfo}):}
+  \texttt{findOrCreateProfile}, \texttt{getProfile}, \texttt{updateDetails},
+  \texttt{getPublicProfile}, and their types.
+\item \textbf{Chain Observer (\mref{mChain}):} \texttt{listTasks},
+  \texttt{getTask}, \texttt{listProviders}, \texttt{getProviderInfo},
+  \texttt{getPendingTransfers}, \texttt{getTransactionHistory},
+  \texttt{getBalances}, and \texttt{subscribe}.
+\item \textbf{Transaction Manager (\mref{mTransaction}):} the same routines,
+  types, and constant as the Requester Interface.
+\end{itemize}
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{View} = \{Home, Marketplace, Task, Dashboard,
+  TransactionHistory, Profile\} -- the pages of the web client
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+As in the Requester Interface, each access program other than \texttt{init}
+is started by the user, and an exception from a used module is shown to the
+user with \texttt{showError} instead of being raised.
+
+\begin{longtable}{p{3.4cm} p{6.6cm} p{1.2cm} p{1.8cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+init & - & - & - \\
+startSession & Address & - & - \\
+signOut & - & - & - \\
+display & View, TaskId $\cup$ \{$\bot$\} & - & - \\
+register & TaskId & - & - \\
+unregister & TaskId & - & - \\
+retryReward & RequestId & - & - \\
+confirmTransaction & - & - & - \\
+cancelTransaction & - & - & - \\
+retryTransaction & - & - & - \\
+updateProfile & ProfileDetails & - & - \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+The same as the Requester Interface: \texttt{session}, \texttt{pending},
+\texttt{tracked}, and \texttt{failed}, with the same types. For this module,
+\texttt{pending.input} and \texttt{failed.input} are always $\bot$.
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item \texttt{Screen}: (\texttt{view}: View, \texttt{messages}: seq of String)
+  -- the browser window, showing one page and any messages for the user
+\end{itemize}
+
+\subsubsection{State Invariant}
+
+If no one is signed in, there is no transaction waiting to be confirmed
+(\texttt{session} = $\bot$ $\Rightarrow$ \texttt{pending} = $\bot$). This is
+true after \texttt{init}, and every access program keeps it true.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The same assumptions as the Requester Interface.
+\item Accepting requests, committing, and revealing are done by the
+  Participation Client (\mref{mParticipation}), not by this module.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{init}(), \texttt{startSession}(a), \texttt{signOut}(), \texttt{confirmTransaction}(),
+\texttt{cancelTransaction}(), \texttt{retryTransaction}(), \texttt{updateProfile}(d):
+\begin{itemize}
+\item transition: The same as in the Requester Interface
+  (Section~\ref{misRequesterUI}). For \texttt{updateProfile}, the provider can
+  also add a description and choose whether their name and description are
+  shown on public pages (\nfrref{NFR_PublicPagesPrivacy}).
+\end{itemize}
+
+\noindent \texttt{display}(v, item):
+\begin{itemize}
+\item transition: \texttt{Screen} shows the page \texttt{v}. Home,
+  Marketplace, TransactionHistory, and Profile show the same information as in
+  the Requester Interface. The other pages show:
+  \begin{itemize}
+  \item Task: the task \texttt{item} from \texttt{getTask} and its providers,
+    with the option to register for it.
+  \item Dashboard: for each task the provider is registered for, their
+    reputation, stake, and rewards earned from \texttt{getProviderInfo}
+    (\rref{FR_ProviderDashboard}), and for each reward held from
+    \texttt{getPendingTransfers}, the amount and the pending transfer deadline
+    (\rref{FR_PendingTransferNotice}).
+  \end{itemize}
+\end{itemize}
+
+\noindent \texttt{register}(t):
+\begin{itemize}
+\item transition: Prepares the provider's registration for task \texttt{t}
+  with \texttt{prepare(RegisterProvider(t), $\bot$, $\bot$)}. The preview
+  shows the minimum stake for the task, which will be locked while the
+  provider is registered (\rref{FR_InferenceTaskRegistration},
+  \rref{FR_InferenceTaskRegistrationStaking}).
+\end{itemize}
+
+\noindent \texttt{unregister}(t):
+\begin{itemize}
+\item transition: Prepares the provider's unregistration from task
+  \texttt{t} with \texttt{prepare(UnregisterProvider(t), $\bot$, $\bot$)}.
+  Before the provider confirms, \texttt{Screen} also shows their reputation
+  and stake from \texttt{getProviderInfo}, and explains how much of the stake
+  will be returned or burned based on their reputation
+  (\rref{FR_ProviderWillingUnregistration},
+  \rref{FR_ProviderUnregistrationStakeReturn}).
+\end{itemize}
+
+\noindent \texttt{retryReward}(id):
+\begin{itemize}
+\item transition: Prepares a retry of the held reward transfer for request
+  \texttt{id} with \texttt{prepare(RetryReward(id), $\bot$, $\bot$)}
+  (\rref{FR_PendingTransferRetry}).
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{prepare} and \texttt{showError}: the same as in the Requester
+  Interface.
+\item \texttt{onChange}(event): the same as in the Requester Interface for
+  transactions. If a new reward transfer for the provider is held,
+  \texttt{Screen} also shows a notice (\rref{FR_PendingTransferNotice}).
+\end{itemize}
+
+\newpage
+
+\section{MIS of Wallet Service (\mref{mWallet})} \label{misWallet}
+% =====================================================================
+
+\subsection{Module}
+
+Wallet Service (\mref{mWallet}). An abstract object implemented in the
+off-chain application. This module handles the connection between
+\progname{} and the user's wallet. It supports embedded wallets, which can be
+created with an email, phone number, or social account, and wallet extensions
+that users may already have installed. The user's private keys always stay in
+their wallet, so this module never has access to them
+(\ref{SA_WalletSigning}).
+
+\subsection{Uses}
+
+None.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+\begin{itemize}
+\item \texttt{SUPPORTED\_SOCIAL\_ACCOUNTS}: set of String = \{``Google''\} --
+  the social accounts that can be used to create an embedded wallet
+\end{itemize}
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{SignInMethod} = Extension $\mid$ Social(String) $\mid$
+  Email(String) $\mid$ Phone(String) -- how the user chooses to sign in
+\item \texttt{WalletKind} = \{Embedded, Extension\}
+\item \texttt{TransactionData}: byte string -- an unsigned transaction
+\item \texttt{Signature}: byte string
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{3.6cm} p{2.8cm} p{1.8cm} p{5.6cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+init & - & - & - \\
+connectExtension & - & - & AlreadyConnectedError, NoWalletFoundError,
+  ConnectionRejectedError \\
+startEmbeddedSignIn & SignInMethod & - & AlreadyConnectedError,
+  UnsupportedMethodError, InvalidContactError,
+  WalletProviderUnavailableError \\
+completeEmbeddedSignIn & String (code) & $\mathbb{B}$ & NoSignInStartedError,
+  InvalidCodeError, WalletCreationFailedError \\
+verifyOwnership & - & Address & WalletNotConnectedError,
+  SignatureRejectedError, OwnershipNotVerifiedError \\
+getConnectedAddress & - & Address & WalletNotConnectedError \\
+requestSignature & TransactionData & Signature & WalletNotConnectedError,
+  SignatureRejectedError \\
+disconnect & - & - & - \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item \texttt{connected}: Address $\cup$ \{$\bot$\} -- the address of the
+  connected wallet, or $\bot$ if no wallet is connected
+\item \texttt{kind}: WalletKind $\cup$ \{$\bot$\} -- the kind of wallet that is
+  connected
+\item \texttt{started}: SignInMethod $\cup$ \{$\bot$\} -- the embedded sign-in
+  that is waiting for its code
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item \texttt{BrowserWallet}: Address $\cup$ \{$\bot$\} -- the wallet extension
+  installed in the user's browser, given by its address, or $\bot$ if there is
+  none
+\item \texttt{EmbeddedWalletProvider}: SignInMethod $\rightarrow$ Address
+  $\cup$ \{$\bot$\} -- the external service that holds embedded wallets, giving
+  the wallet that belongs to each email, phone number, or social account
+\end{itemize}
+
+\subsubsection{State Invariant}
+
+A wallet kind is recorded exactly when a wallet is connected (\texttt{connected}
+= $\bot$ if and only if \texttt{kind} = $\bot$). This is true after
+\texttt{init}, and every access program keeps it true.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item \texttt{init} is called once when the web client is opened, before any
+  other access program.
+\item \texttt{EmbeddedWalletProvider} gives back the same wallet every time a
+  user signs in with the same email, phone number, or social account, so the
+  user keeps the same profile after signing out (\rref{FR_WalletAuthentication}).
+\item Only one wallet is connected at a time.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{init}():
+\begin{itemize}
+\item transition: \texttt{connected}, \texttt{kind}, \texttt{started} :=
+  $\bot$, $\bot$, $\bot$
+\end{itemize}
+
+\noindent \texttt{connectExtension}():
+\begin{itemize}
+\item transition: Asks the user to approve the connection in their wallet
+  extension. Once they approve, \texttt{connected} := \texttt{BrowserWallet}
+  and \texttt{kind} := Extension.
+\item exception: \textit{exc} := AlreadyConnectedError if a wallet is already
+  connected; NoWalletFoundError if \texttt{BrowserWallet} = $\bot$;
+  ConnectionRejectedError if the user declines
+\end{itemize}
+
+\noindent \texttt{startEmbeddedSignIn}(m):
+\begin{itemize}
+\item transition: \texttt{EmbeddedWalletProvider} sends a one-time code to the
+  email address or phone number in \texttt{m}, or opens the social account's
+  sign-in page, and \texttt{started} := \texttt{m}.
+\item exception: \textit{exc} := AlreadyConnectedError if a wallet is already
+  connected; UnsupportedMethodError if \texttt{m} is Extension or a social
+  account not in \texttt{SUPPORTED\_SOCIAL\_ACCOUNTS}; InvalidContactError if
+  the email address or phone number is not valid;
+  WalletProviderUnavailableError if \texttt{EmbeddedWalletProvider} cannot be
+  reached
+\end{itemize}
+
+\noindent \texttt{completeEmbeddedSignIn}(code):
+\begin{itemize}
+\item transition: If the user does not have an embedded wallet yet
+  (\texttt{EmbeddedWalletProvider[started]} = $\bot$), a new one is created for
+  them (\rref{FR_EmbeddedWalletCreation}). Then \texttt{connected} := the
+  wallet's address, \texttt{kind} := Embedded, and \texttt{started} := $\bot$.
+\item output: \textit{out} := true if a new wallet was created, and false
+  otherwise
+\item exception: \textit{exc} := NoSignInStartedError if \texttt{started} =
+  $\bot$; InvalidCodeError if \texttt{code} is wrong or has expired;
+  WalletCreationFailedError if the wallet cannot be created. A failed creation
+  is never reported as a created wallet.
+\end{itemize}
+
+\noindent \texttt{verifyOwnership}():
+\begin{itemize}
+\item output: \textit{out} := \texttt{connected}, once the wallet has signed a
+  new random message and the signature has been checked with
+  \texttt{isValidSignature}. This proves the user controls the address
+  (\rref{FR_WalletAuthentication}).
+\item exception: \textit{exc} := WalletNotConnectedError if \texttt{connected}
+  = $\bot$; SignatureRejectedError if the user refuses to sign;
+  OwnershipNotVerifiedError if the signature is not valid
+\end{itemize}
+
+\noindent \texttt{getConnectedAddress}():
+\begin{itemize}
+\item output: \textit{out} := \texttt{connected}
+\item exception: \textit{exc} := WalletNotConnectedError if \texttt{connected}
+  = $\bot$
+\end{itemize}
+
+\noindent \texttt{requestSignature}(tx):
+\begin{itemize}
+\item output: \textit{out} := the signature of \texttt{tx}, made in the user's
+  wallet after the user approves it (\rref{FR_TransactionAuthorization},
+  \ref{SA_WalletSigning})
+\item exception: \textit{exc} := WalletNotConnectedError if \texttt{connected}
+  = $\bot$; SignatureRejectedError if the user refuses to sign
+\end{itemize}
+
+\noindent \texttt{disconnect}():
+\begin{itemize}
+\item transition: \texttt{connected}, \texttt{kind}, \texttt{started} :=
+  $\bot$, $\bot$, $\bot$. An embedded wallet is not deleted, so the user gets
+  the same wallet back the next time they sign in.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{isValidSignature}(sig, message, a): $\mathbb{B}$ -- true if
+  \texttt{sig} is a valid signature of \texttt{message} by the address
+  \texttt{a}
+\end{itemize}
+
+\newpage
+
+\section{MIS of User Information (\mref{mUserInfo})} \label{misUserInfo}
+% =====================================================================
+
+\subsection{Module}
+
+User Information (\mref{mUserInfo}). An abstract object implemented in the
+off-chain application. This module stores the information about
+each user that is not kept on the blockchain, such as their display name and
+the names of the requests they have submitted.
+Each profile is linked to a verified wallet address, so the user sees the same
+profile every time they sign in (\rref{FR_WalletAuthentication}).
+
+\subsection{Uses}
+
+None.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Constants}
+
+None.
+
+\subsubsection{Exported Types}
+\begin{itemize}
+\item \texttt{ProfileDetails} = (\texttt{displayName}: String,
+  \texttt{providerDescription}: String $\cup$ \{$\bot$\},
+  \texttt{showOnPublicPages}: $\mathbb{B}$)
+\item \texttt{HistoryEntry} = (\texttt{requestId}: RequestId, \texttt{label}:
+  String, \texttt{time}: Timestamp)
+\item \texttt{Profile} = (\texttt{address}: Address, \texttt{details}:
+  ProfileDetails, \texttt{history}: seq of HistoryEntry)
+\item \texttt{PublicProfile} = (\texttt{address}: Address,
+  \texttt{displayName}: String $\cup$ \{$\bot$\},
+  \texttt{providerDescription}: String $\cup$ \{$\bot$\}) -- the part of a
+  profile that may be shown on public pages
+\end{itemize}
+
+\subsubsection{Exported Access Programs}
+
+\begin{longtable}{p{3.4cm} p{4.2cm} p{2.4cm} p{4.4cm}}
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\hline
+\endhead
+init & - & - & StorageUnavailableError \\
+findOrCreateProfile & Address & Profile & StorageUnavailableError \\
+getProfile & Address & Profile & UnknownUserError \\
+updateDetails & Address, ProfileDetails & - & UnknownUserError,
+  InvalidDetailsError \\
+addHistoryEntry & Address, RequestId, String & - & UnknownUserError,
+  DuplicateEntryError \\
+getPublicProfile & Address & PublicProfile & - \\
+\hline
+\end{longtable}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item \texttt{profiles}: Address $\rightarrow$ Profile $\cup$ \{$\bot$\} -- the
+  profile of each user who has signed in
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item \texttt{ProfileStore}: Address $\rightarrow$ Profile $\cup$ \{$\bot$\} --
+  the off-chain storage where profiles are kept between sessions
+\item \texttt{Clock}: Timestamp -- the current time
+\end{itemize}
+
+\subsubsection{State Invariant}
+
+Each profile is stored under its own address, and no request appears twice in
+a user's history. This is true after \texttt{init}, and every access program
+keeps it true.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item \texttt{init} is called once when the off-chain application starts,
+  before any other access program.
+\item Every address passed to this module has already been verified with the
+  Wallet Service's \texttt{verifyOwnership}.
+\item Profiles only hold information the user entered. Private keys and
+  request input data are never stored here.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \texttt{init}():
+\begin{itemize}
+\item transition: \texttt{profiles} := the profiles in \texttt{ProfileStore}
+\item exception: \textit{exc} := StorageUnavailableError if
+  \texttt{ProfileStore} cannot be reached
+\end{itemize}
+
+\noindent \texttt{findOrCreateProfile}(a):
+\begin{itemize}
+\item transition: If \texttt{a} has no profile yet, creates one with the
+  display name \texttt{shorten(a)}, no description, not shown on public pages,
+  and an empty history. A new profile is private
+  by default, so nothing about the user appears on public pages until they
+  choose to share it.
+\item output: \textit{out} := the profile of \texttt{a}
+\item exception: \textit{exc} := StorageUnavailableError if
+  \texttt{ProfileStore} cannot be reached
+\end{itemize}
+
+\noindent \texttt{getProfile}(a):
+\begin{itemize}
+\item output: \textit{out} := the profile of \texttt{a}
+\item exception: \textit{exc} := UnknownUserError if \texttt{a} has no profile
+\end{itemize}
+
+\noindent \texttt{updateDetails}(a, d):
+\begin{itemize}
+\item transition: The details in the profile of \texttt{a} become \texttt{d}.
+\item exception: \textit{exc} := UnknownUserError if \texttt{a} has no
+  profile; InvalidDetailsError if the display name in \texttt{d} is empty
+\end{itemize}
+
+\noindent \texttt{addHistoryEntry}(a, id, label):
+\begin{itemize}
+\item transition: Adds the request \texttt{id} with the name \texttt{label} and
+  the current time from \texttt{Clock} to the end of the history of
+  \texttt{a}.
+\item exception: \textit{exc} := UnknownUserError if \texttt{a} has no
+  profile; DuplicateEntryError if \texttt{id} is already in the history of
+  \texttt{a}
+\end{itemize}
+
+\noindent \texttt{getPublicProfile}(a):
+\begin{itemize}
+\item output: \textit{out} := the address \texttt{a} with its display name and
+  description, if \texttt{a} has a profile and has chosen to show it on public
+  pages. Otherwise, only the address, with the name and description as
+  $\bot$. Public pages only show what a user has agreed to share
+  (\nfrref{NFR_PublicPagesPrivacy}), and they do not reveal whether an address
+  has a profile.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\begin{itemize}
+\item \texttt{shorten}(a): String -- the first and last four characters of the
+  address \texttt{a}, used as the display name until the user chooses one
+\end{itemize}
 
 \newpage
 
@@ -1797,36 +3305,61 @@ None, since the module has no state variables.
 
 \section{Appendix --- Generative AI Use Disclosure}
 
-\wss{ChatGPT (version 5) was used to brainstorm ideas for the template for this disclose section.}
-
 \subsection{AI Tools Used}
 
-\wss{Give the name of the AI tool(s) used and the version.}
+\begin{itemize}
+\item Claude Opus 5.5 (Anthropic), used through Claude Code.
+\end{itemize}
+
+\wss{Other team members: add any other AI tools you used for your MIS sections
+here, as was done in the MG.}
 
 \subsection{How and Where Used}
 
-\wss{Explain what the tool(s) were used for.  Examples include: brainstorming,
-explaining a technical concept, reviewing the document, generating or modifying
-text, generating or modifying diagrams, identifying errors or omissions or
-inconsistencies.}
-
-\wss{For each of the uses, identify which parts of the document were affected.}
-
-\wss{You do not need to report every interaction, but you should disclose the 
-uses that materially contributed to your work}
+\begin{itemize}
+\item \textbf{MIS of the Provider Registry, Marketplace Action Preflight,
+  Provider Setup, Request Listener, and Model:} The tool was given the module
+  decomposition, the SRS, the Module Guide and its use hierarchy, the MIS
+  sections already written for the other modules, and the proof of concept
+  code. It read the on-chain program (\texttt{src/crates/protocol}), the
+  simulation's provider agents (\texttt{src/crates/sim}), and the frontend
+  prototype (\texttt{src/frontend}), and used them to draft each module's
+  exported types, access programs, state variables, and semantics. For
+  example, the Preflight issues and their messages were taken from the
+  validation in the prototype's request and task creation pages, and the
+  Registry's default parameters were taken from the proof of concept's
+  protocol parameters.
+\item \textbf{Consistency between modules:} The tool checked the routine names
+  the Request Lifecycle, Participation Client, and Transaction Manager sections
+  already assumed from these modules, so that the new sections export them.
+  It also proposed one change to the Participation Client section, so that the
+  Request Listener is created with the network endpoint and provider address
+  it needs.
+\item \textbf{Gaps between the SRS and the code:} The tool listed places where
+  the code and the SRS disagree or the SRS is silent, such as registrations
+  being capped at a task's maximum number of providers in the proof of
+  concept, and what happens to a provider's stake when it falls below
+  \texttt{MINIMUM\_PROVIDER\_STAKE}. The team decided how each was handled in
+  the MIS.
+\item \textbf{Appendices:} The tool drafted this disclosure and a first draft of
+  the team's reflection answers, which were then edited.
+\end{itemize}
 
 \subsection{Verification of AI-Generated Content}
 
-\wss{\begin{itemize}
-    \item Describe how the team checked AI-generated or AI-assisted material
-    before including it in the document.
-    \item In particular, verify factual claims, technical assertions,
-    requirements, calculations, references, and other information for which an
-    AI system may produce incorrect or fabricated results.
-    \item \textbf{The team is responsible for the accuracy, completeness,
-consistency, and appropriateness of the submitted document, regardless of
-whether material was generated by a human or an AI system.}
-\end{itemize}}
+Every line of the AI-assisted sections was read and reviewed by at least one
+team member before it was included. Each access program was checked against
+the SRS requirement it cites and against the module's secret and services in
+the Module Guide, so that the specification does not add behaviour the team has
+not agreed to. The Uses sections were compared with the use hierarchy in the
+Module Guide, and the routine names were compared with the sections of the
+modules that call them. Where the specification follows the SRS rather than
+the proof of concept code, this was a deliberate choice and is noted in the
+reflection. The \LaTeX{} document was compiled to check that the sections and
+cross-references rendered correctly. The team remains responsible for the
+accuracy, completeness, and consistency of this document, regardless of
+whether material was first drafted by a team member or with the help of an AI
+tool.
 
 \newpage{}
 
@@ -1840,20 +3373,105 @@ graduate attribute of Problem Analysis and Design.
 \input{../../Reflection.text}
 
 \begin{enumerate}
-  \item What went well while writing this deliverable? 
+  \item What went well while writing this deliverable?
+
+  Having the Module Guide finished before the MIS made this deliverable much
+  easier. Each module's secret told us what its interface had to hide, so
+  deciding what belonged in an access program was mostly a matter of asking
+  whether it would expose that secret. For example, the Request Listener
+  reports deadlines and phases to the Participation Client, but how it reads
+  the blockchain stays inside it. The use hierarchy also answered most of the
+  Uses sections directly. Splitting the modules between team members worked
+  well too, because the sections written first listed the routines they
+  expected from other modules. For example, the Request Lifecycle section named
+  the routines it needs from the Provider Registry, and the Registry was then
+  written against that list, which kept the two sections consistent instead of
+  having to reconcile them afterwards.
+
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?
+
+  The main pain point was that the proof of concept code, the SRS, and the MIS
+  did not always agree. The proof of concept rejects a registration once a task
+  has its maximum number of providers, but the SRS uses that maximum per
+  request, not per task, and some routines, such as voluntary unregistration,
+  are not implemented yet. We resolved this by specifying the syntax of every
+  module in full, describing the semantics that the proof of concept already
+  implements, and marking the rest as to be filled in later (for Rev -1). 
+  We will fill in the gaps as we develop the system further throughout the semester.
+  A second pain point was that sections
+  written by different people did not always line up. The Participation Client
+  created a Request Listener from only a task, but a listener also needs the
+  provider it is watching for and a way to reach the blockchain, so we changed
+  that call and added the routine it needs to Provider Setup.
+
   \item Which of your design decisions stemmed from speaking to your client(s)
   or a proxy (e.g. your peers, stakeholders, potential users)? For those that
   were not, why, and where did they come from?
+
+  The design of the Marketplace Action Preflight came from working with
+  potential users. The issues it reports, and the rule that every issue names
+  the field it belongs to and suggests a fix, follow the error screens we built
+  for the cognitive walkthrough, such as ``Not enough funds'' with a way to
+  deposit more, and the rejected upload that names the missing column.
+  Staking, reputation, and the stake returned when a provider leaves a task
+  trace back to our discussions with our supervisor about provider incentives,
+  which shaped the SRS. Most of the remaining decisions, such as how the
+  Registry stores provider entries or what the Request Listener reports to the
+  provider software, did not come from stakeholders. Users do not see them, so
+  they came from the module secrets, the use hierarchy, and the need to keep
+  the modules consistent with each other.
+
   \item While creating the design doc, what parts of your other documents (e.g.
   requirements, hazard analysis, etc), it any, needed to be changed, and why?
+
+  Writing the Provider Registry showed two gaps in the SRS.
+  \rref{FR_ProviderMinimumStakeUnregistration} says to unregister a provider
+  whose stake falls below \texttt{MINIMUM\_PROVIDER\_STAKE}, but not whether
+  the remaining stake is returned or burned. The SRS also does not say what
+  happens to stake that is still reserved for active requests when a provider
+  is forced out. Neither is implemented in the proof of concept yet, so the
+  semantics of these routines are left to be filled in once we decide, and the
+  SRS will need to be updated to match. Within this document, the
+  Participation Client section changed so that it matches the Request
+  Listener's interface.
+
   \item What are the limitations of your solution?  Put another way, given
   unlimited resources, what could you do to make the project better? (LO\_ProbSolutions)
+
+  The Preflight checks are only advisory. They are made before a transaction
+  is signed, and the state of the blockchain can change before it executes, so
+  a user can still pass every check and have the transaction rejected. Nothing
+  advances a request on its own, so providers depend on someone calling
+  \texttt{advancePhase} after a deadline passes. The Model interface only
+  supports a single number as output, so tasks that produce several values or
+  categories cannot be specified yet. Several semantics are also still to be
+  filled in, so parts of the design cannot be reviewed until they are
+  implemented. With more resources, we would run a scheduler that advances
+  requests as soon as their deadlines pass, support richer output schemas, and
+  add a way for providers to back up their salts so that losing their machine
+  between commit and reveal does not cost them their stake.
+
   \item Give a brief overview of other design solutions you considered.  What
   are the benefits and tradeoffs of those other designs compared with the chosen
   design?  From all the potential options, why did you select the documented design?
   (LO\_Explores)
+
+  One alternative was to put the preflight checks inside the Transaction
+  Manager. That would mean one less module, but the Transaction Manager would
+  then hide two unrelated decisions: how transactions are built and signed, and
+  which user errors are caught early and how they are worded. The wording is
+  likely to change after usability testing, so keeping it in its own module
+  makes that change local. Another option was for Preflight to read the
+  blockchain through the Chain Observer instead of reading it directly. This
+  would avoid repeating the reading logic, but the use hierarchy keeps
+  Preflight a leaf module, and depending on the Chain Observer would couple it
+  to a module that also manages subscriptions. For the Registry, we still have
+  to choose between returning a forced-out provider's stake immediately and
+  waiting until its reservations for active requests are released. Returning
+  it immediately is simpler, but that stake may still be needed to compensate
+  other providers, so this is left to be filled in later.
+
   \item (After you have implemented another team's module, which means this
   isn't filled in until after the original deadline). What did you learn by
   implementing another team's module? Were all the details you needed in the
@@ -1866,6 +3484,8 @@ graduate attribute of Problem Analysis and Design.
   Your reflection should be about concepts learned in your SE education, such as modular decomposition, cohesion, coupling, information hiding, etc.  You should critique the quality and utility of the specification you received.
 
   You should create a PR for your implemented module.  A link to the PR should be part of your reflection.
+
+  \wss{To be completed after implementing another team's module.}
 
 \end{enumerate}
 
