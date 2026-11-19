@@ -1,0 +1,48 @@
+# Three biased providers start with a reputation earned before this run.
+name = "b_7_3_established_bias"
+seed = 100
+rounds = 100
+
+[task]
+kind = "linear_regression"
+description = "Reputation feedback experiment"
+min_providers = 3
+max_providers = 7
+
+[task.ground_truth]
+slope = 2.0
+intercept = 3.0
+
+[protocol]
+reputation_adjustment_factor = 0.2
+
+[[providers]]
+id = 1
+agent = { type = "fixed", slope = 2.0, intercept = 3.0, noise = 0.5 }
+
+[[providers]]
+id = 2
+agent = { type = "fixed", slope = 2.0, intercept = 3.0, noise = 1.0 }
+
+[[providers]]
+id = 3
+agent = { type = "fixed", slope = 2.0, intercept = 3.0, noise = 1.5 }
+
+[[providers]]
+id = 4
+agent = { type = "fixed", slope = 2.0, intercept = 3.0, noise = 0.5 }
+
+[[providers]]
+id = 5
+initial_reputation = 20.0
+agent = { type = "fixed", slope = 2.1, intercept = 4.0, noise = 1.0 }
+
+[[providers]]
+id = 6
+initial_reputation = 20.0
+agent = { type = "fixed", slope = 2.1, intercept = 4.0, noise = 1.5 }
+
+[[providers]]
+id = 7
+initial_reputation = 20.0
+agent = { type = "fixed", slope = 2.1, intercept = 4.0, noise = 0.5 }

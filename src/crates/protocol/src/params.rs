@@ -1,5 +1,6 @@
 pub const MIN_REPUTATION: f64 = 0.0;
 pub const MAX_REPUTATION: f64 = 100.0;
+pub const ACCEPTANCE_PERIOD: u64 = 60;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Params {
@@ -10,7 +11,6 @@ pub struct Params {
     pub minimum_stake: u64,
     pub baseline_reputation: u64,
     pub exit_reputation_threshold_ratio: f64,
-    pub acceptance_period: u64,
     pub commit_period: u64,
     pub reveal_period: u64,
 }
@@ -25,7 +25,6 @@ impl Default for Params {
             minimum_stake: 50,
             baseline_reputation: 10,
             exit_reputation_threshold_ratio: 0.5,
-            acceptance_period: 60,
             commit_period: 60,
             reveal_period: 60,
         }

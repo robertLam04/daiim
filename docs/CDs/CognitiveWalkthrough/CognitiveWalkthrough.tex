@@ -52,6 +52,7 @@ November 15 & Keira & Initial document\\
 November 16 & Keira & Added sections Introduction and Plan \\
 November 16 & Aidan & Added tasks and action steps to Results \\
 November 16 & Aidan & Added prototype screens to each step and as an appendix \\
+November 18 & Keira & Added results and likely changes for Task 1 and 3 \\
 November 18 & Aidan & Completed analysis for Tasks 4 and 5; added planned change for My requests \\
 \bottomrule
 \end{tabularx}
@@ -88,7 +89,7 @@ The plan for conducting the cognitive walkthrough is detailed below.
 
 \subsection{Methodology}
 The cognitive walkthrough will be performed by identifying a typical new user persona and important 
-user tasks, then having a usability expert evaulate the learnability of the prototype by answering the 
+user tasks, then having a usability expert evaluate the learnability of the prototype by answering the 
 following four questions after every action in each task:
 
 \begin{enumerate}
@@ -123,12 +124,12 @@ The user persona chosen to represent a DAIIM inference requester is outlined as 
 \end{itemize}
 
 \subsection{User Tasks}
-For the purposes of performing the cognitive walkthrough, the following four user tasks have been identified:
+For the purposes of performing the cognitive walkthrough, the following five user tasks have been identified as being essential tasks to analyse to justify the learnability of the user interface:
 \begin{enumerate}
 \item Log in/sign up (authenticate wallet) and log out;
 \item Add funds to the wallet;
 \item Create a task definition;
-\item Submit and inference request and view the result;
+\item Submit an inference request and view the result;
 \item View user profile and transaction history.
 \end{enumerate}
 
@@ -166,13 +167,13 @@ On the home page, Priya clicks \textbf{Sign up / Log in} in the header. The \tex
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & No: While the log in/sign up button is visible, it is not currently clear within the homepage instructions that a user must sign in to be able to access the ability to submit requests and interact with the system beyond viewing the marketplace. There is no association made between the instruction ``Make an account'' and clicking the sign up/log in button. The instructions also assume that the audience is new users, and does not account for returning users needing to be refreshed on how to interact with the system. \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: The log in/sign up button is clearly visible in the top right corner. This is familiar to users who have used web applications before, like Priya with web dashboard experience.  The button gets highlighted when a user's cursor is over it. This further supports the association with the correct action (i.e.\ that the button is clickable). \newline \textbf{Note:} The button could stand out more (i.e.\ be a bolder colour), as it somewhat blends into the background currently. Conversely, the button could remain the same colour, but change the navigation bar to make for a better contrast. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The action is clearly written on the button with familiar text. \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: After the button is pressed, a window pops up in the centre of the screen with further information on how to continue the sign up/log in process. \\
         \hline
     \end{tabularx}
     \caption{Step 1.1: Click ``Sign up / Log in''}
@@ -190,13 +191,13 @@ Priya types her email address in the \textbf{Email} field and clicks \textbf{Con
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & Yes: The information that is required as input is clearly stated within the sign in pop-up window.  \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: All options for signing in are contained within the pop-up window and organized logically. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: All options for sign in methods are clearly labelled, so users like Priya can choose which method best suits them. For a user choosing the option to enter their email, the area where the user must type out their email contains an example email, to indicate the expected action. The button to choose the option to sign in with the email is visible and clearly labelled ``Continue with email.'' \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: Upon clicking ``Continue with email'' the pop-up window changes to a window asking to verify the email by entering the code sent to the email. \\
         \hline
     \end{tabularx}
     \caption{Step 1.2: Enter her email and click ``Continue with email''}
@@ -214,13 +215,13 @@ Priya types the 6-digit code sent to her email into the code boxes and clicks \t
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & Yes: The instructions are clearly stated within the same pop-up window. \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: There are 6 boxes, which aligns with the stated expected input of a 6 digit code.  \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: After typing a single digit, the cursor automatically moves to the next box, writing only one digit per box. The user is unable to type values other than integers. The ``Verify'' button remains greyed out and unclickable until all 6 digits have been input.  \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: The pop-up window changes the display to a loading screen and updates the user on the progress of the sign-in process. \\
         \hline
     \end{tabularx}
     \caption{Step 1.3: Enter the 6-digit code and click ``Verify''}
@@ -238,13 +239,13 @@ The \textbf{Setting up your account} window ticks off ``Email confirmed'' and ``
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & No: The loading window displays a good amount of information, but the steps occur in quick succession and the window automatically closes when the user has been successfully logged in. Users may not have enough time to read the different loading messages before they disappear, which can lead to some confusion. Also, the loading line ``Opening DAIIM...'' may be confusing, as the application is already open on their browser. The information regarding the wallet supports users like Priya who do not have experience with blockchain and wallets, by abstracting the technical details while still maintaining a level of transparency.  \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: The pop-up window is in the centre of the screen and obvious. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The window clearly states that the account is being set up, and progress is displayed having steps greyed out, and becoming white with a checkmark when they have been accomplished.  \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: After the loading completes, the user is returned to an unobstructed view of the homepage, where a welcome message and confirmation message clearly state the account has been set up. The navigation bar has also changed to show information visible only to signed in users, such as the held and available funds, the requests tab, deposit button, and the user profile picture and name in place of where the sign up/log in button used to be.  \\
         \hline
     \end{tabularx}
     \caption{Step 1.4: Wait for account setup}
@@ -262,13 +263,13 @@ Priya clicks her profile picture in the top-right corner of the header. A menu o
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & No: It is not immediately obvious that the user must click on their profile picture/name to access the profile menu. However, this mapping is similar to most other web applications. The display of the profile picture and name does demonstrate that this button represents the user's profile. \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: The sign up / log in button gets replaced with their name and profile picture in the top right corner. This aligns with the expected mental model of the user, as this follows the familiar structure of other web applications. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & No: The button for the user profile looks different to the other buttons in the navigation bar, and does not highlight when the cursor is over it. This may imply to the user that it is not a clickable button. \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: The user will see the profile menu pop up. \\
         \hline
     \end{tabularx}
     \caption{Step 1.5: Open the profile menu}
@@ -288,13 +289,13 @@ Priya clicks \textbf{Log out} and returns to the signed-out home page. If a paym
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & Yes: Having experience with web browsers and apps, users like Priya will understand that they must perform an action to log out of the application. \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: The ``Log out'' option is highly visible, as it is the only text in red. It is also at the bottom of the list of actions in the user profile menu, so it is organized to be easy to find. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The phrase ``Log out'' is familiar amongst users with experience with web dashboards, like Priya. \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: Upon selecting ``Log out,'' the application returns to the home screen and removes all navigation bar options that should only be visible to signed in users. The profile menu button is replaced by the ``Sign up / Log in'' button. \newline \textbf{Note:} There is no confirmation message to get the user to confirm that they want to log out. There are no safety mechanisms to prevent mistakenly selecting the log out option. \\
         \hline
     \end{tabularx}
     \caption{Step 1.6: Click ``Log out''}
@@ -459,13 +460,13 @@ On the Marketplace page, Priya clicks \textbf{+ New task}. The \textbf{Create a 
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & No: Priya's goal is to receive forecasts, and the getting-started checklist on the homepage only directs her to ``Pick a task'' from the Marketplace. Nothing on the homepage or in the Marketplace explains what a task is, or that a user can define their own task when none of the existing ones fit their needs. Users like Priya, with no experience with Web3 applications, may not realise that creating a task is something a requester can do. \newline \textbf{Note:} The message shown when a search returns no results does suggest creating a new task, which helps users who cannot find what they are looking for. \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: The ``+ New task'' button is clearly visible in the top right corner of the Marketplace, beside the search bar. It is filled in purple, so it stands out from the other buttons on the page. When signed out, the button is faded and labelled ``Sign in to create'', which tells the user why it is not yet available. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The action is clearly written on the button with familiar text, and the ``+'' symbol is commonly used in web applications to indicate creating something new. The button gets highlighted when a user's cursor is over it. \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: After the button is pressed, the ``Create a new task'' form opens, with a clear heading and labelled fields. \\
         \hline
     \end{tabularx}
     \caption{Step 3.1: Click ``+ New task''}
@@ -483,13 +484,13 @@ Priya fills in \textbf{Task name} (e.g.\ ``Snowmelt streamflow forecast''), \tex
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & Yes: The heading ``Create a new task'' and the field labels clearly state the information that is required. The label ``What should be predicted?'' is phrased as a question in plain language, which matches how users like Priya think about their goal. \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: The fields are the first items on the left side of the form, and are organized top to bottom in the order they should be filled in. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: Each text field contains an example (e.g.\ ``Snowmelt streamflow forecast'') to indicate the expected input. The Category field is a drop-down with a short list of choices, so the user does not have to come up with their own category. \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: The typed text appears in each field, and the selected category is displayed in the drop-down. \newline \textbf{Note:} The fields are not checked until ``Review and create'' is clicked, so the user does not find out about a missing field until the end of the form. \\
         \hline
     \end{tabularx}
     \caption{Step 3.2: Name and describe the task}
@@ -507,13 +508,13 @@ Priya enters the \textbf{Output} unit (e.g.\ m\textsuperscript{3}/s). Under \tex
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & No: The ``Output'' and ``Inputs requesters will provide'' sections assume an understanding of how prediction models take in inputs and return an output. Priya has no programming experience, and the example input names (snowpack\_cm, temp\_avg\_c) use a naming style that is familiar to programmers but not to users like Priya. It is not explained whether the names must follow this format, or how the inputs relate to the data she will upload when she submits a request. \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: The Output field is directly below Category, and the inputs section is at the top of the right column with a clear heading. \newline \textbf{Note:} The form is split into two columns, so users reading top to bottom may reach the end of the left column and not immediately continue on the right. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & No: The Output field is labelled ``One number $\cdot$ unit'', which implies that only the unit should be typed, but this is not clearly stated. ``+ Add input'' is displayed as a small underlined link rather than a button like the other actions on the page, so it may not be associated with adding another input. Each input is also fixed to the type ``number'', with no option to change it and no explanation of why. \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: Clicking ``+ Add input'' adds a new empty input field below the existing ones, and extra inputs can be removed with the ``x'' beside them. \newline \textbf{Note:} Errors such as duplicate input names are only shown after ``Review and create'' is clicked, rather than as the user types. \\
         \hline
     \end{tabularx}
     \caption{Step 3.3: Define the output and inputs}
@@ -531,13 +532,13 @@ Priya sets \textbf{Min providers} (at least 2), \textbf{Max providers}, and \tex
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & No: The concept of a provider is not explained on this page. Users like Priya may not know what a provider is, how many she should choose, or how the number affects the cost or reliability of her results. ``Time for providers to join'' is also unclear, as it does not say what happens when the time runs out. \newline \textbf{Note:} Using familiar terms like "Number of responses" or "Number of predictions" may be more intuitive for users like Priya than "Number of providers"  \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: The provider settings are grouped together below the inputs section, and default values are already filled in, so the user can continue without changing them. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The fields are labelled with short, familiar terms (``Min'', ``Max''), and the join time is a drop-down with set choices, which prevents invalid input. \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & No: There is no feedback when the values are entered. If min providers is less than 2, or max providers is smaller than min providers, the error only appears after ``Review and create'' is clicked. The requirement that min providers must be at least 2 is only stated in small grey text under the buttons. The error message does explain why (``so no single provider decides the result''), and this explanation would be more useful if it was shown next to the fields from the start. \\
         \hline
     \end{tabularx}
     \caption{Step 3.4: Set the provider settings}
@@ -557,13 +558,13 @@ Priya clicks \textbf{Review and create}. Missing or invalid fields are highlight
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & Yes: Having experience with online forms, users like Priya will understand that they must submit the form once it is filled in. The label ``Review and create'' also tells the user that they will have a chance to check the details before the task is created. \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: The ``Review and create'' button is filled in purple, matching the other main actions in the application, and is placed beside ``Cancel'' at the bottom of the form. \newline \textbf{Note:} The warning that a task ``is recorded publicly and can't be deleted'' is in small grey text under the buttons and is easy to miss. It is repeated in the confirmation window, which helps. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The confirmation window summarises the task details, so the user can check them before clicking ``Confirm''. \newline \textbf{Note:} The ``Back'' button is outlined in red, which may suggest that it cancels or deletes the task rather than returning to edit it. The line ``Network fee covered by DAIIM'' may also be confusing to users like Priya with no blockchain experience, although ``Cost: \$0.00'' makes it clear that she will not be charged. \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: If a field is missing or invalid, it is outlined in red with a message underneath explaining how to fix it. After ``Confirm'' is clicked, the button changes to ``Recording\ldots'' and both buttons are greyed out, showing that the task is being created. \\
         \hline
     \end{tabularx}
     \caption{Step 3.5: Click ``Review and create'' and confirm}
@@ -581,13 +582,13 @@ The \textbf{Task created} page confirms the task was published, with a proof lin
         \hline
         \textbf{Analysis Question} & \textbf{Group Determination} \\
         \hline
-        Will users try to achieve the right result? &  \\
+        Will users try to achieve the right result? & Yes: After creating a task, users like Priya will want to check that it was created correctly and see how it appears to others in the Marketplace. \\
         \hline
-        Will users notice that the correct action is available? &  \\
+        Will users notice that the correct action is available? & Yes: The ``Task created'' heading is shown in green with a checkmark, and ``View task'' is the filled purple button on the page, beside ``Request this task''. \\
         \hline
-        Will users associate the correct action with the result they're trying to achieve? &  \\
+        Will users associate the correct action with the result they're trying to achieve? & Yes: The phrase ``View task'' is clearly written on the button with familiar text. \newline \textbf{Note:} The ``Proof'' link shows a shortened code (4kTz\ldots Qm8r) with no explanation. Priya has no experience with blockchain, so she will not know what the proof is or why she would click it. \\
         \hline
-        After the action is performed, will users see that progress is made toward the goal? &  \\
+        After the action is performed, will users see that progress is made toward the goal? & Yes: The task page opens and shows the task as it is listed in the Marketplace. \newline \textbf{Note:} The page shows ``Registered providers (0)'' while the ``Request this task'' button is still available. The confirmation page says requests can be sent once enough providers have joined, but the task page does not repeat this, so Priya may try to request a task that no providers can serve yet. \\
         \hline
     \end{tabularx}
     \caption{Step 3.6: Read the confirmation and click ``View task''}
@@ -904,9 +905,34 @@ Priya clicks \textbf{Deposits}, \textbf{Payments} or \textbf{Refunds} to narrow 
 \label{sec:changes}
 This section lists the changes planned for the final UI design to address the problems found in Section~\ref{sec:results}.
 
-\subsection{Separate the request list from the new request form}
+\subsection{Task 1}
+\begin{enumerate}
+    \item Make the "Make an account" step open the sign-in window (1.1).
+    \item Add a message for returning users within the explanation of the steps. Add more information about what it means to make an account and sign in with an existing account (1.1).
+    \item Give the "Sign up / Log in" button better contrast against the navigation bar (1.1).
+    \item Keep the setup window open until it's finished, with a "Continue" button, and replace "Opening DAIIM…" (1.4).
+    \item Make the profile button look clickable, with a hover highlight and a drop-down arrow (1.5).
+\end{enumerate}
+
+\subsection{Task 2}
+\begin{enumerate}
+    \item
+\end{enumerate}
+
+\subsection{Task 3}
+\begin{enumerate}
+    \item Make the "Create a task" functionality information more findable. For example, add it to the navigation bar, instead of having it embedded in the marketplace or requests tab (3.1).
+    \item Fix the formatting of the form. For example, use a single column, or have the rows better aligned (3.3).
+    \item Add information icons beside each field, which allows for a description of the field and expectations to pop up when the cursor is hovered over the icon (3.2-3.4).
+    \item Use a less jargon-based term for providers (3.4).
+    \item Make the "can't be deleted" warning more visible (3.5)
+    \item Make "Confirm" the main button and drop the "network fee" jargon (3.5)
+    \item Show "Waiting for providers" on a new task and disable requests until enough have joined (3.6)
+\end{enumerate}
+
+\subsection{Task 4}
 \label{sec:change-requests}
-\textbf{Problems addressed:} P1 (Step 4.2, Table~\ref{tab:cw-step-4-2}) and P2 (Step 4.6, Table~\ref{tab:cw-step-4-6}).
+\textbf{Separate the request list from the new request form.} This addresses P1 (Step 4.2, Table~\ref{tab:cw-step-4-2}) and P2 (Step 4.6, Table~\ref{tab:cw-step-4-6}).
 
 \textbf{Current design:} Clicking \textbf{My requests} in the navigation bar opens the new request form, with a narrow \textbf{Recents} sidebar beside it that lists past requests by ID. Clicking \textbf{Request this task} on a task page opens the same page, and the \textbf{My requests} tab lights up. The same page therefore acts as both the list of past requests and the form for a new request, so it is unclear which one the user is looking at. It is also hard to find a past request again: \textbf{My requests} opens a blank form, and the sidebar shows only IDs with no search.
 
@@ -920,6 +946,11 @@ This section lists the changes planned for the final UI design to address the pr
 \end{enumerate}
 
 \textbf{Expected result:} \textbf{My requests} matches what the label suggests: a list of the user's requests that they can search. The new request form is a separate, clearly marked page. Priya can tell whether she is starting a new request or checking an old one, and can find her river forecast again by searching for it instead of guessing from request IDs.
+
+\subsection{Task 5}
+\begin{enumerate}
+    \item Add a link to \textbf{Transaction history} on the Profile page, so the user does not have to reopen the profile menu (5.3).
+\end{enumerate}
 
 
 \section{Conclusion}
