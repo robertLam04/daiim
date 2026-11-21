@@ -180,253 +180,39 @@ their specification.
 
 
 \section{Module Decomposition}
-Modules are decomposed according to the principle of ``information hiding''
-proposed by \citet{ParnasEtAl1984}. The \emph{Secrets} field in a module
-decomposition is a brief statement of the design decision hidden by the
-module. The \emph{Services} field specifies \emph{what} the module will do
-without documenting \emph{how} to do it. For each module, a suggestion for the
-implementing software is given under the \emph{Implemented By} title. If the
-entry is \emph{OS}, this means that the module is provided by the operating
-system or by standard programming language libraries.  \emph{\progname{}} means the
-module will be implemented by the \progname{} software.
-
-Only the leaf modules in the hierarchy have to be implemented. If a dash
-(\emph{--}) is shown, this means that the module is not a leaf and will not have
-to be implemented.
-
-\subsection{Hardware Hiding Modules}
-
-\begin{description}
-\item[Secrets:] The data structure and algorithm used to implement the virtual
-  hardware.
-\item[Services:]Serves as a virtual hardware used by the rest of the
-  system. This module provides the interface between the hardware and the
-  software. So, the system can use it to display outputs or to accept inputs.
-\item[Implemented By:] OS
-\end{description}
-
-\subsection{Behaviour-Hiding Module}
-
-\begin{description}
-\item[Secrets:]The contents of the required behaviours.
-\item[Services:]Includes programs that provide externally visible behaviour of
-  the system as specified in the software requirements specification (SRS)
-  documents. This module serves as a communication layer between the
-  hardware-hiding module and the software decision module. The programs in this
-  module will need to change if there are changes in the SRS.
-\item[Implemented By:] --
-\end{description}
-
-\subsubsection{Provider Registry (\mref{mRegistry})}
-
-\begin{description}
-\item[Secrets:] The representation and curation rules of the on-chain task
-  and provider registry.
-\item[Services:] Creates and retrieves task definitions. Records per-task
-  provider registrations, reputation, and stake. Determines whether providers may join or remain listed.
-\item[Implemented By:] \progname{} on-chain program
-\item[Type of Module:] Abstract Data Type
-\end{description}
-
-\subsubsection{Marketplace Action Preflight (\mref{mActionPreflight})}
-
-\begin{description}
-\item[Secrets:] The preliminary validation and error feedback for marketplace
-  actions used before submitting blockchain transactions.
-\item[Services:] Validates proposed marketplace actions before
-  transaction preparation including account balances and authorization.
-\item[Implemented By:] \progname{} off-chain application
-\item[Type of Module:] Library
-\end{description}
-
-\subsubsection{Request Lifecycle (\mref{mLifecycle})}
-
-\begin{description}
-\item[Secrets:] The request records, state machine, deadlines, and rules for
-  commitments and reveals.
-\item[Services:] Creates inference requests. Records provider acceptances,
-  commitments, and reveals. Advances request phases.
-\item[Implemented By:] \progname{} on-chain program
-\item[Type of Module:] Abstract Data Type
-\end{description}
-
-\subsubsection{Prediction Aggregator (\mref{mAggregator})}
-
-\begin{description}
-\item[Secrets:] The prediction aggregation algorithm.
-\item[Services:] Calculates an aggregate prediction from valid predictions
-  and provider reputations.
-\item[Implemented By:] \progname{} on-chain program
-\item[Type of Module:] Library
-\end{description}
-
-\subsubsection{Rewards Calculator (\mref{mRewards})}
-
-\begin{description}
-\item[Secrets:] The reward calculation algorithm and eligibility criteria.
-\item[Services:] Determines which providers are eligible for a request's
-  rewards. Calculates each eligible provider's share of the rewards.
-\item[Implemented By:] \progname{} on-chain program
-\item[Type of Module:] Library
-\end{description}
-
-\subsubsection{Penalty Enforcer (\mref{mPenalty})}
-
-\begin{description}
-\item[Secrets:] The conditions and amounts for slashing provider stake.
-\item[Services:] Determines whether a provider's participation or lack thereof warrants a penalty.
-  Calculates the penalty amount.
-\item[Implemented By:] \progname{} on-chain program
-\item[Type of Module:] Library
-\end{description}
-
-\subsubsection{Reputation Handler (\mref{mReputation})}
-
-\begin{description}
-\item[Secrets:] The provider reputation update formula.
-\item[Services:] Calculates a provider's reputation change from their
-  performance in a request.
-\item[Implemented By:] \progname{} on-chain program
-\item[Type of Module:] Library
-\end{description}
-
-\subsubsection{Request Input Manager (\mref{mInput})}
-
-\begin{description}
-\item[Secrets:] The management of off-chain request input data.
-\item[Services:] Encrypts and stores the input record for an inference request.
- Grants access to accepted providers. Deletes the data when the request reaches a final state.
-\item[Implemented By:] \progname{} off-chain application
-\item[Type of Module:] Abstract Data Type
-\end{description}
-
-\subsubsection{Requester Interface (\mref{mRequesterUI})}
-
-\begin{description}
-\item[Secrets:] The view of the user interface presented to requesters.
-\item[Services:] Displays available tasks. Allows requesters to create tasks
-  and submit inference requests. Displays request status, results, and history.
-\item[Implemented By:] \progname{} frontend
-\item[Type of Module:] Abstract Object
-\end{description}
-
-\subsubsection{Provider Interface (\mref{mProviderUI})}
-
-\begin{description}
-\item[Secrets:] The view of the user interface presented to providers.
-\item[Services:] Displays available tasks and provider registrations. Allows
-  providers to register for and unregister from tasks. Displays their stake,
-  reputation, and rewards.
-\item[Implemented By:] \progname{} frontend
-\item[Type of Module:] Abstract Object
-\end{description}
-
-\subsubsection{Wallet Service (\mref{mWallet})}
-
-\begin{description}
-\item[Secrets:] The wallet access and transaction authorization mechanisms.
-\item[Services:] Maintains the active wallet connection.
- Verifies control of the wallet address. Requests
-  wallet signatures for authorization.
-\item[Implemented By:] \progname{} off-chain application
-\item[Type of Module:] Abstract Object
-\end{description}
-
-\subsubsection{Participation Client (\mref{mParticipation})}
-
-\begin{description}
-\item[Secrets:] The interface between provider-owned models and the request
-  participation protocol.
-\item[Services:] Creates a participation client for a provider's registered
-  task. Obtains authorized inputs for that task's requests. Invokes the
-  provider's model. Generates and retains a cryptographically secure salt and
-  prediction for each active request. Submits commitments and reveals.
-\item[Implemented By:] \progname{} provider SDK
-\item[Type of Module:] Abstract Data Type
-\end{description}
-
-\subsection{Software Decision Module}
-
-\begin{description}
-\item[Secrets:] The design decision based on mathematical theorems, physical
-  facts, or programming considerations. The secrets of this module are
-  \emph{not} described in the SRS.
-\item[Services:] Includes data structure and algorithms used in the system that
-  do not provide direct interaction with the user. 
-\item[Implemented By:] --
-\end{description}
-
-\subsubsection{Token Manager (\mref{mToken})}
-
-\begin{description}
-\item[Secrets:] The token transfer, minting, and burning mechanisms.
-\item[Services:] Transfers tokens for payments, stakes, penalties, and
-  rewards. Mints and burns tokens when required.
-\item[Implemented By:] \progname{} on-chain program
-\item[Type of Module:] Library
-\end{description}
-
-\subsubsection{User Information (\mref{mUserInfo})}
-
-\begin{description}
-\item[Secrets:] The representation of user profiles.
-\item[Services:] Finds or creates a profile for a verified address. Stores
-  and retrieves profile details, preferences, and history.
-\item[Implemented By:] \progname{} off-chain application
-\item[Type of Module:] Abstract Object
-\end{description}
-
-\subsubsection{Chain Observer (\mref{mChain})}
-
-\begin{description}
-\item[Secrets:] The method for reading blockchain data and detecting changes.
-\item[Services:] Reads account and transaction information. Maintains
-  subscriptions to relevant accounts. Reports state changes and transaction
-  outcomes.
-\item[Implemented By:] \progname{} off-chain application
-\item[Type of Module:] Abstract Object
-\end{description}
-
-\subsubsection{Transaction Manager (\mref{mTransaction})}
-
-\begin{description}
-\item[Secrets:] The process for executing blockchain transactions.
-\item[Services:] Constructs transactions for marketplace actions. Checks
-  balances and fees. Simulates transactions. Obtains wallet authorization.
-  Submits signed transactions.
-\item[Implemented By:] \progname{} off-chain application
-\item[Type of Module:] Library
-\end{description}
-
-\subsubsection{Provider Setup (\mref{mProviderSetup})}
-
-\begin{description}
-\item[Secrets:] The provider client's blockchain and wallet setup procedure.
-\item[Services:] Initializes a provider client with blockchain connectivity
-  and wallet access.
-\item[Implemented By:] \progname{} provider SDK
-\item[Type of Module:] Abstract Object
-\end{description}
-
-\subsubsection{Request Listener (\mref{mListener})}
-
-\begin{description}
-\item[Secrets:] The process of detecting and reporting on-chain events
-  relevant to a provider's registered task.
-\item[Services:] Creates a listener for a provider's registered task. Watches
-  that task for relevant requests. Reports payments, phases, and deadlines.
-\item[Implemented By:] \progname{} provider SDK
-\item[Type of Module:] Abstract Data Type
-\end{description}
-
-\subsubsection{Model (\mref{mModel})}
-
-\begin{description}
-\item[Secrets:] The provider's private machine learning model.
-\item[Services:] Generates a prediction for a given request using the input data.
-\item[Implemented By:] Inference provider
-\item[Type of Module:] Abstract Data Type
-\end{description}
+\begin{table}[ht!]
+\centering
+\label{TblMH}
+\small
+\begin{tabularx}{\textwidth}{p{0.28\textwidth}X}
+\toprule
+\textbf{Category} & \textbf{Module}\\
+\midrule
+Hardware-Hiding & No project-specific hardware-hiding module \\
+\midrule
+Behaviour-Hiding & \mref{mRegistry}: Provider Registry \\
+& \mref{mActionPreflight}: Marketplace Action Preflight \\
+& \mref{mLifecycle}: Request Lifecycle \\
+& \mref{mAggregator}: Prediction Aggregator \\
+& \mref{mRewards}: Rewards Calculator \\
+& \mref{mPenalty}: Penalty Enforcer \\
+& \mref{mReputation}: Reputation Handler \\
+& \mref{mInput}: Request Input Manager \\
+& \mref{mRequesterUI}: Requester Interface \\
+& \mref{mProviderUI}: Provider Interface \\
+& \mref{mWallet}: Wallet Service \\
+& \mref{mParticipation}: Participation Client \\
+\midrule
+Software Decision & \mref{mToken}: Token Manager \\
+& \mref{mUserInfo}: User Information \\
+& \mref{mChain}: Chain Observer \\
+& \mref{mTransaction}: Transaction Manager \\
+& \mref{mProviderSetup}: Provider Setup \\
+& \mref{mListener}: Request Listener \\
+& \mref{mModel}: Model (provided externally) \\
+\bottomrule
+\end{tabularx}
+\end{table}
 ~\newpage
 
 % =====================================================================
