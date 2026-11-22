@@ -1,8 +1,8 @@
 use crate::agents::{Agent, FixedAgent, ImprovingAgent};
 use crate::ground_truth::LinearRegression;
-use crate::simulation::Simulation;
+use crate::simulation::{ScheduledAgent, Simulation};
 use protocol::error::ProtocolError;
-use protocol::instructions::{create_task, register_provider};
+use protocol::instructions::create_task;
 use protocol::ledger::Ledger;
 use protocol::params::Params;
 use protocol::types::{Address, Category, EvaluationMetric, Requester, TaskId};
@@ -53,9 +53,15 @@ struct LinearModel {
 #[serde(deny_unknown_fields)]
 struct ProviderConfig {
     id: u8,
+    #[serde(default = "first_round")]
+    join_at_round: u32,
     #[serde(default)]
     initial_reputation: Option<f64>,
     agent: AgentConfig,
+}
+
+fn first_round() -> u32 {
+    1
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -161,6 +167,12 @@ impl Scenario {
 
         let mut ids = HashSet::new();
         for provider in &self.providers {
+            if provider.join_at_round == 0 || provider.join_at_round > self.rounds {
+                return Err(format!(
+                    "provider {} join_at_round must be within 1..=rounds",
+                    provider.id
+                ));
+            }
             if provider.id == 0 || !ids.insert(provider.id) {
                 return Err("provider ids must be unique and nonzero".into());
             }
@@ -224,6 +236,15 @@ impl Scenario {
                 }
             }
         }
+        if self
+            .providers
+            .iter()
+            .filter(|provider| provider.join_at_round == 1)
+            .count()
+            < self.task.min_providers as usize
+        {
+            return Err("at least min_providers must join at round 1".into());
+        }
         let params = self.params();
         if !params.reputation_adjustment_factor.is_finite()
             || params.reputation_adjustment_factor < 0.0
@@ -273,7 +294,7 @@ impl Scenario {
                 ),
             ),
         };
-        let mut task = create_task(
+        let task = create_task(
             &mut ledger,
             &requester,
             TaskId(0),
@@ -286,10 +307,6 @@ impl Scenario {
         let mut agents = Vec::with_capacity(self.providers.len());
         for provider in &self.providers {
             let address = Address([provider.id; 32]);
-            register_provider(&mut ledger, &mut task, address, &params)?;
-            if let Some(reputation) = provider.initial_reputation {
-                task.set_provider_reputation(address, reputation)?;
-            }
             let agent = match &provider.agent {
                 AgentConfig::Fixed {
                     slope,
@@ -309,7 +326,11 @@ impl Scenario {
                     *improve_at_round,
                 )),
             };
-            agents.push(agent);
+            agents.push(ScheduledAgent {
+                agent,
+                join_at_round: provider.join_at_round,
+                initial_reputation: provider.initial_reputation,
+            });
         }
         Ok(Simulation::new(
             task,
@@ -335,7 +356,82 @@ mod tests {
         let scenario = Scenario::parse(BASELINE).unwrap();
         assert_eq!(scenario.providers.len(), 7);
         assert_eq!(scenario.rounds, 100);
+        assert!(
+            scenario
+                .providers
+                .iter()
+                .all(|provider| provider.join_at_round == 1)
+        );
         scenario.build().unwrap();
+    }
+
+    #[test]
+    fn late_providers_participate_only_from_their_join_round() {
+        let scenario =
+            Scenario::parse(include_str!("../../../scenarios/d_7_3_late_joiners.toml")).unwrap();
+        let metrics = scenario.build().unwrap().run(scenario.rounds).unwrap();
+        assert_eq!(metrics.settled_count(), scenario.rounds as usize);
+        for round in 1..=scenario.rounds {
+            let providers: Vec<_> = metrics
+                .providers
+                .iter()
+                .filter(|provider| provider.round == round)
+                .collect();
+            assert_eq!(providers.len(), if round < 40 { 4 } else { 7 });
+            if round < 40 {
+                assert!(providers.iter().all(|provider| provider.provider_id <= 4));
+            }
+        }
+        for id in 5..=7 {
+            let first = metrics
+                .providers
+                .iter()
+                .find(|provider| provider.provider_id == id)
+                .unwrap();
+            assert_eq!(first.round, 40);
+            assert_eq!(
+                first.reputation_before,
+                scenario.params().baseline_reputation as f64
+            );
+        }
+    }
+
+    #[test]
+    fn provider_can_join_on_the_last_round_with_configured_reputation() {
+        let mut scenario = Scenario::parse(BASELINE).unwrap();
+        scenario.providers[6].join_at_round = scenario.rounds;
+        scenario.providers[6].initial_reputation = Some(20.0);
+        scenario.validate().unwrap();
+        let metrics = scenario.build().unwrap().run(scenario.rounds).unwrap();
+        let newcomer: Vec<_> = metrics
+            .providers
+            .iter()
+            .filter(|provider| provider.provider_id == 7)
+            .collect();
+        assert_eq!(newcomer.len(), 1);
+        assert_eq!(newcomer[0].round, scenario.rounds);
+        assert_eq!(newcomer[0].reputation_before, 20.0);
+    }
+
+    #[test]
+    fn rejects_invalid_join_schedule() {
+        let mut scenario = Scenario::parse(BASELINE).unwrap();
+        for round in [0, scenario.rounds + 1] {
+            scenario.providers[6].join_at_round = round;
+            assert!(scenario.validate().unwrap_err().contains("join_at_round"));
+        }
+        scenario.providers[6].join_at_round = 40;
+        assert!(
+            scenario
+                .apply_run_overrides(None, Some(39), None)
+                .unwrap_err()
+                .contains("join_at_round")
+        );
+        scenario.rounds = 100;
+        for provider in &mut scenario.providers[3..] {
+            provider.join_at_round = 40;
+        }
+        assert!(scenario.validate().unwrap_err().contains("min_providers"));
     }
 
     #[test]
