@@ -3,7 +3,9 @@ use crate::ground_truth::{GroundTruth, LinearRegression};
 use crate::metrics::{ProviderParticipationResult, RequestResult, RunMetrics, unweighted_median};
 use protocol::commitment::commitment_hash;
 use protocol::error::ProtocolError;
-use protocol::instructions::{advance_request, provider_accept, provider_commit, provider_reveal};
+use protocol::instructions::{
+    advance_request, provider_accept, provider_commit, provider_reveal, register_provider,
+};
 use protocol::ledger::Ledger;
 use protocol::params::Params;
 use protocol::types::RequestStatus;
@@ -11,6 +13,12 @@ use protocol::types::{RequestId, Requester, Task};
 
 use rand::RngExt;
 use rand_chacha::ChaCha8Rng;
+
+pub struct ScheduledAgent {
+    pub agent: Agent,
+    pub join_at_round: u32,
+    pub initial_reputation: Option<f64>,
+}
 
 pub struct Simulation {
     task: Task,
@@ -20,7 +28,7 @@ pub struct Simulation {
     rng: ChaCha8Rng,
     noise_rng: ChaCha8Rng,
     ground_truth: LinearRegression,
-    agents: Vec<Agent>,
+    agents: Vec<ScheduledAgent>,
 }
 
 impl Simulation {
@@ -32,7 +40,7 @@ impl Simulation {
         rng: ChaCha8Rng,
         noise_rng: ChaCha8Rng,
         ground_truth: LinearRegression,
-        agents: Vec<Agent>,
+        agents: Vec<ScheduledAgent>,
     ) -> Self {
         Self {
             task,
@@ -50,6 +58,15 @@ impl Simulation {
         let mut metrics = RunMetrics::default();
         let mut next_request_time = 0_u64;
         for round in 0..iterations {
+            for scheduled in &self.agents {
+                if scheduled.join_at_round == round + 1 {
+                    let address = scheduled.agent.address();
+                    register_provider(&mut self.ledger, &mut self.task, address, &self.params)?;
+                    if let Some(reputation) = scheduled.initial_reputation {
+                        self.task.set_provider_reputation(address, reputation)?;
+                    }
+                }
+            }
             let current_time = next_request_time;
             let input = self.ground_truth.generate_input(&mut self.rng);
             let reputations_before: Vec<_> = self
@@ -68,7 +85,12 @@ impl Simulation {
                 current_time,
             )?;
 
-            for agent in &self.agents {
+            for agent in self
+                .agents
+                .iter()
+                .filter(|scheduled| scheduled.join_at_round <= round + 1)
+                .map(|scheduled| &scheduled.agent)
+            {
                 provider_accept(
                     &mut self.ledger,
                     &self.task,
@@ -93,7 +115,12 @@ impl Simulation {
             )?;
 
             let mut private_predictions = Vec::new();
-            for agent in &mut self.agents {
+            for agent in self
+                .agents
+                .iter_mut()
+                .filter(|scheduled| scheduled.join_at_round <= round + 1)
+                .map(|scheduled| &mut scheduled.agent)
+            {
                 let salt: [u8; 32] = self.rng.random();
                 let prediction = agent.predict(request.input(), round + 1, &mut self.noise_rng);
                 let commitment = commitment_hash(&request.id(), agent.address(), prediction, salt)?;

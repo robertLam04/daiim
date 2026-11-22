@@ -1,0 +1,48 @@
+# Four biased providers start immediately; three more accurate newcomers join later.
+name = "d_7_3_late_joiners_bias"
+seed = 100
+rounds = 100
+
+[task]
+kind = "linear_regression"
+description = "Accurate newcomers joining established biased providers"
+min_providers = 4
+max_providers = 7
+
+[task.ground_truth]
+slope = 2.0
+intercept = 3.0
+
+[protocol]
+reputation_adjustment_factor = 0.2
+
+[[providers]]
+id = 1
+agent = { type = "fixed", slope = 2.1, intercept = 4.0, noise = 0.5 }
+
+[[providers]]
+id = 2
+agent = { type = "fixed", slope = 2.1, intercept = 4.0, noise = 1.0 }
+
+[[providers]]
+id = 3
+agent = { type = "fixed", slope = 2.1, intercept = 4.0, noise = 1.5 }
+
+[[providers]]
+id = 4
+agent = { type = "fixed", slope = 2.1, intercept = 4.0, noise = 0.5 }
+
+[[providers]]
+id = 5
+join_at_round = 10
+agent = { type = "fixed", slope = 2.0, intercept = 3.0, noise = 1.0 }
+
+[[providers]]
+id = 6
+join_at_round = 20
+agent = { type = "fixed", slope = 2.0, intercept = 3.0, noise = 1.0  }
+
+[[providers]]
+id = 7
+join_at_round = 30
+agent = { type = "fixed", slope = 2.0, intercept = 3.0, noise = 1.0  }

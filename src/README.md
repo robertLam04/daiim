@@ -51,6 +51,22 @@ one-based `improve_at_round`, then uses `improved_slope` and
 `improved_intercept`. Its optional `noise` applies in both phases.
 CLI overrides affect only that run; the source TOML file is unchanged.
 
+A provider can set `join_at_round = 40` to register immediately before round 40
+and participate from that round onward. Rounds are one-based; omitting this field
+means round 1. New providers start at the protocol baseline reputation unless
+`initial_reputation` is specified. At least `min_providers` must join in round 1,
+the total provider count must not exceed `max_providers`, and each join round must
+be within the run's rounds (including any CLI override).
+
+The [late-joiner scenario](scenarios/d_7_3_late_joiners.toml) starts with four noisy
+providers and adds three accurate providers in round 40:
+
+```sh
+cargo run -p sim -- scenarios/d_7_3_late_joiners.toml
+```
+
+Provider CSV rows and reputation chart lines begin at each provider's join round.
+
 Each round runs acceptance, commitment, reveal, and settlement. The simulator
 prints a summary and writes files under
 `results/<scenario name>/seed-<seed>_rounds-<rounds>_factor-<factor>/`:
